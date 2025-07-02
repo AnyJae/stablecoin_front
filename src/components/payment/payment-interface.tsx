@@ -322,7 +322,7 @@ export function PaymentInterface() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-ksc-blue hover:bg-ksc-blue-dark disabled:bg-ksc-blue text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-blue text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               {isLoading ? t("common.processing") : t("payment.sendForm.send")}
             </button>
@@ -390,7 +390,7 @@ export function PaymentInterface() {
             <button
               type="button"
               onClick={addRecipient}
-              className="w-full py-2 border-2 border-dashed border-ksc-gray-light text-ksc-gray-light hover:border-ksc-blue hover:text-ksc-blue rounded-lg transition-colors"
+              className="w-full py-2 border-2 border-dashed border-ksc-gray-light text-ksc-gray-light hover:border-ksc-mint hover:text-ksc-mint rounded-lg transition-colors"
             >
               + {t("payment.batchForm.addRecipient")}
             </button>
@@ -416,7 +416,7 @@ export function PaymentInterface() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-ksc-blue hover:bg-ksc-blue-dark disabled:bg-ksc-gray text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-gray text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               {isLoading ? t("common.processing") : t("payment.batchExecute")}
             </button>
@@ -509,7 +509,7 @@ export function PaymentInterface() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-ksc-blue hover:bg-ksc-blue-dark disabled:bg-ksc-gray text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-gray text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               {isLoading
                 ? t("payment.scheduledForm.registering")

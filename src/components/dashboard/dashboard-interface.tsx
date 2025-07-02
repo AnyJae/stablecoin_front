@@ -124,14 +124,18 @@ export function DashboardInterface() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === tab.id 
-                  ? 'bg-ksc-blue text-white' 
-                  : 'text-ksc-gray-light hover:text-white'
-              }`}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors group`}
             >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
+              <Icon className={`w-4 h-4 transition-colors ${
+              activeTab === tab.id
+                ? "text-ksc-mint"
+                : "text-ksc-gray-light group-hover:text-ksc-mint"
+            }`} />
+              <span className={`transition-colors ${
+              activeTab === tab.id
+                ? "text-ksc-mint"
+                : "text-ksc-gray-light group-hover:text-ksc-mint"
+            }`}>{tab.label}</span>
             </button>
           );
         })}
