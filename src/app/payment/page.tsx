@@ -10,7 +10,7 @@ export default function PaymentPage() {
   
   return (
     <div className="min-h-screen bg-ksc-background text-ksc-white">
-      <Header />
+
       <main className="py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="mb-8">

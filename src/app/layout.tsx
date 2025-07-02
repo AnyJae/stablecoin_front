@@ -5,6 +5,8 @@ import { Providers } from '@/components/providers';
 import { WalletProvider } from '@/providers/wallet-provider';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Toaster } from 'react-hot-toast';
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -40,7 +42,9 @@ export default function RootLayout({
         <WalletProvider>
           <Providers>
             <div className="min-h-screen bg-ksc-background">
+              <Header/>
               {children}
+              <Footer/>
             </div>
           </Providers>
           <Toaster
