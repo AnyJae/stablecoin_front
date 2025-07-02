@@ -37,19 +37,21 @@ export function Header() {
   };
 
   return (
-    <header className="bg-ksc-box/80 backdrop-blur-sm border-b border-ksc-box sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-ksc-mint rounded-lg flex items-center justify-center">
-              <Coins className="w-5 h-5 text-ksc-black" />
-            </div>
-            <span className="text-xl font-bold text-gradient">KSC</span>
-          </Link>
+    <header className="w-full bg-ksc-box/80 backdrop-blur-sm border-b border-ksc-box sticky top-0 z-50">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="w-full relative flex items-center h-16">
+          {/* Logo (왼쪽) */}
+          <div className="flex items-center h-full flex-1">
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-ksc-mint rounded-lg flex items-center justify-center">
+                <Coins className="w-5 h-5 text-ksc-black" />
+              </div>
+              <span className="text-xl font-bold text-gradient">KSC</span>
+            </Link>
+          </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          {/* Desktop Navigation (가운데) */}
+          <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center space-x-8">
             <Link href="/" className="text-ksc-gray hover:text-ksc-mint transition-colors">
               {t('navigation.home')}
             </Link>
@@ -75,8 +77,8 @@ export function Header() {
             </Link>
           </nav>
 
-          {/* Connect Wallet Button */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Connect Wallet Button (오른쪽) */}
+          <div className="flex items-center space-x-4 flex-1 justify-end">
             <LanguageSwitcher />
             {isConnected ? (
               <div className="flex items-center space-x-3">
@@ -109,7 +111,7 @@ export function Header() {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2 rounded-md text-ksc-gray hover:text-ksc-mint hover:bg-ksc-box/50"
+            className="md:hidden p-2 rounded-md text-ksc-gray hover:text-ksc-mint hover:bg-ksc-box/50 ml-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -216,4 +218,4 @@ export function Header() {
       </div>
     </header>
   );
-} 
+}
