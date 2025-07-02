@@ -14,7 +14,7 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-ksc-white mb-4">
-              KSC <span className="text-gradient">{t('admin.title')}</span>
+              KSC {t('admin.title')}
             </h1>
             <p className="text-lg text-ksc-gray">
               {t('admin.description')}

@@ -32,7 +32,10 @@
   },
   "home": {
     "hero": {
-      "title": "KSC Stablecoin",
+      "title": {
+        "ksc": "KSC",
+        "stablecoin": "Stablecoin"
+      },
       "subtitle": "Safe and Reliable Korean Won-Based Stablecoin",
       "description": "KSC Stablecoin provides high performance and stability through a hybrid architecture based on Avalanche and XRPL.",
       "cta": "Connect Wallet",

@@ -13,7 +13,7 @@ export function Hero() {
         <div className="text-center">
           {/* Main Heading */}
           <h1 className="text-4xl md:text-6xl font-bold text-ksc-white mb-6">
-            {t('home.hero.title')}
+            {t('home.hero.title.ksc')} <span className="text-gradient">{t('home.hero.title.stablecoin')}</span>
           </h1>
           
           {/* Subtitle */}

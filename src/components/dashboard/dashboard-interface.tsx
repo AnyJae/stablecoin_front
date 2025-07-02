@@ -88,7 +88,7 @@ export function DashboardInterface() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-ksc-white">{t('dashboard.title')}</h1>
-          <p className="text-ksc-gray-light mt-1">
+          <p className="text-ksc-gray mt-1">
             {t('dashboard.overview')}
           </p>
         </div>
