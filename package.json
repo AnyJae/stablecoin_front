@@ -22,7 +22,8 @@
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.5.2",
     "recharts": "^3.0.0",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "styled-component": "^2.8.0"
   },
   "devDependencies": {
     "@types/node": "^20.9.0",
@@ -32,6 +33,7 @@
     "eslint": "^8.53.0",
     "eslint-config-next": "^14.0.0",
     "postcss": "^8.4.31",
+    "tailwind-styled-components": "^2.2.0",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.2.2"
   }
