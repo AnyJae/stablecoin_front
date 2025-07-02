@@ -50,7 +50,7 @@ export function AdminInterface() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto p-6">
       {/* 컨트랙트 정보 */}
       <div className="card p-6 mb-6">
         <h2 className="text-xl font-bold text-ksc-white mb-4">{t('admin.contractInfo.title')}</h2>

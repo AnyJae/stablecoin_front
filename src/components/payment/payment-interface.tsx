@@ -143,7 +143,7 @@ export function PaymentInterface() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto p-6">
       {/* 탭 네비게이션 */}
       <div className="flex space-x-1 bg-ksc-gray-dark rounded-lg p-1">
         <button
