@@ -7,11 +7,13 @@ import { useWallet } from '@/providers/wallet-provider';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import toast from 'react-hot-toast';
+import { usePathname } from 'next/navigation';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isConnected, address, balance, connect, disconnect, isLoading, error } = useWallet();
   const { t } = useLanguage();
+  const pathname = usePathname();
 
   const handleConnect = async () => {
     try {
@@ -52,27 +54,48 @@ export function Header() {
 
           {/* Desktop Navigation (가운데) */}
           <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-ksc-gray hover:text-ksc-mint transition-colors">
+            <Link
+              href="/"
+              className={`${pathname === '/' ? 'text-ksc-mint' : 'text-ksc-gray'} hover:text-ksc-mint transition-colors`}
+            >
               {t('navigation.home')}
             </Link>
-            <Link href="/dashboard" className="text-ksc-gray hover:text-ksc-mint transition-colors">
+            <Link
+              href="/dashboard"
+              className={`${pathname.startsWith('/dashboard') ? 'text-ksc-mint' : 'text-ksc-gray'} hover:text-ksc-mint transition-colors`}
+            >
               {t('navigation.dashboard')}
             </Link>
-            <Link href="/wallet" className="text-ksc-gray hover:text-ksc-mint transition-colors">
+            <Link
+              href="/wallet"
+              className={`${pathname.startsWith('/wallet') ? 'text-ksc-mint' : 'text-ksc-gray'} hover:text-ksc-mint transition-colors`}
+            >
               {t('navigation.wallet')}
             </Link>
-            <Link href="/payment" className="text-ksc-gray hover:text-ksc-mint transition-colors flex items-center space-x-1">
+            <Link
+              href="/payment"
+              className={`${pathname.startsWith('/payment') ? 'text-ksc-mint' : 'text-ksc-gray'} hover:text-ksc-mint transition-colors flex items-center space-x-1`}
+            >
               <Send size={16} />
               <span>{t('navigation.payment')}</span>
             </Link>
-            <Link href="/collateral" className="text-ksc-gray hover:text-ksc-mint transition-colors flex items-center space-x-1">
+            <Link
+              href="/collateral"
+              className={`${pathname.startsWith('/collateral') ? 'text-ksc-mint' : 'text-ksc-gray'} hover:text-ksc-mint transition-colors flex items-center space-x-1`}
+            >
               <Shield size={16} />
               <span>{t('navigation.collateral')}</span>
             </Link>
-            <Link href="/admin" className="text-ksc-gray hover:text-ksc-mint transition-colors">
+            <Link
+              href="/admin"
+              className={`${pathname.startsWith('/admin') ? 'text-ksc-mint' : 'text-ksc-gray'} hover:text-ksc-mint transition-colors`}
+            >
               {t('navigation.admin')}
             </Link>
-            <Link href="/docs" className="text-ksc-gray hover:text-ksc-mint transition-colors">
+            <Link
+              href="/docs"
+              className={`${pathname.startsWith('/docs') ? 'text-ksc-mint' : 'text-ksc-gray'} hover:text-ksc-mint transition-colors`}
+            >
               {t('navigation.docs')}
             </Link>
           </nav>
