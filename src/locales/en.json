@@ -1,0 +1,339 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "refresh": "Refresh",
+    "copy": "Copy",
+    "copied": "Copied",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "navigation": {
+    "home": "Home",
+    "wallet": "Wallet",
+    "dashboard": "Dashboard",
+    "payment": "Payment",
+    "collateral": "Collateral",
+    "admin": "Admin",
+    "scanner": "Scanner",
+    "docs": "Docs",
+    "language": "Language"
+  },
+  "home": {
+    "hero": {
+      "title": "KSC Stablecoin",
+      "subtitle": "Safe and Reliable Korean Won-Based Stablecoin",
+      "description": "KSC Stablecoin provides high performance and stability through a hybrid architecture based on Avalanche and XRPL.",
+      "cta": "Connect Wallet",
+      "learnMore": "Learn More"
+    },
+    "stats": {
+      "kscValue": "KSC Value",
+      "krwPeg": "KRW Peg",
+      "networks": "Supported Networks",
+      "trading": "24/7 Trading"
+    },
+    "features": {
+      "title": "Key Features",
+      "subtitle": "Discover the core features of KSC Stablecoin",
+      "items": {
+        "secure": {
+          "title": "Secure Minting/Burning",
+          "description": "Only administrators can mint and burn tokens, ensuring security."
+        },
+        "crosschain": {
+          "title": "Cross-Chain Transfer",
+          "description": "Enable free asset movement between Avalanche and XRPL."
+        },
+        "realtime": {
+          "title": "Real-Time Payment",
+          "description": "Real-time payment system supporting instant, batch, and scheduled payments."
+        },
+        "monitoring": {
+          "title": "Collateral Management",
+          "description": "Real-time collateral asset monitoring and risk management system."
+        }
+      }
+    },
+    "about": {
+      "title": "About KSC Stablecoin",
+      "description": "KSC is a stablecoin pegged 1:1 to the Korean Won, enabling safe and transparent digital asset transactions using blockchain technology.",
+      "benefits": [
+        "Stable value preservation",
+        "Fast transaction processing",
+        "Low fees",
+        "Transparent transaction records"
+      ]
+    }
+  },
+  "wallet": {
+    "title": "Wallet Management",
+    "connect": "Connect Wallet",
+    "disconnect": "Disconnect Wallet",
+    "balance": "Balance",
+    "address": "Address",
+    "network": "Network",
+    "transactions": "Transactions",
+    "send": "Send",
+    "receive": "Receive",
+    "overview": "Overview",
+    "sendForm": {
+      "title": "Send KSC",
+      "recipient": "Recipient Address",
+      "amount": "Amount",
+      "chain": "Chain",
+      "send": "Send",
+      "placeholder": {
+        "recipient": "Enter recipient address",
+        "amount": "Enter amount to send"
+      }
+    },
+    "connection": {
+      "xrpl": {
+        "title": "XRPL Wallet",
+        "subtitle": "XRP Ledger Based",
+        "description": "Trade and manage KSC on XRP Ledger.",
+        "connect": "Connect XRPL Wallet"
+      },
+      "avalanche": {
+        "title": "Avalanche Wallet",
+        "subtitle": "MetaMask Supported",
+        "description": "Trade and manage KSC on Avalanche C-Chain.",
+        "connect": "Connect Avalanche Wallet"
+      },
+      "mock": {
+        "title": "Mock Wallet",
+        "subtitle": "Development/Test",
+        "description": "Test functionality without a real wallet.",
+        "xrplMock": "XRPL Mock",
+        "avalancheMock": "Avalanche Mock"
+      }
+    },
+    "status": {
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "connecting": "Connecting...",
+      "mock": "MOCK WALLET CONNECTED",
+      "mockDescription": "This screen is a test Mock Wallet environment.",
+      "mockNote": "(Not connected to real blockchain)"
+    }
+  },
+  "dashboard": {
+    "title": "KSC Dashboard",
+    "overview": "Real-time market data and system status monitoring",
+    "market": "Market",
+    "collateral": "Collateral",
+    "transactions": "Transactions",
+    "statistics": "Statistics",
+    "recentTransactions": "Recent Transactions",
+    "quickActions": "Quick Actions",
+    "status": {
+      "connected": "Real-time Connected",
+      "disconnected": "Connection Lost",
+      "walletConnected": "Wallet Connected"
+    },
+    "stats": {
+      "totalSupply": "Total Supply",
+      "circulatingSupply": "Circulating Supply",
+      "totalTransactions": "Total Transactions",
+      "activeUsers": "Active Users",
+      "kscPrice": "KSC Price",
+      "marketCap": "Market Cap",
+      "volume24h": "24h Volume",
+      "noChange": "No Change"
+    },
+    "trillion": "T",
+    "hundredMillion": "B",
+    "tenThousand": "K",
+    "errors": {
+      "realtime": "Failed to connect to real-time data."
+    }
+  },
+  "payment": {
+    "title": "KSC Payment System",
+    "description": "Safe and fast KSC stablecoin payment service",
+    "create": "Create Payment",
+    "history": "Payment History",
+    "batch": "Batch Payment",
+    "schedule": "Schedule Payment",
+    "instant": "Instant Payment",
+    "sendForm": {
+      "recipient": "Recipient Address",
+      "amount": "Amount",
+      "description": "Description",
+      "send": "Send Payment"
+    },
+    "batchForm": {
+      "recipient": "Recipient",
+      "addRecipient": "Add Recipient",
+      "description": "Payment Description"
+    },
+    "batchExecute": "Execute Batch Payment",
+    "scheduledForm": {
+      "time": "Scheduled Time",
+      "register": "Register Scheduled Payment",
+      "registering": "Registering..."
+    },
+    "messages": {
+      "success": "Payment processed successfully!",
+      "batchSuccess": "Batch payment processed successfully!",
+      "scheduledSuccess": "Scheduled payment registered successfully!"
+    },
+    "errors": {
+      "processing": "Error occurred during payment processing.",
+      "batchProcessing": "Error occurred during batch payment processing.",
+      "scheduledProcessing": "Error occurred during scheduled payment registration."
+    }
+  },
+  "collateral": {
+    "title": "Collateral Asset Monitoring",
+    "description": "Real-time monitoring of KSC stablecoin collateral assets",
+    "status": "Collateral Status",
+    "assets": "Collateral Assets",
+    "ratio": "Collateral Ratio",
+    "monitoring": "Monitoring",
+    "tabs": {
+      "overview": "Overview",
+      "assets": "Assets",
+      "alerts": "Alerts",
+      "analytics": "Analytics"
+    },
+    "alerts": {
+      "stable": "Collateral ratio is being maintained stably."
+    },
+    "errors": {
+      "loadFailed": "Failed to load collateral asset data."
+    }
+  },
+  "admin": {
+    "title": "Admin",
+    "description": "KSC token minting, burning and system monitoring",
+    "mint": "Mint",
+    "burn": "Burn",
+    "users": "User Management",
+    "settings": "Settings",
+    "logs": "Logs",
+    "contractInfo": {
+      "title": "Contract Information",
+      "totalSupply": "Total Supply (KSC)",
+      "totalMinted": "Total Minted (KSC)",
+      "totalBurned": "Total Burned (KSC)",
+      "loading": "Loading contract information..."
+    },
+    "mint": {
+      "title": "Mint KSC",
+      "recipient": "Recipient Address",
+      "amount": "Mint Amount (KSC)",
+      "button": "Mint KSC",
+      "processing": "Minting..."
+    },
+    "burn": {
+      "title": "Burn KSC",
+      "address": "Burn Address",
+      "amount": "Burn Amount (KSC)",
+      "button": "Burn KSC",
+      "processing": "Burning..."
+    },
+    "emergency": {
+      "title": "Emergency Control",
+      "pause": "Pause",
+      "unpause": "Unpause"
+    }
+  },
+  "scanner": {
+    "title": "Scanner",
+    "search": "Search",
+    "transaction": "Transaction",
+    "block": "Block",
+    "address": "Address"
+  },
+  "docs": {
+    "title": "Documentation",
+    "description": "KSC stablecoin project technical documentation and guides",
+    "api": "API Documentation",
+    "guide": "User Guide",
+    "faq": "FAQ",
+    "sections": {
+      "overview": "Overview",
+      "architecture": "Architecture",
+      "smartContract": "Smart Contract",
+      "api": "API Documentation",
+      "security": "Security",
+      "deployment": "Deployment"
+    }
+  },
+  "errors": {
+    "walletConnection": "Failed to connect wallet",
+    "transactionFailed": "Transaction failed",
+    "insufficientBalance": "Insufficient balance",
+    "invalidAddress": "Invalid address",
+    "networkError": "Network error occurred",
+    "serverError": "Server error occurred"
+  },
+  "common": {
+    "processing": "Processing...",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "add": "Add",
+    "edit": "Edit",
+    "save": "Save"
+  },
+  "messages": {
+    "addressCopied": "Address copied",
+    "transactionSent": "Transaction sent",
+    "walletConnected": "Wallet connected",
+    "walletDisconnected": "Wallet disconnected"
+  },
+  "footer": {
+    "description": "KSC is a Korean Won-based stablecoin that provides stable and efficient digital asset transactions through innovative blockchain technology.",
+    "sections": {
+      "product": "Product",
+      "resources": "Resources",
+      "company": "Company"
+    },
+    "product": {
+      "wallet": "Wallet",
+      "admin": "Admin",
+      "docs": "Docs",
+      "api": "API"
+    },
+    "resources": {
+      "developerDocs": "Developer Docs",
+      "apiRef": "API Reference",
+      "github": "GitHub",
+      "community": "Community"
+    },
+    "company": {
+      "about": "About",
+      "blog": "Blog",
+      "careers": "Careers",
+      "contact": "Contact"
+    },
+    "legal": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "cookies": "Cookie Policy",
+      "license": "License"
+    },
+    "copyright": "All rights reserved.",
+    "disclaimer": {
+      "demo": "KSC is a demo project running on testnet environment.",
+      "warning": "Please use only for educational and development purposes, not for actual investment or trading."
+    }
+  }
+} 
