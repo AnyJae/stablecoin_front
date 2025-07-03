@@ -17,7 +17,7 @@ export function Hero() {
           </h1>
           
           {/* Subtitle */}
-          <p className="text-xl md:text-2xl text-ksc-gray mb-8 max-w-3xl mx-auto">
+          <p className="text-lg md:text-lg text-ksc-gray mb-8 max-w-3xl mx-auto">
             {t('home.hero.subtitle')}
             <br />
             {t('home.hero.description')}
