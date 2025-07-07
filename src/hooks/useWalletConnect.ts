@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 
 export const useWalletConnect=()=> {
   const { t } = useLanguage();
-  const {setAddress, setIsConnected, setChain, setIsMock, setIsLoading, setError } = useWalletContext();
+  const {setAddress, setIsConnected, setChain, setIsMock, setIsLoading, setError, setProvider, setSigner } = useWalletContext();
 
   //Avalanche 지갑 연결
   const connectAvalancheWallet = useCallback(async()=>{

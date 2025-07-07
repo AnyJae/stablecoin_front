@@ -41,8 +41,8 @@ interface WalletContextType {
   setTransactions: (transactions: WalletTransaction[]) => void;
   setError:(error: string) => void;
   setIsLoading: (connected: boolean) => void;
-//   setProvider: (provider: ethers.BrowserProvider | null) => void;
-//   setSigner: (signer: ethers.Signer | null) => void;
+  setProvider: (provider: ethers.BrowserProvider | null) => void;
+  setSigner: (signer: ethers.Signer | null) => void;
  }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -85,8 +85,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
     setTransactions,
     setError,
     setIsLoading,
-    // setProvider,
-    // setSigner,
+    setProvider,
+    setSigner,
   };
 
 
