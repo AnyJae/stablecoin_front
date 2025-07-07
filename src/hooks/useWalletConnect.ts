@@ -3,156 +3,143 @@ import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 
-export const useWalletConnect=()=> {
-  const { t } = useLanguage();
-  const {setAddress, setIsConnected, setChain, setIsMock, setIsLoading, setError, setProvider, setSigner } = useWalletContext();
+// 각 체인별 설정 정보 (📍실제 Chain ID, RPC URL 등으로 업데이트 필요📍)
+const CHAIN_CONFIGS = {
+  avalanche: {
+    chainId: "0xa869", // Avalanche Fuji Testnet (43113)
+    chainName: "Avalanche Fuji Testnet",
+    nativeCurrency: { name: "AVAX", symbol: "AVAX", decimals: 18 },
+    rpcUrls: ["https://api.avax-test.network/ext/bc/C/rpc"],
+    blockExplorerUrls: ["https://testnet.snowtrace.io"],
+  },
+  "xrpl-evm": {
+    chainId: "0x160002", // XRPL EVM Sidechain Testnet (1440002)
+    chainName: "XRPL EVM Sidechain Testnet",
+    nativeCurrency: { name: "XRP", symbol: "XRP", decimals: 18 },
+    rpcUrls: ["https://rpc-evm-testnet.xrpl.org"],
+    blockExplorerUrls: ["https://evm-explorer.xrpl.org"],
+  },
+};
 
-  //Avalanche 지갑 연결
-  const connectAvalancheWallet = useCallback(async()=>{
-    setIsLoading(true);
-    try{
-      if(typeof window.ethereum !== 'undefined'){
-        // 계정 요청
-        const accounts = await window.ethereum.request({
-          method: 'eth_requestAccounts'
-        });
-        
-        if (!accounts || accounts.length === 0) {
-          throw new Error('지갑 연결이 거부되었습니다.');
+export const useWalletConnect = () => {
+  const { t } = useLanguage();
+  const {
+    setAddress,
+    setIsConnected,
+    setChainId,
+    setChainName,
+    setIsMock,
+    setIsLoading,
+    setError,
+  } = useWalletContext();
+
+  //지갑 연결
+  const connectEvmWallet = useCallback(
+    async (targetChain: "avalanche" | "xrpl-evm") => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // 메타마스크가 없을 경우
+        if (typeof window.ethereum === "undefined") {
+          setError("메타마스크가 설치되어 있지 않습니다.");
+          toast.error(t("errors.metaMaskNotFound"));
+          setIsLoading(false);
+          return;
         }
-        
+
+        const config = CHAIN_CONFIGS[targetChain];
+
+        // 계정 요청 (MetaMask 팝업 띄움)
+        const accounts: string[] = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+
+        if (!accounts || accounts.length === 0) {
+          throw new Error(t("errors.walletConnection"));
+        }
         const address = accounts[0];
 
-        
-        // 네트워크 확인 및 전환
-        const chainId = await window.ethereum.request({
-          method: 'eth_chainId'
+        // 현재 연결된 체인 ID 확인
+        const currentChainId = await window.ethereum.request({
+          method: "eth_chainId",
         });
 
-        
-        // Avalanche Fuji 테스트넷 (Chain ID: 43113)
-        const targetChainId = '0xa869'; // 43113 in hex
-        
-        if (chainId !== targetChainId) {
+        // 타겟 체인으로 전환 시도
+        if (currentChainId !== config.chainId) {
           try {
             await window.ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: targetChainId }],
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: config.chainId }],
             });
           } catch (switchError: any) {
-            // 네트워크가 없는 경우 추가
             if (switchError.code === 4902) {
+              // 네트워크가 MetaMask에 없는 경우 추가
               await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: targetChainId,
-                  chainName: 'Avalanche Fuji Testnet',
-                  nativeCurrency: {
-                    name: 'AVAX',
-                    symbol: 'AVAX',
-                    decimals: 18
-                  },
-                  rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
-                  blockExplorerUrls: ['https://testnet.snowtrace.io']
-                }]
+                method: "wallet_addEthereumChain",
+                params: [config], 
               });
             } else {
-              throw switchError;
+              throw switchError; //다른 에러
             }
           }
         }
+
+        // WalletContext 상태 업데이트
         setAddress(address);
         setIsConnected(true);
-        setChain("avalanche");
+        setChainId(Number(config.chainId)); // 십진수로 변환
+        setChainName(targetChain === "avalanche" ? "avalanche" : "xrpl");
         setIsMock(false);
-        setIsLoading(false);
 
-        toast.success(t(`wallet.connection.avalanche.connect`));
-      
-          // 계정 변경 이벤트 리스너
-      window.ethereum.on('accountsChanged', (newAccounts: string[]) => {
-        console.log("계정 변경");
-        if (newAccounts.length === 0) {
-          setAddress(address);
-          setIsConnected(false);
-          setChain(null);
-          toast.success(t(`messages.walletDisconnected`));
-        } else {
-          setAddress(newAccounts[0]);
-          toast.success(t(`messages.accountChanged`));
-        }
-      });
-      
-      // 체인 변경 이벤트 리스너
-      window.ethereum.on('chainChanged', (newChainId: string) => {
-        console.log("체인 변경");
-        if (newChainId !== targetChainId) {
-          setError('올바른 네트워크로 전환해주세요.');
-          toast.error(t(`errors.invalidNetwork`));
-        }
-      });
-      }
-    } catch(e){
-      const errorMessage = e instanceof Error ? e.message : 'Avalanche 지갑 연결에 실패했습니다.';
-      setError(errorMessage);
-      toast.error(t('errors.walletConnection'));
-      console.error('Avalanche wallet connection error:', e);
-    
-    } finally {
-      setIsLoading(false);
-    }   
-
-
-  },[])
-
-  //XRPL 지갑 연결
-    const connectXRPLWallet = useCallback(async () => {
-      setIsLoading(true);
-      
-      try {
-        // XUMM SDK 또는 xrpl.js를 사용한 실제 연결
-        if (typeof window !== 'undefined' && (window as any).xumm) {
-          // XUMM 지갑 연결
-          const xumm = (window as any).xumm;
-          const account = await xumm.user.account;
-          
-          if (!account) {
-            throw new Error('XUMM 지갑 연결이 필요합니다.');
-          }
-          
-          setAddress(account);
-          setIsConnected(true);
-          setChain("xrpl");
-          setIsMock(false);
-          setIsLoading(false);
-
-          toast.success(t(`wallet.connection.xrpl.connect`));
-          
-        } 
-        
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'XRPL 지갑 연결에 실패했습니다.';
+        toast.success(t(`messages.walletConnected`));
+      } catch (e) {
+        const errorMessage =
+          e instanceof Error ? e.message : t("errors.walletConnection");
         setError(errorMessage);
-        toast.error(`error.walletConnection`);
-        console.error('XRPL wallet connection error:', err);
+        toast.error(t("errors.walletConnection"));
+        console.error(`${targetChain} wallet connection error:`, e);
       } finally {
         setIsLoading(false);
       }
-    }, []);
+    },
+    [
+      t,
+      setAddress,
+      setIsConnected,
+      setChainId,
+      setChainName,
+      setIsMock,
+      setIsLoading,
+      setError,
+    ]
+  );
+
+  // XRPL 지갑 연결 (EVM 사이드체인)
+  const connectXrplEvmWallet = useCallback(async () => {
+    await connectEvmWallet("xrpl-evm");
+  }, [connectEvmWallet]);
+
+  // Avalanche 지갑 연결
+  const connectAvalancheWallet = useCallback(async () => {
+    await connectEvmWallet("avalanche");
+  }, [connectEvmWallet]);
+
 
   //지갑 연결 해제
   const disconnectWallet = useCallback(() => {
-
-    setAddress('');
+    setAddress(null); 
     setIsConnected(false);
-    setChain(null);
+    setChainId(null);
+    setChainName(null); 
+    setIsMock(false);
+    setError(null);
 
-    toast.success('지갑 연결이 해제되었습니다.');
+    toast.success(t('messages.walletDisconnected'));
   }, []);
 
-return{
-  connectAvalancheWallet,
-  connectXRPLWallet,
-  disconnectWallet
+  return {
+    connectAvalancheWallet,
+    connectXrplEvmWallet,
+    disconnectWallet,
+  };
 };
-}
