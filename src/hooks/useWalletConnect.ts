@@ -3,6 +3,9 @@ import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 
+//localStorage 키 (지갑 연결 수동 해제 상태)
+const DISCONNECT_FLAG_KEY = "wallet_disconnected_permanently";
+
 // 각 체인별 설정 정보 (📍실제 Chain ID, RPC URL 등으로 업데이트 필요📍)
 const CHAIN_CONFIGS = {
   avalanche: {
@@ -13,11 +16,11 @@ const CHAIN_CONFIGS = {
     blockExplorerUrls: ["https://testnet.snowtrace.io"],
   },
   "xrpl-evm": {
-    chainId: "0x160002", // XRPL EVM Sidechain Testnet (1440002)
+    chainId: "0x161c28", // XRPL EVM Sidechain Testnet (1449000)
     chainName: "XRPL EVM Sidechain Testnet",
     nativeCurrency: { name: "XRP", symbol: "XRP", decimals: 18 },
-    rpcUrls: ["https://rpc-evm-testnet.xrpl.org"],
-    blockExplorerUrls: ["https://evm-explorer.xrpl.org"],
+    rpcUrls: ["https://rpc.testnet.xrplevm.org"],
+    blockExplorerUrls: ["https://explorer.testnet.xrplevm.org/"],
   },
 };
 
@@ -46,6 +49,8 @@ export const useWalletConnect = () => {
           setIsLoading(false);
           return;
         }
+
+        localStorage.removeItem(DISCONNECT_FLAG_KEY);
 
         const config = CHAIN_CONFIGS[targetChain];
 
@@ -76,7 +81,7 @@ export const useWalletConnect = () => {
               // 네트워크가 MetaMask에 없는 경우 추가
               await window.ethereum.request({
                 method: "wallet_addEthereumChain",
-                params: [config], 
+                params: [config],
               });
             } else {
               throw switchError; //다른 에러
@@ -124,17 +129,18 @@ export const useWalletConnect = () => {
     await connectEvmWallet("avalanche");
   }, [connectEvmWallet]);
 
-
   //지갑 연결 해제
   const disconnectWallet = useCallback(() => {
-    setAddress(null); 
+    setAddress(null);
     setIsConnected(false);
     setChainId(null);
-    setChainName(null); 
+    setChainName(null);
     setIsMock(false);
     setError(null);
 
-    toast.success(t('messages.walletDisconnected'));
+    localStorage.setItem(DISCONNECT_FLAG_KEY, "true");
+
+    toast.success(t("messages.walletDisconnected"));
   }, []);
 
   return {

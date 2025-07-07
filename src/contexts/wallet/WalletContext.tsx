@@ -34,6 +34,9 @@ interface WalletContextType {
   transactions: WalletTransaction[];
   isLoading: boolean;
   error: string | null;
+  provider: ethers.BrowserProvider | null;
+  signer: ethers.Signer | null;
+
 
   setAddress: (address: string | null) => void;
   setBalance: (balance: string | null) => void;
@@ -43,11 +46,16 @@ interface WalletContextType {
   setChainName: (chainName: "xrpl" | "avalanche" | null) => void;
   setIsMock: (connected: boolean) => void;
   setTransactions: (transactions: WalletTransaction[]) => void;
-  setError: (error: string) => void;
+  setError: (error: string |null) => void;
   setIsLoading: (connected: boolean) => void;
   setProvider: (provider: ethers.BrowserProvider | null) => void;
   setSigner: (signer: ethers.Signer | null) => void;
 }
+
+
+//localStorage 키 (지갑 연결 수동 해제 상태)
+const DISCONNECT_FLAG_KEY = 'wallet_disconnected_permanently';
+
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
@@ -82,6 +90,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
     transactions,
     isLoading,
     error,
+    provider,
+    signer,
 
     setAddress,
     setBalance,
@@ -100,9 +110,29 @@ export function WalletProvider({ children }: WalletProviderProps) {
   //provider와 signer 설정 및 이벤트 리스너 등록
   useEffect(() => {
     const initWalletProvider = async () => {
-      if (typeof window.ethereum !== "undefined") {
+      if (typeof window.ethereum === "undefined") {
+        console.warn("MetaMask wallet not detected.");
+        return;
+      }else {
+        // 지갑 연결 해제 플래그 확인하여 상태 업데이트
+        if(localStorage.getItem(DISCONNECT_FLAG_KEY) === 'true') {
+          setAddress(null);
+          setBalance(null);
+          setKscBalance(null);
+          setChainId(null);
+          setChainName(null);
+          setIsConnected(false);
+          setIsMock(false);
+          setTransactions([]);
+          setIsLoading(false);
+          setProvider(null);
+          setSigner(null);
+
+          return;  //지갑 연결 해제 상태 시 자동 연결하지 않음
+        }
+
         try {
-          // ethers.js BrowserProvider 생성 (지갑 연결 없이도 가능)
+          // ethers.js BrowserProvider 생성 
           const _provider = new ethers.BrowserProvider(window.ethereum);
           setProvider(_provider);
 
@@ -172,6 +202,9 @@ export function WalletProvider({ children }: WalletProviderProps) {
       //계정 변경/해제 이벤트 리스너
       const handleAccountsChanged = async (newAccounts: string[]) => {
         setIsLoading(true);
+        
+        const currentProvider = new ethers.BrowserProvider(window.ethereum);
+
         if (newAccounts.length === 0) {
           // 지갑 연결 해제
           setAddress(null);
@@ -186,15 +219,17 @@ export function WalletProvider({ children }: WalletProviderProps) {
           setSigner(null);
           setError(null);
 
+          localStorage.setItem(DISCONNECT_FLAG_KEY, 'true'); 
           toast.success(t("messages.walletDisconnected"));
         } else {
           setAddress(newAccounts[0]);
           setIsConnected(true);
-
-          if (provider) {
+          localStorage.removeItem(DISCONNECT_FLAG_KEY);
+          
+          if (currentProvider) {
             // provider가 이미 있다면 Signer 갱신
             try {
-              const _signer = await provider.getSigner();
+              const _signer = await currentProvider.getSigner();
               setSigner(_signer);
             } catch (signerError) {
               console.error(
@@ -210,25 +245,25 @@ export function WalletProvider({ children }: WalletProviderProps) {
       };
 
       //네트워크 변경 이벤트 리스너
-      const handleChainChanged = async (newChainId: string) => {
+      const handleChainChanged = async () => {
         setIsLoading(true); // 상태 변경 시작
-        if (provider) {
+        const currentProvider = new ethers.BrowserProvider(window.ethereum);
+        if (currentProvider) {
           // provider가 있다면 네트워크 정보 갱신
-          const network = await provider.getNetwork();
+          const network = await currentProvider.getNetwork();
           const chainId = Number(network.chainId);
-          const chainName = network.name;
           let currentChain: "xrpl" | "avalanche" | null = null;
           if (chainId === 43114 || chainId === 43113) {
             // Avalanche
             currentChain = "avalanche";
-          } else if (chainId === 1440002) {
+          } else if (chainId === 1449000) {
             currentChain = "xrpl";
           }
 
           setChainId(chainId);
           setChainName(currentChain);
           setError(null);
-          toast.success(t("messages.networkChanged", { chainName: chainName }));
+          toast.success(t("messages.networkChanged", { chainName:  currentChain || '' }));
         }
         setIsLoading(false);
       };
@@ -245,7 +280,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         window.ethereum.removeListener("chainChanged", handleChainChanged);
       };
     }
-  }, [provider]);
+  }, []);
 
   return (
     <WalletContext.Provider value={contextValue}>
