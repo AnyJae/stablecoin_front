@@ -21,6 +21,7 @@ export const useWalletData = () => {
     chainName,
     provider,
     isConnected,
+    isMock ,
 
     setBalance,
     setKscBalance,
@@ -83,7 +84,7 @@ export const useWalletData = () => {
   }, []);
 
   useEffect(() => {
-    if (isConnected && address && chainName) {
+    if ((isConnected||isMock) && address && chainName) {
       fetchBalance();
       fetchKscBalance();
       fetchTransactions();
