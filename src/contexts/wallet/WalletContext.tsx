@@ -9,6 +9,7 @@ import {
   useCallback,
 } from "react";
 import { ethers } from "ethers";
+import { MOCK_WALLET_DATA, generateMockTransactions } from "@/utils/mockWallet";
 import { useLanguage } from "../localization/LanguageContext";
 import toast from "react-hot-toast";
 
@@ -37,7 +38,6 @@ interface WalletContextType {
   provider: ethers.BrowserProvider | null;
   signer: ethers.Signer | null;
 
-
   setAddress: (address: string | null) => void;
   setBalance: (balance: string | null) => void;
   setKscBalance: (balance: string | null) => void;
@@ -46,16 +46,16 @@ interface WalletContextType {
   setChainName: (chainName: "xrpl" | "avalanche" | null) => void;
   setIsMock: (connected: boolean) => void;
   setTransactions: (transactions: WalletTransaction[]) => void;
-  setError: (error: string |null) => void;
+  setError: (error: string | null) => void;
   setIsLoading: (connected: boolean) => void;
   setProvider: (provider: ethers.BrowserProvider | null) => void;
   setSigner: (signer: ethers.Signer | null) => void;
+  connectMockWallet: (chain: "xrpl" | "avalanche") => void;
+  sendMockKsc: (to: string, amount: string) => Promise<void>;
 }
 
-
 //localStorage 키 (지갑 연결 수동 해제 상태)
-const DISCONNECT_FLAG_KEY = 'wallet_disconnected_permanently';
-
+const DISCONNECT_FLAG_KEY = "wallet_disconnected_permanently";
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
@@ -76,6 +76,82 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
+
+  // Mock 지갑 연결
+  const connectMockWallet = useCallback(async (chain: "xrpl" | "avalanche") => {
+    setIsLoading(true);
+    setError(null);
+    setIsMock(true);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500)); // 0.5초 지연
+      const mockData = MOCK_WALLET_DATA[chain];
+      const mockTransactions = generateMockTransactions(mockData.address);
+
+      setAddress(mockData.address);
+      setBalance(mockData.balance);
+      setKscBalance(mockData.kscBalance);
+      setChainName(chain);
+      setTransactions(mockTransactions);
+
+      toast.success(`${chain.toUpperCase()} Mock 지갑이 연결되었습니다.`);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Mock 지갑 연결에 실패했습니다.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      console.error("Mock wallet connection error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+
+  //Mock KSC 전송
+  const sendMockKsc = useCallback(async (to: string, amount: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1초 지연
+
+      if (!address || !kscBalance) {
+        throw new Error("지갑이 연결되지 않았거나 KSC 잔액을 알 수 없습니다.");
+      }
+
+      const currentKscBalance = parseFloat(kscBalance);
+      const sendAmount = parseFloat(amount);
+
+      if (currentKscBalance < sendAmount) {
+        throw new Error("잔액이 부족합니다.");
+      }
+
+      const newKscBalance = (currentKscBalance - sendAmount).toFixed(2);
+      setKscBalance(newKscBalance);
+
+      const mockTransaction = {
+        hash: "0x" + Math.random().toString(36).substring(2, 15),
+        from: address,
+        to: to,
+        amount: amount,
+        currency: "KSC",
+        timestamp: Date.now(),
+        status: "confirmed" as const,
+        explorerUrl: `https://mock-explorer.com/tx/${"0x" + Math.random().toString(36).substring(2, 15)}`
+      };
+      setTransactions((prev) => [mockTransaction, ...prev]);
+
+      toast.success("Mock KSC 전송이 성공적으로 완료되었습니다!");
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Mock KSC 전송 중 오류가 발생했습니다.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      console.error("Mock KSC send error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [address, kscBalance, setKscBalance, setTransactions, setIsLoading, setError]);
 
   const { t } = useLanguage();
 
@@ -105,6 +181,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
     setIsLoading,
     setProvider,
     setSigner,
+    connectMockWallet,
+    sendMockKsc,
   };
 
   //provider와 signer 설정 및 이벤트 리스너 등록
@@ -113,9 +191,9 @@ export function WalletProvider({ children }: WalletProviderProps) {
       if (typeof window.ethereum === "undefined") {
         console.warn("MetaMask wallet not detected.");
         return;
-      }else {
+      } else {
         // 지갑 연결 해제 플래그 확인하여 상태 업데이트
-        if(localStorage.getItem(DISCONNECT_FLAG_KEY) === 'true') {
+        if (localStorage.getItem(DISCONNECT_FLAG_KEY) === "true") {
           setAddress(null);
           setBalance(null);
           setKscBalance(null);
@@ -128,11 +206,11 @@ export function WalletProvider({ children }: WalletProviderProps) {
           setProvider(null);
           setSigner(null);
 
-          return;  //지갑 연결 해제 상태 시 자동 연결하지 않음
+          return; //지갑 연결 해제 상태 시 자동 연결하지 않음
         }
 
         try {
-          // ethers.js BrowserProvider 생성 
+          // ethers.js BrowserProvider 생성
           const _provider = new ethers.BrowserProvider(window.ethereum);
           setProvider(_provider);
 
@@ -202,7 +280,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
       //계정 변경/해제 이벤트 리스너
       const handleAccountsChanged = async (newAccounts: string[]) => {
         setIsLoading(true);
-        
+
         const currentProvider = new ethers.BrowserProvider(window.ethereum);
 
         if (newAccounts.length === 0) {
@@ -219,13 +297,13 @@ export function WalletProvider({ children }: WalletProviderProps) {
           setSigner(null);
           setError(null);
 
-          localStorage.setItem(DISCONNECT_FLAG_KEY, 'true'); 
+          localStorage.setItem(DISCONNECT_FLAG_KEY, "true");
           toast.success(t("messages.walletDisconnected"));
         } else {
           setAddress(newAccounts[0]);
           setIsConnected(true);
           localStorage.removeItem(DISCONNECT_FLAG_KEY);
-          
+
           if (currentProvider) {
             // provider가 이미 있다면 Signer 갱신
             try {
@@ -263,7 +341,9 @@ export function WalletProvider({ children }: WalletProviderProps) {
           setChainId(chainId);
           setChainName(currentChain);
           setError(null);
-          toast.success(t("messages.networkChanged", { chainName:  currentChain || '' }));
+          toast.success(
+            t("messages.networkChanged", { chainName: currentChain || "" })
+          );
         }
         setIsLoading(false);
       };
