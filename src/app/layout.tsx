@@ -2,11 +2,12 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
-import { WalletProvider } from '@/providers/wallet-provider';
-import { LanguageProvider } from '@/contexts/LanguageContext';
+import { WalletProvider } from '@/contexts/wallet/WalletContext';
+import { LanguageProvider} from '@/contexts/localization/LanguageContext';
 import { Toaster } from 'react-hot-toast';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -29,6 +30,8 @@ export const metadata: Metadata = {
     description: '한국 원화 기반 스테이블코인 KSC 플랫폼',
   },
 };
+
+
 
 export default function RootLayout({
   children,

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { ChevronDown, Globe } from 'lucide-react';
+import { useState, useRef, useEffect } from "react";
+import { useLanguage } from "@/contexts/localization/LanguageContext";
+import { ChevronDown, Globe } from "lucide-react";
 
 export default function LanguageSwitcher() {
   const { language, setLanguage, t } = useLanguage();
@@ -10,27 +10,30 @@ export default function LanguageSwitcher() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const languages = [
-    { code: 'ko', name: '한국어', flag: '🇰🇷' },
-    { code: 'en', name: 'English', flag: '🇺🇸' }
+    { code: "ko", name: "한국어", flag: "🇰🇷" },
+    { code: "en", name: "English", flag: "🇺🇸" },
   ];
 
-  const currentLanguage = languages.find(lang => lang.code === language);
+  const currentLanguage = languages.find((lang) => lang.code === language);
 
   // 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
-  const handleLanguageChange = (langCode: 'ko' | 'en') => {
+  const handleLanguageChange = (langCode: "ko" | "en") => {
     setLanguage(langCode);
     setIsOpen(false);
   };
@@ -40,12 +43,16 @@ export default function LanguageSwitcher() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-ksc-white hover:text-ksc-mint transition-colors duration-200 rounded-lg hover:bg-ksc-box/50"
-        aria-label={t('navigation.language')}
+        aria-label={t("navigation.language")}
       >
         <Globe className="w-4 h-4" />
         <span className="hidden sm:inline">{currentLanguage?.flag}</span>
         <span className="hidden md:inline">{currentLanguage?.name}</span>
-        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`w-4 h-4 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
       </button>
 
       {isOpen && (
@@ -54,11 +61,11 @@ export default function LanguageSwitcher() {
             {languages.map((lang) => (
               <button
                 key={lang.code}
-                onClick={() => handleLanguageChange(lang.code as 'ko' | 'en')}
+                onClick={() => handleLanguageChange(lang.code as "ko" | "en")}
                 className={`w-full flex items-center space-x-3 px-4 py-2 text-sm text-left hover:bg-ksc-mint/10 transition-colors duration-200 ${
-                  language === lang.code 
-                    ? 'text-ksc-mint bg-ksc-mint/10' 
-                    : 'text-ksc-white'
+                  language === lang.code
+                    ? "text-ksc-mint bg-ksc-mint/10"
+                    : "text-ksc-white"
                 }`}
               >
                 <span className="text-lg">{lang.flag}</span>
@@ -73,4 +80,4 @@ export default function LanguageSwitcher() {
       )}
     </div>
   );
-} 
+}

@@ -12,39 +12,22 @@ import {
   LogOut,
   User,
 } from "lucide-react";
-import { useWallet } from "@/providers/wallet-provider";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useWalletConnect } from "@/hooks/useWalletConnect";
+import { useLanguage } from "@/contexts/localization/LanguageContext";
 import LanguageSwitcher from "./LanguageSwitcher";
 import toast from "react-hot-toast";
 import { usePathname } from "next/navigation";
+import { useWalletContext } from "@/contexts/wallet/WalletContext";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [walletDropdown, setWalletDropdown] = useState(false);
-  const {
-    walletInfo,
-    isLoading,
-    connect,
-    disconnect,
-    connectAvalancheWallet,
-    connectXRPLWallet,
-  } = useWallet();
+  const { connectAvalancheWallet, connectXrplEvmWallet, disconnectWallet } =
+    useWalletConnect();
+  const { isConnected, address, balance, kscBalance, isLoading } =
+    useWalletContext();
   const { t } = useLanguage();
   const pathname = usePathname();
-
-  const handleConnect = async () => {
-    try {
-      await connect();
-      toast.success(t("messages.walletConnected"));
-    } catch (err) {
-      toast.error(t("errors.walletConnection"));
-    }
-  };
-
-  const handleDisconnect = () => {
-    disconnect();
-    toast.success(t("messages.walletDisconnected"));
-  };
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -144,20 +127,20 @@ export function Header() {
           {/* Connect Wallet Button (오른쪽) */}
           <div className="flex items-center space-x-4 flex-1 justify-end">
             <LanguageSwitcher />
-            {walletInfo.isConnected ? (
+            {isConnected ? (
               <div className="flex items-center space-x-3">
                 <div className="text-right">
                   <p className="text-sm font-medium">
-                    {formatAddress(walletInfo.address!)}
+                    {formatAddress(address!)}
                   </p>
-                  <p className="text-xs text-ksc-gray-light">
-                    {walletInfo.balance
-                      ? `${formatBalance(walletInfo.balance)} AVAX`
+                  {/* <p className="text-xs text-ksc-gray-light">
+                    {balance
+                      ? `${formatBalance(balance)} AVAX`
                       : t("common.loading")}
-                  </p>
+                  </p> */}
                 </div>
                 <button
-                  onClick={handleDisconnect}
+                  onClick={disconnectWallet}
                   className="btn-secondary flex items-center space-x-2"
                   title={t("wallet.disconnect")}
                 >
@@ -167,7 +150,7 @@ export function Header() {
               </div>
             ) : (
               <div
-                className="relative"
+                className="relative hidden md:block"
                 onMouseEnter={() => setWalletDropdown(true)}
                 onMouseLeave={() => setWalletDropdown(false)}
               >
@@ -196,7 +179,7 @@ export function Header() {
                       </button>
                       <button
                         className="w-full px-4 py-2 text-left hover:bg-ksc-mint/10 hover:text-ksc-mint transition-colors"
-                        onClick={connectXRPLWallet}
+                        onClick={connectXrplEvmWallet}
                         disabled={isLoading}
                       >
                         XRPL 지갑 연결
@@ -279,24 +262,24 @@ export function Header() {
 
               {/* Mobile Wallet Section */}
               <div className="pt-4 border-t border-ksc-box/50">
-                {walletInfo.isConnected ? (
+                {isConnected ? (
                   <div className="space-y-3">
                     <div className="px-3 py-2 bg-ksc-gray rounded-md">
                       <div className="flex items-center space-x-2 mb-1">
                         <User className="w-4 h-4 text-ksc-mint" />
                         <span className="text-sm font-medium">
-                          {formatAddress(walletInfo.address!)}
+                          {formatAddress(address!)}
                         </span>
                       </div>
                       <p className="text-xs text-ksc-gray-light">
-                        {walletInfo.balance
-                          ? `${formatBalance(walletInfo.balance)} AVAX`
+                        {balance
+                          ? `${formatBalance(balance)} AVAX`
                           : t("common.loading")}
                       </p>
                     </div>
                     <button
                       onClick={() => {
-                        handleDisconnect();
+                        disconnectWallet;
                         setIsMenuOpen(false);
                       }}
                       className="w-full btn-secondary flex items-center justify-center space-x-2"
@@ -308,7 +291,7 @@ export function Header() {
                 ) : (
                   <button
                     onClick={() => {
-                      handleConnect();
+                      // handleConnect();
                       setIsMenuOpen(false);
                     }}
                     disabled={isLoading}
