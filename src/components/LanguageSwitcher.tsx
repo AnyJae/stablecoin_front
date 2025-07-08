@@ -47,7 +47,7 @@ export default function LanguageSwitcher() {
       >
         <Globe className="w-4 h-4" />
         <span className="hidden sm:inline">{currentLanguage?.flag}</span>
-        <span className="hidden md:inline">{currentLanguage?.name}</span>
+        {/* <span className="hidden md:inline">{currentLanguage?.name}</span> */}
         <ChevronDown
           className={`w-4 h-4 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""

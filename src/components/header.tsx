@@ -144,8 +144,8 @@ export function Header() {
                   className="btn-secondary flex items-center space-x-2"
                   title={t("wallet.disconnect")}
                 >
-                  <LogOut className="w-4 h-4" />
-                  <span>{t("wallet.disconnect")}</span>
+                  <LogOut className="w-4 h-4 hover:text-ksc-mint" strokeWidth={3} />
+                  {/* <span>{t("wallet.disconnect")}</span> */}
                 </button>
               </div>
             ) : (
