@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BarChart3, DollarSign, AlertTriangle, TrendingUp, Shield } from "lucide-react";
+import {
+  BarChart3,
+  DollarSign,
+  AlertTriangle,
+  TrendingUp,
+  Shield,
+} from "lucide-react";
 import {
   LineChart,
   Line,
@@ -17,7 +23,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage } from "@/contexts/localization/LanguageContext";
 
 export function CollateralDashboard() {
   const { t } = useLanguage();

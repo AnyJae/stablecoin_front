@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Send, Users, Clock, History } from "lucide-react";
 import toast from "react-hot-toast";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage } from "@/contexts/localization/LanguageContext";
 
 interface PaymentForm {
   to: string;
