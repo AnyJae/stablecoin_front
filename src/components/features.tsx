@@ -145,7 +145,7 @@ export function Features() {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center mt-16">
+        {/* <div className="text-center mt-16">
           <div className="card bg-gradient-to-r from-ksc-mint to-ksc-mint/80 text-ksc-white">
             <h3 className="text-2xl font-bold mb-4">{t("home.hero.cta")}</h3>
             <p className="text-ksc-white/90 mb-6">{t("home.hero.subtitle")}</p>
@@ -158,7 +158,7 @@ export function Features() {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );

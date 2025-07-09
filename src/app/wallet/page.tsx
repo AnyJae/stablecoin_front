@@ -1,5 +1,3 @@
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
 import WalletInterface from '@/components/wallet/wallet-interface';
 
 export default function WalletPage() {

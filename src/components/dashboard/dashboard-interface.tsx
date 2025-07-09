@@ -15,7 +15,6 @@ import {
   WifiOff,
   Shield,
 } from "lucide-react";
-import { useWallet } from "@/providers/wallet-provider";
 import { useRealtime } from "@/hooks/useRealtime";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/contexts/localization/LanguageContext";
