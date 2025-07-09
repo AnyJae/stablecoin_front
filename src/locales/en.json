@@ -282,7 +282,9 @@
     "insufficientBalance": "Insufficient balance",
     "invalidAddress": "Invalid address",
     "networkError": "Network error occurred",
-    "serverError": "Server error occurred"
+    "serverError": "Server error occurred",
+    "invalidNetwork": "Invalid network",
+    "metaMaskNotFound": "MetaMask wallet not found"
   },
   "common": {
     "processing": "Processing...",
@@ -300,7 +302,9 @@
     "addressCopied": "Address copied",
     "transactionSent": "Transaction sent",
     "walletConnected": "Wallet connected",
-    "walletDisconnected": "Wallet disconnected"
+    "walletDisconnected": "Wallet disconnected",
+    "accountChanged": "Account changed",
+    "networkChanged": "Network changed to {{chainName}}"
   },
   "footer": {
     "description": "KSC is a Korean Won-based stablecoin that provides stable and efficient digital asset transactions through innovative blockchain technology.",
@@ -339,4 +343,4 @@
       "warning": "Please use only for educational and development purposes, not for actual investment or trading."
     }
   }
-} 
+}

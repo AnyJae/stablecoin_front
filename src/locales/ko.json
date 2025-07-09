@@ -282,7 +282,9 @@
     "insufficientBalance": "잔액이 부족합니다",
     "invalidAddress": "유효하지 않은 주소입니다",
     "networkError": "네트워크 오류가 발생했습니다",
-    "serverError": "서버 오류가 발생했습니다"
+    "serverError": "서버 오류가 발생했습니다",
+    "invalidNetwork": "유효하지 않은 네트워크입니다",
+    "metaMaskNotFound": "MetaMask 지갑을 찾을 수 없습니다"
   },
   "common": {
     "processing": "처리 중...",
@@ -300,7 +302,9 @@
     "addressCopied": "주소가 복사되었습니다",
     "transactionSent": "거래가 전송되었습니다",
     "walletConnected": "지갑이 연결되었습니다",
-    "walletDisconnected": "지갑 연결이 해제되었습니다"
+    "walletDisconnected": "지갑 연결이 해제되었습니다",
+    "accountChanged": "계정이 변경되었습니다",
+    "networkChanged": "네트워크가 {{chainName}}로 변경되었습니다"
   },
   "footer": {
     "description": "한국 원화 기반 스테이블코인 KSC는 혁신적인 블록체인 기술을 통해 안정적이고 효율적인 디지털 자산 거래를 제공합니다.",
