@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import  { useState } from "react";
 
 import { useLanguage } from "@/contexts/localization/LanguageContext";
 import { ExternalLink, RefreshCw, Copy, Check, Zap } from "lucide-react";
@@ -36,7 +36,8 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
 
   const [sendForm, setSendForm] = useState({
     to: "",
-    amount: "",
+    amount: 0,
+    memo:"",
     chain: "xrpl" as "xrpl" | "avalanche",
   });
 
@@ -44,6 +45,9 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
     "overview" | "send" | "transactions"
   >("overview");
   const [copiedAddress, setCopiedAddress] = useState(false);
+  const [paymentType, setPaymentType] = useState<"instant" | "batch" | "scheduled">("instant");
+  const [scheduledAt, setScheduledAt] = useState<string | null>(null);
+
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,14 +56,15 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
     if (isMock) {
       await sendMockKsc(sendForm.to, sendForm.amount);
     } else {
-      await sendKsc(sendForm.to, sendForm.amount, sendForm.chain);
+      await sendKsc(sendForm.to, sendForm.amount, sendForm.memo, sendForm.chain, paymentType, scheduledAt);
     }
-    setSendForm({ to: "", amount: "", chain: "xrpl" });
+    setSendForm({ to: "", amount: 0, memo: "", chain: "xrpl" });
   };
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
+
 
   const formatBalance = (balance: string) => {
     return parseFloat(balance).toLocaleString("ko-KR", {
@@ -68,7 +73,7 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
     });
   };
 
-  const formatDate = (timestamp: number) => {
+  const formatDate = (timestamp: string) => {
     return new Date(timestamp).toLocaleString("ko-KR");
   };
 
@@ -320,12 +325,12 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
               title="잔액 새로고침"
             >
               <RefreshCw
-                className={`w-4 h-4 text-ksc-gray ${
+                className={`w-4 h-4 text-ksc-gray hover:text-ksc-mint/80${
                   isLoading ? "animate-spin" : ""
                 }`}
               />
             </button>
-            <button onClick={disconnectWallet} className="btn-secondary">
+            <button onClick={disconnectWallet} className="btn-secondary hover:text-ksc-mint/80">
               연결 해제
             </button>
           </div>
@@ -454,29 +459,29 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
                   <div className="space-y-2">
                     {transactions.slice(0, 3).map((tx) => (
                       <div
-                        key={tx.hash}
+                        key={tx.id}
                         className="flex items-center justify-between text-sm"
                       >
                         <span className="text-ksc-gray">
-                          {tx.amount} {tx.currency}
+                          {tx.amount} {tx.tokenType}
                         </span>
                         <div className="flex items-center space-x-2">
                           <span
                             className={`px-2 py-1 rounded text-xs ${
-                              tx.status === "confirmed"
+                              tx.txStatus === "confirmed"
                                 ? "bg-success-100 text-success-800"
-                                : tx.status === "pending"
+                                : tx.txStatus === "pending"
                                 ? "bg-warning-100 text-warning-800"
                                 : "bg-error-100 text-error-800"
                             }`}
                           >
-                            {tx.status === "confirmed"
+                            {tx.txStatus === "confirmed"
                               ? "완료"
-                              : tx.status === "pending"
+                              : tx.txStatus === "pending"
                               ? "처리중"
                               : "실패"}
                           </span>
-                          {tx.explorerUrl && (
+                          {/* {tx.explorerUrl && (
                             <a
                               href={tx.explorerUrl}
                               target="_blank"
@@ -485,7 +490,7 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
                             >
                               <ExternalLink className="w-3 h-3" />
                             </a>
-                          )}
+                          )} */}
                         </div>
                       </div>
                     ))}
@@ -524,7 +529,7 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
                     onChange={(e) =>
                       setSendForm((prev) => ({
                         ...prev,
-                        amount: e.target.value,
+                        amount: Number(e.target.value),
                       }))
                     }
                     placeholder="0.00"
@@ -580,7 +585,7 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
                     fetchTransactions()
                   }
                   disabled={isLoading}
-                  className="flex items-center space-x-2 text-ksc-mint hover:text-ksc-mint/80 text-sm"
+                  className="flex items-center space-x-2 text-white hover:text-ksc-mint/80 text-sm"
                 >
                   <RefreshCw
                     className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
@@ -619,45 +624,45 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
                     </thead>
                     <tbody className="bg-ksc-box/20 divide-y divide-ksc-box/30">
                       {transactions.map((tx) => (
-                        <tr key={tx.hash} className="hover:bg-ksc-box/30">
+                        <tr key={tx.id} className="hover:bg-ksc-box/30">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-ksc-white">
-                            {formatAddress(tx.hash)}
+                            {formatAddress(tx.txHash || '')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white">
-                            {formatAddress(tx.from)}
+                            {formatAddress(tx.fromAddress)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white">
-                            {formatAddress(tx.to)}
+                            {formatAddress(tx.toAddress)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white">
-                            {formatBalance(tx.amount)} {tx.currency}
+                            {formatBalance((tx.amount).toString())} {tx.tokenType}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
                               className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                tx.status === "confirmed"
+                                tx.txStatus === "confirmed"
                                   ? "bg-success-100 text-success-800"
-                                  : tx.status === "pending"
+                                  : tx.txStatus === "pending"
                                   ? "bg-warning-100 text-warning-800"
                                   : "bg-error-100 text-error-800"
                               }`}
                             >
-                              {tx.status === "confirmed"
+                              {tx.txStatus === "confirmed"
                                 ? "완료"
-                                : tx.status === "pending"
+                                : tx.txStatus === "pending"
                                 ? "처리중"
                                 : "실패"}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-gray">
-                            {formatDate(tx.timestamp)}
+                            {formatDate(tx.statusUpdatedAt || '')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <a
-                              href={getExplorerUrl(tx.hash, chainName!)}
+                              href={getExplorerUrl(tx.txHash || '', chainName!)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-ksc-mint hover:text-ksc-mint/80"
+                              className="text-ksc-white hover:text-ksc-mint/80"
                             >
                               <ExternalLink className="w-4 h-4" />
                             </a>

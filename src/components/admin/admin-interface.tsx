@@ -134,13 +134,15 @@ export function AdminInterface() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading || !mintForm.to || !mintForm.amount}
-              className="w-full bg-ksc-mint hover:bg-ksc-mint/80 disabled:bg-ksc-box/50 text-ksc-black font-medium py-3 px-4 rounded-lg transition-colors"
-            >
-              {isLoading ? t("admin.mint.processing") : t("admin.mint.button")}
-            </button>
+            <div className="flex justify-center">
+              <button
+                type="submit"
+                disabled={isLoading || !mintForm.to || !mintForm.amount}
+                className="bg-ksc-mint hover:text-ksc-mint disabled:bg-ksc-box/50 text-ksc-white font-medium py-3 px-4 rounded-lg transition-colors"
+              >
+                {isLoading ? t("admin.mint.processing") : t("admin.mint.button")}
+              </button>
+            </div>
           </form>
         </div>
 
@@ -185,13 +187,15 @@ export function AdminInterface() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading || !burnForm.from || !burnForm.amount}
-              className="w-full bg-red-500 hover:bg-red-600 disabled:bg-ksc-box/50 text-white font-medium py-3 px-4 rounded-lg transition-colors"
-            >
-              {isLoading ? t("admin.burn.processing") : t("admin.burn.button")}
-            </button>
+            <div className="flex justify-center">
+              <button
+                type="submit"
+                disabled={isLoading || !burnForm.from || !burnForm.amount}
+                className="bg-red-500 hover:text-ksc-mint disabled:bg-ksc-box/50 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              >
+                {isLoading ? t("admin.burn.processing") : t("admin.burn.button")}
+              </button>
+            </div>
           </form>
         </div>
       </div>
