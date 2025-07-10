@@ -8,21 +8,12 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import { ethers } from "ethers";
+import { ethers, id } from "ethers";
 import { MOCK_WALLET_DATA, generateMockTransactions } from "@/utils/mockWallet";
 import { useLanguage } from "../localization/LanguageContext";
 import toast from "react-hot-toast";
 
-interface WalletTransaction {
-  hash: string;
-  from: string;
-  to: string;
-  amount: string;
-  currency: string;
-  timestamp: number;
-  status: "pending" | "confirmed" | "failed";
-  explorerUrl?: string;
-}
+import { WalletTransaction } from "@/types/global.d";
 
 interface WalletContextType {
   address: string | null;
@@ -51,7 +42,7 @@ interface WalletContextType {
   setProvider: (provider: ethers.BrowserProvider | null) => void;
   setSigner: (signer: ethers.Signer | null) => void;
   connectMockWallet: (chain: "xrpl" | "avalanche") => void;
-  sendMockKsc: (to: string, amount: string) => Promise<void>;
+  sendMockKsc: (to: string, amount: number) => Promise<void>;
 }
 
 //localStorage 키 (지갑 연결 수동 해제 상태)
@@ -106,52 +97,66 @@ export function WalletProvider({ children }: WalletProviderProps) {
     }
   }, []);
 
-
   //Mock KSC 전송
-  const sendMockKsc = useCallback(async (to: string, amount: string) => {
-    setIsLoading(true);
-    setError(null);
+  const sendMockKsc = useCallback(
+    async (to: string, amount: number) => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1초 지연
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // 1초 지연
 
-      if (!address || !kscBalance) {
-        throw new Error("지갑이 연결되지 않았거나 KSC 잔액을 알 수 없습니다.");
+        if (!address || !kscBalance) {
+          throw new Error(
+            "지갑이 연결되지 않았거나 KSC 잔액을 알 수 없습니다."
+          );
+        }
+
+        const currentKscBalance = parseFloat(kscBalance);
+
+        if (currentKscBalance < amount) {
+          throw new Error("잔액이 부족합니다.");
+        }
+
+        const newKscBalance = (currentKscBalance - amount).toFixed(2);
+        setKscBalance(newKscBalance);
+
+        const mockTransaction: WalletTransaction = {
+          id: "txid_" + Math.random().toString(36).substring(2, 9),
+          txHash: "0x" + Math.random().toString(36).substring(2, 15),
+          targetAddress: to,
+          txStatus: "pending",
+          txType: "instant",
+          fee: 0.0003,
+          amount: amount,
+          tokenType: chainName === "avalanche" ? "A_KSC" : "X_KSC",
+          paidAt: new Date().toISOString(),
+          memo: "Mock KSC 전송",
+        };
+        setTransactions((prev) => [mockTransaction, ...prev]);
+
+        toast.success("Mock KSC 전송이 성공적으로 완료되었습니다!");
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "Mock KSC 전송 중 오류가 발생했습니다.";
+        setError(errorMessage);
+        toast.error(errorMessage);
+        console.error("Mock KSC send error:", err);
+      } finally {
+        setIsLoading(false);
       }
-
-      const currentKscBalance = parseFloat(kscBalance);
-      const sendAmount = parseFloat(amount);
-
-      if (currentKscBalance < sendAmount) {
-        throw new Error("잔액이 부족합니다.");
-      }
-
-      const newKscBalance = (currentKscBalance - sendAmount).toFixed(2);
-      setKscBalance(newKscBalance);
-
-      const mockTransaction = {
-        hash: "0x" + Math.random().toString(36).substring(2, 15),
-        from: address,
-        to: to,
-        amount: amount,
-        currency: "KSC",
-        timestamp: Date.now(),
-        status: "confirmed" as const,
-        explorerUrl: `https://mock-explorer.com/tx/${"0x" + Math.random().toString(36).substring(2, 15)}`
-      };
-      setTransactions((prev) => [mockTransaction, ...prev]);
-
-      toast.success("Mock KSC 전송이 성공적으로 완료되었습니다!");
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Mock KSC 전송 중 오류가 발생했습니다.";
-      setError(errorMessage);
-      toast.error(errorMessage);
-      console.error("Mock KSC send error:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [address, kscBalance, setKscBalance, setTransactions, setIsLoading, setError]);
+    },
+    [
+      address,
+      kscBalance,
+      setKscBalance,
+      setTransactions,
+      setIsLoading,
+      setError,
+    ]
+  );
 
   const { t } = useLanguage();
 

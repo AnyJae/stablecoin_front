@@ -6,3 +6,20 @@ declare global {
     ethereum: Eip1193Provider & BrowserProvider;
   }
 }
+
+export interface WalletTransaction {
+  id: string;
+  txHash: string | null;
+  fromAddress: string;
+  toAddress: string;
+  txStatus: "pending" | "confirmed" | "failed";
+  paymentType: "instant" | "batch" | "scheduled";
+  fee: number | null;
+  amount: number;
+  tokenType: "A_KSC" | "X_KSC";
+  scheduledAt?: string | null;
+  createdAt: string;
+  updatedAt?: string | null;
+  statusUpdatedAt?: string | null;
+  memo?: string | null;
+}

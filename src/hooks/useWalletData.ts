@@ -4,16 +4,7 @@ import { useCallback, useEffect } from "react";
 import toast from "react-hot-toast";
 import { ethers } from "ethers";
 
-interface WalletTransaction {
-  hash: string;
-  from: string;
-  to: string;
-  amount: string;
-  currency: string;
-  timestamp: number;
-  status: "pending" | "confirmed" | "failed";
-  explorerUrl?: string;
-}
+
 
 export const useWalletData = () => {
   const {
@@ -52,6 +43,7 @@ export const useWalletData = () => {
 
   //KSC 잔액 조회
   const fetchKscBalance = useCallback(async () => {
+
     if (!address || !chainName) return;
     try {
       const response = await fetch(`/api/${chainName}/get-balance/${address}`);
@@ -72,11 +64,11 @@ export const useWalletData = () => {
   const fetchTransactions = useCallback(async () => {
     if (!address) return;
     try {
-      const response = await fetch(`/api/transactions/${address}`);
+      const response = await fetch(`/api/transaction/get-history/${address}`);
       const data = await response.json();
 
       if (data.success) {
-        setTransactions(data.data || []);
+        setTransactions(data.data.items || []);
       } else {
         throw new Error(data.error.message || "거래 내역 조회에 실패했습니다");
       }
