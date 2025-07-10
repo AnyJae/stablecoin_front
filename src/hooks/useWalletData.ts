@@ -21,7 +21,10 @@ export const useWalletData = () => {
     chainName,
     provider,
     isConnected,
-    isMock ,
+    isMock,
+    balance,
+    kscBalance,
+    transactions,
 
     setBalance,
     setKscBalance,
@@ -35,25 +38,23 @@ export const useWalletData = () => {
   //Avalanche or XRPL 네이티브 토큰 잔액 조회
   const fetchBalance = useCallback(async () => {
     try {
-      if (address) {
-        const balanceWei = await provider?.getBalance(address);
-        if (balanceWei) {
-          setBalance(ethers.formatEther(balanceWei));
-        } else {
-          setBalance("0");
-        }
+      if (address && provider) {
+        const balanceWei = await provider.getBalance(address);
+        setBalance(ethers.formatEther(balanceWei));
       } else {
-        throw new Error("연결된 지갑이 없습니다");
+        setBalance("0");
       }
     } catch (err) {
       console.error("네이티브 토큰 잔액 조회에 실패했습니다", err);
+      setBalance("0");
     }
-  }, []);
+  }, [address, provider, setBalance]);
 
   //KSC 잔액 조회
   const fetchKscBalance = useCallback(async () => {
+    if (!address || !chainName) return;
     try {
-      const response = await fetch(`/api/${chainName}/balance/${address}`);
+      const response = await fetch(`/api/${chainName}/get-balance/${address}`);
       const data = await response.json();
       if (data.success) {
         setKscBalance(data.data.formattedBalance);
@@ -61,30 +62,33 @@ export const useWalletData = () => {
         throw new Error(data.error.message || "잔액 조회에 실패했습니다");
       }
     } catch (err: any) {
-      console.log("KSC Balance fetch error", err);
+      console.log("KSC Balance fetch error: ", err);
       toast.error("잔액 조회에 실패했습니다");
+      setKscBalance("0");
     }
-  }, []);
+  }, [address, chainName, setKscBalance]);
 
   //주소별 트랜잭션 내역 조회
   const fetchTransactions = useCallback(async () => {
+    if (!address) return;
     try {
-      const response = await fetch(`/api/transactions/history/${address}`);
+      const response = await fetch(`/api/transactions/${address}`);
       const data = await response.json();
 
       if (data.success) {
-        setTransactions(data.data.history || []);
+        setTransactions(data.data || []);
       } else {
         throw new Error(data.error.message || "거래 내역 조회에 실패했습니다");
       }
     } catch (err: any) {
       console.error("Transaction fetch error:", err);
       toast.error("거래 내역 조회에 실패했습니다.");
+      setTransactions([]);
     }
-  }, []);
+  }, [address, setTransactions]);
 
   useEffect(() => {
-    if ((isConnected||isMock) && address && chainName) {
+    if ((isConnected || isMock) && address && chainName) {
       fetchBalance();
       fetchKscBalance();
       fetchTransactions();
@@ -93,14 +97,7 @@ export const useWalletData = () => {
       setKscBalance("0");
       setTransactions([]);
     }
-  },[
-    isConnected,  //연결 상태 변경 시
-    address,   //지갑 주소 변경 시
-    chainName,   //네트워크 변경 시
-    fetchBalance,
-    fetchKscBalance,
-    fetchTransactions
-  ]);
+  }, [isConnected, isMock, address, chainName, fetchBalance, fetchKscBalance, fetchTransactions]);
 
   return {
     fetchBalance,

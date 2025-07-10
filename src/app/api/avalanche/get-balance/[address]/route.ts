@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET({ params }: { params: { address: string } }) {
-  const { address } = params;
+export async function GET(request: NextRequest, { params }: { params: { address: string } }) {
+      console.log("❗❗❗❗❗❗ API ROUTE EXECUTION STARTED ❗❗❗❗❗❗");
+      const { address } = params;
 
   //Mocking (개발용)
   const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
@@ -13,8 +14,8 @@ export async function GET({ params }: { params: { address: string } }) {
       success: true,
       data: {
         address,
-        balance: "20000",
-        formattedBalance: (Math.random() * 50000).toFixed(2),
+        balance: "100",
+        formattedBalance: "100",
         symbol: "KSC",
         decimals: "18",
       },
@@ -22,30 +23,30 @@ export async function GET({ params }: { params: { address: string } }) {
     return NextResponse.json(mockData);
   }
 
-  try {
-    // 백엔드 API 호출
-    const backendUrl =
-      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
-    const response = await fetch(
-      `${backendUrl}/api/avalanche/balance/${address}`
-    );
+  // try {
+  //   // 백엔드 API 호출
+  //   const backendUrl =
+  //     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+  //   const response = await fetch(
+  //     `${backendUrl}/api/avalanche/balance/${address}`
+  //   );
 
-    if (!response.ok) {
-      throw new Error(`Backend API error: ${response.status}`);
-    }
+  //   if (!response.ok) {
+  //     throw new Error(`Backend API error: ${response.status}`);
+  //   }
 
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Avalanche balance fetch error:", error);
+  //   const data = await response.json();
+  //   return NextResponse.json(data);
+  // } catch (error) {
+  //   console.error("Avalanche balance fetch error:", error);
 
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Failed to fetch balance from backend",
-        error: (error as Error).message,
-      },
-      { status: 500 }
-    );
-  }
+  //   return NextResponse.json(
+  //     {
+  //       success: false,
+  //       message: "Failed to fetch balance from backend",
+  //       error: (error as Error).message,
+  //     },
+  //     { status: 500 }
+  //   );
+  // }
 }

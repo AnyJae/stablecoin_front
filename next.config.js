@@ -16,17 +16,17 @@ const nextConfig = {
   },
   
   // API 라우트 설정
-  async rewrites() {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
-    console.log('Backend URL for rewrites:', backendUrl);
+  // async rewrites() {
+  //   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+  //   console.log('Backend URL for rewrites:', backendUrl);
     
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${backendUrl}/api/:path*`,
-      },
-    ];
-  },
+  //   return [
+  //     {
+  //       source: '/api/:path*',
+  //       destination: `${backendUrl}/api/:path*`,
+  //     },
+  //   ];
+  // },
   
   // 웹팩 설정
   webpack: (config, { isServer }) => {
