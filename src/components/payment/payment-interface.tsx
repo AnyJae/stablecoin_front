@@ -4,6 +4,11 @@ import { useState } from "react";
 import { Send, Users, Clock, History } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/contexts/localization/LanguageContext";
+import { Transaction } from "ethers";
+import { useWalletContext } from "@/contexts/wallet/WalletContext";
+import { useWalletData } from "@/hooks/useWalletData";
+import { send } from "process";
+import { useSendTokens } from "@/hooks/useSendTokens";
 
 interface PaymentForm {
   to: string;
@@ -26,10 +31,15 @@ interface ScheduledPaymentForm {
 
 export function PaymentInterface() {
   const { t } = useLanguage();
+  const { fetchTransactions } = useWalletData();
+  const { address, transactions } = useWalletContext();
+  const {sendKsc} = useSendTokens();
   const [activeTab, setActiveTab] = useState<
     "instant" | "batch" | "scheduled" | "history"
   >("instant");
   const [isLoading, setIsLoading] = useState(false);
+
+  const [scheduledAt, setScheduledAt] = useState<string | null>(null);
 
   // 즉시 결제 폼
   const [instantForm, setInstantForm] = useState<PaymentForm>({
@@ -275,7 +285,7 @@ export function PaymentInterface() {
                   setInstantForm((prev) => ({ ...prev, to: e.target.value }))
                 }
                 placeholder="0x..."
-                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-ksc-blue focus:outline-none"
+                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
                 required
               />
             </div>
@@ -296,7 +306,7 @@ export function PaymentInterface() {
                 placeholder="1000"
                 min="0"
                 step="0.01"
-                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-ksc-blue focus:outline-none"
+                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
                 required
               />
             </div>
@@ -315,13 +325,14 @@ export function PaymentInterface() {
                 }
                 placeholder="결제 목적을 입력하세요..."
                 rows={3}
-                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-ksc-blue focus:outline-none"
+                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
+              onClick={() => sendKsc(instantForm.to, Number(instantForm.amount), instantForm.description, "xrpl", "instant", null)}
               className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-blue text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               {isLoading ? t("common.processing") : t("payment.sendForm.send")}
@@ -352,7 +363,7 @@ export function PaymentInterface() {
                       updateRecipient(index, "recipient", e.target.value)
                     }
                     placeholder="0x..."
-                    className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-ksc-blue focus:outline-none"
+                    className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
                     required
                   />
                 </div>
@@ -370,7 +381,7 @@ export function PaymentInterface() {
                     placeholder="1000"
                     min="0"
                     step="0.01"
-                    className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-ksc-blue focus:outline-none"
+                    className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
                     required
                   />
                 </div>
@@ -409,7 +420,7 @@ export function PaymentInterface() {
                 }
                 placeholder="배치 결제 목적을 입력하세요..."
                 rows={3}
-                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-ksc-blue focus:outline-none"
+                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
               />
             </div>
 
@@ -444,7 +455,7 @@ export function PaymentInterface() {
                   setScheduledForm((prev) => ({ ...prev, to: e.target.value }))
                 }
                 placeholder="0x..."
-                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-ksc-blue focus:outline-none"
+                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
                 required
               />
             </div>
@@ -465,7 +476,7 @@ export function PaymentInterface() {
                 placeholder="1000"
                 min="0"
                 step="0.01"
-                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-ksc-blue focus:outline-none"
+                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
                 required
               />
             </div>
@@ -483,7 +494,7 @@ export function PaymentInterface() {
                     scheduledTime: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-ksc-blue focus:outline-none"
+                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
                 required
               />
             </div>
@@ -502,13 +513,14 @@ export function PaymentInterface() {
                 }
                 placeholder="예약 결제 목적을 입력하세요..."
                 rows={3}
-                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-ksc-blue focus:outline-none"
+                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
+              onClick={() => sendKsc(scheduledForm.to, Number(scheduledForm.amount), scheduledForm.description, "xrpl", "scheduled", scheduledForm.scheduledTime)}
               className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-gray text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               {isLoading
@@ -519,7 +531,7 @@ export function PaymentInterface() {
         </div>
       )}
 
-      {/* 결제 이력 */}
+      {/* 결제 내역 */}
       {activeTab === "history" && (
         <div className="bg-ksc-gray-dark rounded-lg p-6">
           <h2 className="text-2xl font-semibold mb-6 flex items-center">
@@ -529,84 +541,53 @@ export function PaymentInterface() {
 
           <div className="space-y-4">
             {/* 모의 결제 이력 데이터 */}
-            {[
-              {
-                id: "1",
-                type: "instant",
-                from: "0x1234...5678",
-                to: "0x8765...4321",
-                amount: "1000",
-                status: "completed",
-                timestamp: "2024-12-19 14:30:00",
-                description: "상품 구매",
-              },
-              {
-                id: "2",
-                type: "batch",
-                from: "0x1234...5678",
-                to: "3명",
-                amount: "5000",
-                status: "completed",
-                timestamp: "2024-12-19 13:15:00",
-                description: "급여 지급",
-              },
-              {
-                id: "3",
-                type: "scheduled",
-                from: "0x1234...5678",
-                to: "0x8765...4321",
-                amount: "2000",
-                status: "pending",
-                timestamp: "2024-12-20 09:00:00",
-                description: "월세 납부",
-              },
-            ].map((payment) => (
+            {transactions.map((payment) => (
               <div key={payment.id} className="bg-ksc-gray rounded-lg p-4">
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center space-x-2 mb-2">
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
-                          payment.type === "instant"
+                          payment.paymentType === "instant"
                             ? "bg-blue-600"
-                            : payment.type === "batch"
+                            : payment.paymentType === "batch"
                             ? "bg-green-600"
                             : "bg-yellow-600"
                         }`}
                       >
-                        {payment.type === "instant"
+                        {payment.paymentType === "instant"
                           ? "즉시"
-                          : payment.type === "batch"
+                          : payment.paymentType === "batch"
                           ? "배치"
                           : "예약"}
                       </span>
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
-                          payment.status === "completed"
+                          payment.txStatus === "confirmed"
                             ? "bg-green-600"
-                            : payment.status === "pending"
+                            : payment.txStatus === "pending"
                             ? "bg-yellow-600"
                             : "bg-red-600"
                         }`}
                       >
-                        {payment.status === "completed"
+                        {payment.txStatus === "confirmed"
                           ? "완료"
-                          : payment.status === "pending"
+                          : payment.txStatus === "pending"
                           ? "대기"
                           : "실패"}
                       </span>
                     </div>
                     <p className="text-sm text-ksc-gray-light">
-                      {payment.from} → {payment.to}
+                      {payment.fromAddress} → {payment.toAddress}
                     </p>
                     <p className="font-semibold">{payment.amount} KSC</p>
                     <p className="text-sm text-ksc-gray-light">
-                      {payment.description}
+                      {payment.memo}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-ksc-gray-light">
-                      {payment.timestamp}
+                      {payment.statusUpdatedAt}
                     </p>
                   </div>
                 </div>
