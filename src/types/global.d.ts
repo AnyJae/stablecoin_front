@@ -15,7 +15,7 @@ export interface WalletTransaction {
   txStatus: "pending" | "confirmed" | "failed";
   paymentType: "instant" | "batch" | "scheduled";
   fee: number | null;
-  amount: number;
+  amount: string;
   tokenType: "A_KSC" | "X_KSC";
   scheduledAt?: string | null;
   createdAt: string;
