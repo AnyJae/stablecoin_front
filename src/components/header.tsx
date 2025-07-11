@@ -18,6 +18,7 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import toast from "react-hot-toast";
 import { usePathname } from "next/navigation";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
+import { formatAddress, formatAmount } from "@/utils/formatters";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -28,15 +29,6 @@ export function Header() {
     useWalletContext();
   const { t } = useLanguage();
   const pathname = usePathname();
-
-  const formatAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-
-  const formatBalance = (balance: string) => {
-    const num = parseFloat(balance);
-    return num > 0.001 ? num.toFixed(4) : "< 0.001";
-  };
 
   return (
     <header className="w-full bg-ksc-box/80 backdrop-blur-sm border-b border-ksc-box sticky top-0 z-50">
@@ -268,14 +260,14 @@ export function Header() {
                       <div className="flex items-center space-x-2 mb-1">
                         <User className="w-4 h-4 text-ksc-mint" />
                         <span className="text-sm font-medium">
-                          {formatAddress(address!)}
+                          {address}
                         </span>
                       </div>
-                      <p className="text-xs text-ksc-gray-light">
+                      {/* <p className="text-xs text-ksc-gray-light">
                         {balance
-                          ? `${formatBalance(balance)} AVAX`
+                          ? `${formatAmount(balance)} AVAX`
                           : t("common.loading")}
-                      </p>
+                      </p> */}
                     </div>
                     <button
                       onClick={() => {

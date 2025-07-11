@@ -16,6 +16,7 @@ import { useWalletConnect } from "@/hooks/useWalletConnect";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { useWalletData } from "@/hooks/useWalletData";
 import { useSendTokens } from "@/hooks/useSendTokens";
+import { formatAddress, formatAmount, formatDate } from "@/utils/formatters";
 
 export default function WalletInterface() {
   const { t } = useLanguage();
@@ -73,21 +74,6 @@ export default function WalletInterface() {
       );
     }
     setSendForm({ to: "", amount: "", memo: "", chain: "xrpl" });
-  };
-
-  const formatAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-
-  const formatBalance = (balance: string) => {
-    return parseFloat(balance).toLocaleString("ko-KR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 6,
-    });
-  };
-
-  const formatDate = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString("ko-KR");
   };
 
   const copyAddress = async () => {
@@ -454,7 +440,7 @@ export default function WalletInterface() {
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {formatBalance(kscBalance || "")}
+                    {formatAmount(kscBalance || "")}
                   </div>
                   <div className="text-sm text-ksc-gray">
                     {t("wallet.overview.kscBalance")}
@@ -463,7 +449,7 @@ export default function WalletInterface() {
 
                 <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {formatBalance(balance || "")}
+                    {formatAmount(balance || "")}
                   </div>
                   <div className="text-sm text-ksc-gray">
                     {t("wallet.overview.balance", {
@@ -678,7 +664,7 @@ export default function WalletInterface() {
                             {formatAddress(tx.toAddress)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white">
-                            {formatBalance(tx.amount.toString())} {tx.tokenType}
+                            {formatAmount(tx.amount.toString())} {tx.tokenType}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span

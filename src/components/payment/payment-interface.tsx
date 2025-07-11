@@ -9,6 +9,7 @@ import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { useWalletData } from "@/hooks/useWalletData";
 import { send } from "process";
 import { useSendTokens } from "@/hooks/useSendTokens";
+import { formatDate } from "@/utils/formatters";
 
 interface PaymentForm {
   to: string;
@@ -670,7 +671,7 @@ export function PaymentInterface() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-ksc-gray-light">
-                      {payment.statusUpdatedAt}
+                      {formatDate(payment.statusUpdatedAt)}
                     </p>
                   </div>
                 </div>
