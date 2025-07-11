@@ -32,8 +32,8 @@ interface ScheduledPaymentForm {
 export function PaymentInterface() {
   const { t } = useLanguage();
   const { fetchTransactions } = useWalletData();
-  const { address, transactions } = useWalletContext();
-  const {sendKsc} = useSendTokens();
+  const { address, transactions, chainName } = useWalletContext();
+  const { sendKsc } = useSendTokens();
   const [activeTab, setActiveTab] = useState<
     "instant" | "batch" | "scheduled" | "history"
   >("instant");
@@ -69,9 +69,14 @@ export function PaymentInterface() {
     setIsLoading(true);
 
     try {
-      // API 호출 시뮬레이션
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
+      await sendKsc(
+        instantForm.to,
+        instantForm.amount,
+        instantForm.description,
+        chainName,
+        "instant",
+        null
+      );
       toast.success(t("payment.messages.success"));
       setInstantForm({ to: "", amount: "", description: "" });
     } catch (error) {
@@ -79,22 +84,59 @@ export function PaymentInterface() {
     } finally {
       setIsLoading(false);
     }
+
+    // try {
+    //   // API 호출 시뮬레이션
+    //   await new Promise((resolve) => setTimeout(resolve, 2000));
+    //   toast.success("모의 결제 시뮬레이션");
+    //   toast.success(t("payment.messages.success"));
+    //   setInstantForm({ to: "", amount: "", description: "" });
+    // } catch (error) {
+    //   toast.error(t("payment.errors.processing"));
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   // 배치 결제 처리
   const handleBatchPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      toast.success(t("payment.messages.batchSuccess"));
-      setBatchForm({ recipients: [""], amounts: [""], description: "" });
-    } catch (error) {
-      toast.error(t("payment.errors.batchProcessing"));
-    } finally {
-      setIsLoading(false);
+    setIsLoading(true);
+    for (let i = 0; i < batchForm.recipients.length; i++) {
+      const recipient = batchForm.recipients[i];
+      const amount = batchForm.amounts[i];
+
+      try {
+        await sendKsc(
+          recipient,
+          amount,
+          batchForm.description,
+          chainName,
+          "batch",
+          null
+        );
+      } catch (error) {
+        toast.error(t("payment.errors.processing"));
+        setIsLoading(false);
+        return;
+      }
     }
+
+    setIsLoading(false);
+    toast.success(t("payment.messages.success"));
+    setBatchForm({ recipients: [""], amounts: [""], description: "" });
+
+    //API 호출 시뮬레이션
+    // try {
+    //   await new Promise((resolve) => setTimeout(resolve, 3000));
+    //   toast.success(t("payment.messages.batchSuccess"));
+    //   setBatchForm({ recipients: [""], amounts: [""], description: "" });
+    // } catch (error) {
+    //   toast.error(t("payment.errors.batchProcessing"));
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   // 예약 결제 처리
@@ -103,8 +145,15 @@ export function PaymentInterface() {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      toast.success(t("payment.messages.scheduledSuccess"));
+      await sendKsc(
+        scheduledForm.to,
+        scheduledForm.amount,
+        scheduledForm.description,
+        chainName,
+        "scheduled",
+        scheduledForm.scheduledTime
+      );
+      toast.success(t("payment.messages.success"));
       setScheduledForm({
         to: "",
         amount: "",
@@ -112,10 +161,26 @@ export function PaymentInterface() {
         description: "",
       });
     } catch (error) {
-      toast.error(t("payment.errors.scheduledProcessing"));
+      toast.error(t("payment.errors.processing"));
     } finally {
       setIsLoading(false);
     }
+
+    //API 호출 시뮬레이션
+    // try {
+    //   await new Promise((resolve) => setTimeout(resolve, 1500));
+    //   toast.success(t("payment.messages.scheduledSuccess"));
+    //   setScheduledForm({
+    //     to: "",
+    //     amount: "",
+    //     scheduledTime: "",
+    //     description: "",
+    //   });
+    // } catch (error) {
+    //   toast.error(t("payment.errors.scheduledProcessing"));
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   // 배치 결제 수신자 추가
@@ -303,7 +368,7 @@ export function PaymentInterface() {
                     amount: e.target.value,
                   }))
                 }
-                placeholder="1000"
+                placeholder="0"
                 min="0"
                 step="0.01"
                 className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
@@ -323,7 +388,7 @@ export function PaymentInterface() {
                     description: e.target.value,
                   }))
                 }
-                placeholder="결제 목적을 입력하세요..."
+                placeholder={t("payment.sendForm.descriptionPlaceholder")}
                 rows={3}
                 className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
               />
@@ -332,7 +397,16 @@ export function PaymentInterface() {
             <button
               type="submit"
               disabled={isLoading}
-              onClick={() => sendKsc(instantForm.to, Number(instantForm.amount), instantForm.description, "xrpl", "instant", null)}
+              onClick={() =>
+                sendKsc(
+                  instantForm.to,
+                  instantForm.amount,
+                  instantForm.description,
+                  "xrpl",
+                  "instant",
+                  null
+                )
+              }
               className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-blue text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               {isLoading ? t("common.processing") : t("payment.sendForm.send")}
@@ -378,7 +452,7 @@ export function PaymentInterface() {
                     onChange={(e) =>
                       updateRecipient(index, "amount", e.target.value)
                     }
-                    placeholder="1000"
+                    placeholder="0"
                     min="0"
                     step="0.01"
                     className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
@@ -418,7 +492,7 @@ export function PaymentInterface() {
                     description: e.target.value,
                   }))
                 }
-                placeholder="배치 결제 목적을 입력하세요..."
+                placeholder={t("payment.sendForm.descriptionPlaceholder")}
                 rows={3}
                 className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
               />
@@ -473,7 +547,7 @@ export function PaymentInterface() {
                     amount: e.target.value,
                   }))
                 }
-                placeholder="1000"
+                placeholder="0"
                 min="0"
                 step="0.01"
                 className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
@@ -511,7 +585,7 @@ export function PaymentInterface() {
                     description: e.target.value,
                   }))
                 }
-                placeholder="예약 결제 목적을 입력하세요..."
+                placeholder={t("payment.sendForm.descriptionPlaceholder")}
                 rows={3}
                 className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
               />
@@ -520,7 +594,16 @@ export function PaymentInterface() {
             <button
               type="submit"
               disabled={isLoading}
-              onClick={() => sendKsc(scheduledForm.to, Number(scheduledForm.amount), scheduledForm.description, "xrpl", "scheduled", scheduledForm.scheduledTime)}
+              onClick={() =>
+                sendKsc(
+                  scheduledForm.to,
+                  scheduledForm.amount,
+                  scheduledForm.description,
+                  "xrpl",
+                  "scheduled",
+                  scheduledForm.scheduledTime
+                )
+              }
               className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-gray text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               {isLoading
@@ -556,10 +639,10 @@ export function PaymentInterface() {
                         }`}
                       >
                         {payment.paymentType === "instant"
-                          ? "즉시"
+                          ?(t("wallet.transactions.type.instant"))
                           : payment.paymentType === "batch"
-                          ? "배치"
-                          : "예약"}
+                          ? (t("wallet.transactions.type.batch"))
+                          : (t("wallet.transactions.type.scheduled"))}
                       </span>
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
@@ -571,10 +654,10 @@ export function PaymentInterface() {
                         }`}
                       >
                         {payment.txStatus === "confirmed"
-                          ? "완료"
+                          ? t("wallet.transactions.status.confirmed")
                           : payment.txStatus === "pending"
-                          ? "대기"
-                          : "실패"}
+                          ? t("wallet.transactions.status.pending")
+                          : t("wallet.transactions.status.failed")}
                       </span>
                     </div>
                     <p className="text-sm text-ksc-gray-light">
