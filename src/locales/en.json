@@ -81,16 +81,62 @@
     }
   },
   "wallet": {
-    "title": "Wallet Management",
+    "title": "KSC Wallet",
+    "description": "Manage your KSC tokens securely and conveniently",
+    "mock": "MOCK",
+    "copyAddress": "Copy Address",
+    "disconnect": "Disconnect",
+    "tabs": {
+      "overview": "Overview",
+      "send": "Send",
+      "transactions": "Transactions"
+    },
+    "overview": {
+      "title": "Wallet Overview",
+      "refresh": "Refresh",
+      "kscBalance": "KSC Balance",
+      "balance": "{{token}} Balance",
+      "totalTransactions": "Total Transactions",
+      "recentTransactions": "Recent Transactions"
+    },
+    "send": {
+      "title": "Send KSC",
+      "recipientAddress": "Recipient Address",
+      "recipientAddressPlaceholder": "Enter recipient address",
+      "amount": "Amount",
+      "chain": "Chain",
+      "xrpl": "XRPL",
+      "avalanche": "Avalanche",
+      "sending": "Sending...",
+      "send": "Send"
+    },
+    "transactions": {
+      "title": "Transaction History",
+      "refresh": "Refresh",
+      "noTransactions": "No transaction history.",
+      "hash": "Hash",
+      "from": "From",
+      "to": "To",
+      "amount": "Amount",
+      "status": {
+        "title": "Status",
+        "confirmed": "Confirmed",
+        "pending": "Pending",
+        "failed": "Failed"
+      },
+      "type":{
+        "instant" : "Instant",
+        "batch" : "Batch",
+        "scheduled" : "Scheduled"
+      },
+      "timestamp": "Timestamp",
+      "explorer": "Explorer"
+    },
     "connect": "Connect Wallet",
-    "disconnect": "Disconnect Wallet",
     "balance": "Balance",
     "address": "Address",
     "network": "Network",
-    "transactions": "Transactions",
-    "send": "Send",
     "receive": "Receive",
-    "overview": "Overview",
     "sendForm": {
       "title": "Send KSC",
       "recipient": "Recipient Address",
@@ -156,6 +202,31 @@
       "volume24h": "24h Volume",
       "noChange": "No Change"
     },
+    "systemStatus": {
+      "title": "System Status",
+      "blockchain": "Blockchain Connection",
+      "apiServer": "API Server",
+      "database": "Database",
+      "normal": "Normal",
+      "mockMode": "Mock Mode"
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "lastUpdate": "Last Update",
+      "realtimeConnection": "Real-time Connection",
+      "active": "Active",
+      "inactive": "Inactive",
+      "walletStatus": "Wallet Status",
+      "connected": "Connected",
+      "disconnected": "Not Connected"
+    },
+    "tabs": {
+        "overview": "Overview",
+        "market": "Market Data",
+        "collateral": "Collateral Status",
+        "transactions": "Transaction History"
+    },
+    "underDevelopment": "This feature is under development.",
     "trillion": "T",
     "hundredMillion": "B",
     "tenThousand": "K",
@@ -175,7 +246,8 @@
       "recipient": "Recipient Address",
       "amount": "Amount",
       "description": "Description",
-      "send": "Send Payment"
+      "send": "Send Payment",
+      "descriptionPlaceholder": "Enter payment description"
     },
     "batchForm": {
       "recipient": "Recipient",
@@ -212,8 +284,35 @@
       "alerts": "Alerts",
       "analytics": "Analytics"
     },
+    "overview": {
+      "totalValue": "Total Collateral Value",
+      "kscSupply": "KSC Supply",
+      "collateralRatio": "Collateral Ratio",
+      "status": "Status",
+      "stable": "Stable",
+      "risk": "Risk",
+      "collateralRatioTrend": "Collateral Ratio Trend (Last 30 Days)"
+    },
+    "assets": {
+      "title": "Collateral Asset Details"
+    },
     "alerts": {
-      "stable": "Collateral ratio is being maintained stably."
+      "title": "Alert Management",
+      "collateralRatioDrop": "Collateral Ratio Drop",
+      "collateralRatioDropMessage": "Current collateral ratio is 115%, approaching the minimum requirement of 110%.",
+      "assetPriceUpdate": "Asset Price Update",
+      "assetPriceUpdateMessage": "USDT price has increased from 1,500 KRW to 1,520 KRW.",
+      "severity": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
+    },
+    "analytics": {
+      "collateralRatioTrend": "Collateral Ratio Trend",
+      "assetDistribution": "Asset Distribution",
+      "ratio": "Ratio",
+      "supplyAndValueTrend": "KSC Supply and Total Collateral Value Trend"
     },
     "errors": {
       "loadFailed": "Failed to load collateral asset data."
@@ -229,8 +328,8 @@
     "logs": "Logs",
     "contractInfo": {
       "title": "Contract Information",
-      "totalSupply": "Total Supply (KSC)",
-      "totalMinted": "Total Minted (KSC)",
+      "maxSupply": "Max Supply (KSC)",
+      "currentSupply": "Current Supply (KSC)",
       "totalBurned": "Total Burned (KSC)",
       "loading": "Loading contract information..."
     },
@@ -264,9 +363,7 @@
   "docs": {
     "title": "Documentation",
     "description": "KSC stablecoin project technical documentation and guides",
-    "api": "API Documentation",
-    "guide": "User Guide",
-    "faq": "FAQ",
+    "tableOfContents": "Table of Contents",
     "sections": {
       "overview": "Overview",
       "architecture": "Architecture",
@@ -274,6 +371,136 @@
       "api": "API Documentation",
       "security": "Security",
       "deployment": "Deployment"
+    },
+    "project": {
+      "title": "KSC Stablecoin Project Overview",
+      "description": "KSC (Korea Stable Coin) is a stablecoin pegged 1:1 to the Korean Won. It leverages a hybrid architecture of XRPL and Avalanche to ensure both stability and scalability.",
+      "features": {
+        "title": "Key Features",
+        "krwPeg": "1:1 peg to the Korean Won",
+        "hybridArchitecture": "Hybrid architecture combining XRPL and Avalanche",
+        "realtimeMonitoring": "Real-time monitoring and emergency control features",
+        "walletSupport": "Support for MetaMask and XUMM wallets",
+        "adminFunctions": "Administrator functions for minting and burning"
+      }
+    },
+    "architecture": {
+      "title": "System Architecture",
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "blockchain": "Blockchain",
+      "frontendStack": {
+        "nextjs": "• Next.js 14 (App Router)",
+        "typescript": "• TypeScript",
+        "tailwind": "• Tailwind CSS",
+        "reactQuery": "• React Query",
+        "metamask": "• MetaMask Integration"
+      },
+      "backendStack": {
+        "nodejs": "• Node.js + Express",
+        "avalanche": "• Avalanche C-Chain Integration",
+        "xrpl": "• XRPL Integration",
+        "restful": "• RESTful API",
+        "security": "• Security Middleware"
+      },
+      "blockchainStack": {
+        "avalanche": "• Avalanche C-Chain (ERC20)",
+        "xrpl": "• XRPL (Issued Currency)",
+        "solidity": "• Solidity Smart Contracts",
+        "hardhat": "• Hardhat Development Environment"
+      }
+    },
+    "smartContract": {
+      "title": "KSCStablecoin Contract",
+      "mainFeatures": "Main Features",
+      "securityFeatures": "Security Features",
+      "adminFunctions": "Admin Functions",
+      "features": {
+        "erc20": "ERC20 standard compliance",
+        "adminMintBurn": "Admin-only minting and burning",
+        "emergencyPause": "Emergency pause functionality",
+        "reentrancyGuard": "Re-entrancy attack prevention",
+        "eventLogging": "Transaction and administrative action event logging"
+      },
+      "security": {
+        "ownable": "Ownable: Restricts major functions to the owner",
+        "pausable": "Pausable: Allows pausing the contract in emergencies",
+        "reentrancyGuard": "ReentrancyGuard: Prevents re-entrancy attacks",
+        "inputValidation": "Input validation for function parameters"
+      },
+      "admin": {
+        "mint": "mint(address to, uint256 amount): Mints new tokens",
+        "burn": "burn(address from, uint256 amount): Burns existing tokens",
+        "emergencyPause": "emergencyPause(): Pauses the contract",
+        "emergencyUnpause": "emergencyUnpause(): Unpauses the contract"
+      }
+    },
+    "api": {
+      "title": "REST API Endpoints",
+      "avalanche": "Avalanche API",
+      "xrpl": "XRPL API",
+      "admin": "Admin API",
+      "endpoints": {
+        "balance": "Get KSC balance",
+        "contractInfo": "Get contract information",
+        "transfer": "Transfer KSC",
+        "transaction": "Get transaction details",
+        "xrplBalance": "Get XRP/KSC balance",
+        "xrplTransfer": "Transfer on XRPL",
+        "mint": "Mint KSC",
+        "burn": "Burn KSC",
+        "pause": "Pause contract",
+        "unpause": "Unpause contract"
+      }
+    },
+    "security": {
+      "title": "Security Policy",
+      "smartContract": "Smart Contract Security",
+      "backend": "Backend Security",
+      "frontend": "Frontend Security",
+      "smartContractFeatures": {
+        "openzeppelin": "Use of OpenZeppelin libraries",
+        "reentrancyGuard": "Re-entrancy attack prevention",
+        "accessControl": "Role-based access control",
+        "emergencyPause": "Emergency pause function",
+        "inputValidation": "Input validation"
+      },
+      "backendFeatures": {
+        "cors": "CORS policy",
+        "rateLimiting": "Rate limiting",
+        "helmet": "Helmet for security headers",
+        "inputValidation": "Input validation (Joi)",
+        "errorHandling": "Centralized error handling"
+      },
+      "frontendFeatures": {
+        "metamask": "Signature verification via MetaMask",
+        "https": "HTTPS enforcement",
+        "xss": "XSS prevention measures",
+        "envVars": "Secure management of environment variables"
+      }
+    },
+    "deployment": {
+      "title": "Deployment Guide",
+      "devEnvironment": "Development Environment",
+      "labels": {
+        "nodejs": "Node.js:",
+        "npm": "npm:",
+        "metamask": "MetaMask:",
+        "hardhat": "Hardhat:"
+      },
+      "nodejs": "v18 or higher",
+      "npm": "v8 or higher",
+      "metamask": "Browser extension installed",
+      "hardhat": "For smart contract development",
+      "localDeployment": "Local Deployment",
+      "installDeps": "Install dependencies",
+      "runDev": "Run development server",
+      "buildProd": "Create production build",
+      "runTests": "Run tests",
+      "testnetDeployment": "Testnet Deployment",
+      "moveToContracts": "Navigate to contracts directory",
+      "deployToFuji": "Deploy to Avalanche Fuji testnet",
+      "verifyContract": "Verify contract on Snowtrace"
     }
   },
   "errors": {

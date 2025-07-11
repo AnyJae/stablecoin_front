@@ -226,7 +226,7 @@ export function CollateralDashboard() {
             <div className="bg-ksc-gray-dark rounded-lg p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-ksc-gray-light text-sm">총 담보 가치</p>
+                  <p className="text-ksc-gray-light text-sm">{t("collateral.overview.totalValue")}</p>
                   <p className="text-2xl font-bold">
                     {formatCurrency(collateralData.totalValue)}
                   </p>
@@ -238,7 +238,7 @@ export function CollateralDashboard() {
             <div className="bg-ksc-gray-dark rounded-lg p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-ksc-gray-light text-sm">KSC 공급량</p>
+                  <p className="text-ksc-gray-light text-sm">{t("collateral.overview.kscSupply")}</p>
                   <p className="text-2xl font-bold">
                     {formatCurrency(collateralData.kscSupply)}
                   </p>
@@ -250,7 +250,7 @@ export function CollateralDashboard() {
             <div className="bg-ksc-gray-dark rounded-lg p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-ksc-gray-light text-sm">담보 비율</p>
+                  <p className="text-ksc-gray-light text-sm">{t("collateral.overview.collateralRatio")}</p>
                   <p className="text-2xl font-bold">
                     {formatRatio(collateralData.collateralRatio)}
                   </p>
@@ -262,7 +262,7 @@ export function CollateralDashboard() {
             <div className="bg-ksc-gray-dark rounded-lg p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-ksc-gray-light text-sm">상태</p>
+                  <p className="text-ksc-gray-light text-sm">{t("collateral.overview.status")}</p>
                   <p
                     className={`text-2xl font-bold ${
                       collateralData.isHealthy
@@ -270,7 +270,7 @@ export function CollateralDashboard() {
                         : "text-red-500"
                     }`}
                   >
-                    {collateralData.isHealthy ? "안정" : "위험"}
+                    {collateralData.isHealthy ? t("collateral.overview.stable") : t("collateral.overview.risk")}
                   </p>
                 </div>
                 <div
@@ -286,7 +286,7 @@ export function CollateralDashboard() {
 
           <div className="bg-ksc-gray-dark rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-4">
-              담보 비율 추이 (최근 30일)
+              {t("collateral.overview.collateralRatioTrend")}
             </h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -305,7 +305,7 @@ export function CollateralDashboard() {
                     dataKey="collateralRatio"
                     stroke="#3B82F6"
                     strokeWidth={2}
-                    name="담보 비율"
+                    name={t("collateral.overview.collateralRatio")}
                     dot={{ fill: "#3B82F6", strokeWidth: 2, r: 4 }}
                   />
                 </LineChart>
@@ -317,7 +317,7 @@ export function CollateralDashboard() {
 
       {activeTab === "assets" && (
         <div className="bg-ksc-gray-dark rounded-lg p-6">
-          <h3 className="text-xl font-semibold mb-6">담보자산 상세</h3>
+          <h3 className="text-xl font-semibold mb-6">{t("collateral.assets.title")}</h3>
           <div className="space-y-4">
             {collateralData.assets.map((asset: any, index: number) => (
               <div key={index} className="bg-ksc-gray rounded-lg p-4">
@@ -357,15 +357,15 @@ export function CollateralDashboard() {
 
       {activeTab === "alerts" && (
         <div className="bg-ksc-gray-dark rounded-lg p-6">
-          <h3 className="text-xl font-semibold mb-6">알림 관리</h3>
+          <h3 className="text-xl font-semibold mb-6">{t("collateral.alerts.title")}</h3>
           <div className="space-y-4">
             {[
               {
                 id: 1,
                 type: "warning",
-                title: "담보 비율 하락",
+                title: t("collateral.alerts.collateralRatioDrop"),
                 message:
-                  "현재 담보 비율이 115%로 최소 요구 비율(110%)에 근접하고 있습니다.",
+                  t("collateral.alerts.collateralRatioDropMessage"),
                 severity: "medium",
                 timestamp: Date.now() - 3600000,
                 isRead: false,
@@ -373,8 +373,8 @@ export function CollateralDashboard() {
               {
                 id: 2,
                 type: "info",
-                title: "담보자산 가격 업데이트",
-                message: "USDT 가격이 1,500원에서 1,520원으로 상승했습니다.",
+                title: t("collateral.alerts.assetPriceUpdate"),
+                message: t("collateral.alerts.assetPriceUpdateMessage"),
                 severity: "low",
                 timestamp: Date.now() - 7200000,
                 isRead: true,
@@ -410,11 +410,7 @@ export function CollateralDashboard() {
                           : "bg-green-600"
                       }`}
                     >
-                      {alert.severity === "high"
-                        ? "높음"
-                        : alert.severity === "medium"
-                        ? "중간"
-                        : "낮음"}
+                      {t(`collateral.alerts.severity.${alert.severity}`)}
                     </span>
                     {!alert.isRead && (
                       <span className="w-2 h-2 bg-red-500 rounded-full"></span>
@@ -431,7 +427,7 @@ export function CollateralDashboard() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-ksc-gray-dark rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-4">담보 비율 추이</h3>
+              <h3 className="text-xl font-semibold mb-4">{t("collateral.analytics.collateralRatioTrend")}</h3>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={collateralData.chartData}>
@@ -450,7 +446,7 @@ export function CollateralDashboard() {
                       fill="#3B82F6"
                       fillOpacity={0.3}
                       strokeWidth={2}
-                      name="담보 비율"
+                      name={t("collateral.overview.collateralRatio")}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -458,7 +454,7 @@ export function CollateralDashboard() {
             </div>
 
             <div className="bg-ksc-gray-dark rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-4">담보자산 분포</h3>
+              <h3 className="text-xl font-semibold mb-4">{t("collateral.analytics.assetDistribution")}</h3>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -479,7 +475,7 @@ export function CollateralDashboard() {
                       )}
                     </Pie>
                     <Tooltip
-                      formatter={(value: any) => [`${value}%`, "비율"]}
+                      formatter={(value: any) => [`${value}%`, t("collateral.analytics.ratio")]}
                       contentStyle={{
                         backgroundColor: "#1F2937",
                         border: "1px solid #374151",
@@ -495,7 +491,7 @@ export function CollateralDashboard() {
 
           <div className="bg-ksc-gray-dark rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-4">
-              KSC 공급량 및 총 담보 가치 추이
+              {t("collateral.analytics.supplyAndValueTrend")}
             </h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -514,7 +510,7 @@ export function CollateralDashboard() {
                     dataKey="kscSupply"
                     stroke="#10B981"
                     strokeWidth={2}
-                    name="KSC 공급량"
+                    name={t("collateral.overview.kscSupply")}
                     dot={{ fill: "#10B981", strokeWidth: 2, r: 4 }}
                   />
                   <Line
@@ -522,7 +518,7 @@ export function CollateralDashboard() {
                     dataKey="totalValue"
                     stroke="#F59E0B"
                     strokeWidth={2}
-                    name="총 담보 가치"
+                    name={t("collateral.overview.totalValue")}
                     dot={{ fill: "#F59E0B", strokeWidth: 2, r: 4 }}
                   />
                 </LineChart>
@@ -532,5 +528,6 @@ export function CollateralDashboard() {
         </div>
       )}
     </div>
-  );
+  
+    )
 }

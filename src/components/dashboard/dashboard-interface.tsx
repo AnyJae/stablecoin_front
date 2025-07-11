@@ -18,7 +18,6 @@ import {
 import { useRealtime } from "@/hooks/useRealtime";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/contexts/localization/LanguageContext";
-import { useWalletConnect } from "@/hooks/useWalletConnect";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
 
 export function DashboardInterface() {
@@ -236,50 +235,50 @@ export function DashboardInterface() {
           {/* 추가 정보 섹션 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-ksc-box border border-ksc-box rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">시스템 상태</h3>
+              <h3 className="text-lg font-semibold mb-4">{t("dashboard.systemStatus.title")}</h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-ksc-gray-light">블록체인 연결</span>
-                  <span className="text-green-500 font-medium">정상</span>
+                  <span className="text-ksc-gray-light">{t("dashboard.systemStatus.blockchain")}</span>
+                  <span className="text-green-500 font-medium">{t("dashboard.systemStatus.normal")}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-ksc-gray-light">API 서버</span>
-                  <span className="text-green-500 font-medium">정상</span>
+                  <span className="text-ksc-gray-light">{t("dashboard.systemStatus.apiServer")}</span>
+                  <span className="text-green-500 font-medium">{t("dashboard.systemStatus.normal")}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-ksc-gray-light">데이터베이스</span>
-                  <span className="text-yellow-500 font-medium">Mock 모드</span>
+                  <span className="text-ksc-gray-light">{t("dashboard.systemStatus.database")}</span>
+                  <span className="text-yellow-500 font-medium">{t("dashboard.systemStatus.mockMode")}</span>
                 </div>
               </div>
             </div>
 
             <div className="bg-ksc-box border border-ksc-box rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">최근 활동</h3>
+              <h3 className="text-lg font-semibold mb-4">{t("dashboard.recentActivity.title")}</h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-ksc-gray-light">마지막 업데이트</span>
+                  <span className="text-ksc-gray-light">{t("dashboard.recentActivity.lastUpdate")}</span>
                   <span className="text-ksc-white font-medium">
-                    {currentTime || "로딩 중..."}
+                    {currentTime || t("common.loading")}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-ksc-gray-light">실시간 연결</span>
+                  <span className="text-ksc-gray-light">{t("dashboard.recentActivity.realtimeConnection")}</span>
                   <span
                     className={
                       isRealtimeConnected ? "text-green-500" : "text-red-500"
                     }
                     font-medium
                   >
-                    {isRealtimeConnected ? "활성" : "비활성"}
+                    {isRealtimeConnected ? t("dashboard.recentActivity.active") : t("dashboard.recentActivity.inactive")}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-ksc-gray-light">지갑 상태</span>
+                  <span className="text-ksc-gray-light">{t("dashboard.recentActivity.walletStatus")}</span>
                   <span
                     className={isConnected ? "text-green-500" : "text-gray-500"}
                     font-medium
                   >
-                    {isConnected ? "연결됨" : "연결 안됨"}
+                    {isConnected ? t("dashboard.recentActivity.connected") : t("dashboard.recentActivity.disconnected")}
                   </span>
                 </div>
               </div>
@@ -292,13 +291,9 @@ export function DashboardInterface() {
       {activeTab !== "overview" && (
         <div className="bg-ksc-box border border-ksc-box rounded-lg p-6">
           <h3 className="text-xl font-semibold mb-4">
-            {activeTab === "market"
-              ? "시장 데이터"
-              : activeTab === "collateral"
-              ? "담보 현황"
-              : "거래 내역"}
+            {t(`dashboard.tabs.${activeTab}`)}
           </h3>
-          <p className="text-ksc-gray-light">이 기능은 개발 중입니다.</p>
+          <p className="text-ksc-gray-light">{t("dashboard.underDevelopment")}</p>
         </div>
       )}
     </div>

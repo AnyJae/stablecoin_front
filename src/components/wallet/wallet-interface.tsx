@@ -42,7 +42,7 @@ export default function WalletInterface() {
 
   const [sendForm, setSendForm] = useState({
     to: "",
-    amount: 0,
+    amount: "",
     memo: "",
     chain: "xrpl" as "xrpl" | "avalanche",
   });
@@ -72,7 +72,7 @@ export default function WalletInterface() {
         scheduledAt
       );
     }
-    setSendForm({ to: "", amount: 0, memo: "", chain: "xrpl" });
+    setSendForm({ to: "", amount: "", memo: "", chain: "xrpl" });
   };
 
   const formatAddress = (address: string) => {
@@ -299,16 +299,20 @@ export default function WalletInterface() {
             <div>
               <div className="flex items-center space-x-2">
                 <h2 className="text-xl font-bold text-ksc-white">
-                  {chainName === "xrpl" ? "XRPL" : "Avalanche"} 지갑
+                  {t("wallet.title", {
+                    chainName: chainName === "xrpl" ? "XRPL" : "Avalanche",
+                  })}
                 </h2>
-                {isMock && <span className="badge-mock">MOCK</span>}
+                {isMock && (
+                  <span className="badge-mock">{t("wallet.mock")}</span>
+                )}
               </div>
               <div className="flex items-center space-x-2">
                 <p className="text-ksc-gray">{formatAddress(address || "")}</p>
                 <button
                   onClick={copyAddress}
                   className="p-1 hover:bg-ksc-box/50 rounded transition-colors"
-                  title="주소 복사"
+                  title={t("wallet.copyAddress")}
                 >
                   {copiedAddress ? (
                     <Check className="w-4 h-4 text-ksc-mint" />
@@ -330,8 +334,8 @@ export default function WalletInterface() {
               onClick={disconnectWallet}
               className="flex items-center space-x-2 text-white hover:text-ksc-mint/80 text-sm"
             >
-            <CircleX className="w-4 h-4" />
-              <span>연결 해제</span>
+              <CircleX className="w-4 h-4" />
+              <span>{t("wallet.disconnect")}</span>
             </button>
           </div>
         </div>
@@ -365,7 +369,7 @@ export default function WalletInterface() {
                         {tx.amount} {tx.currency}
                       </span>
                       <span className="badge-mock">
-                        {tx.status === "confirmed" ? "완료" : "처리중"}
+                        {t(tx.status === "confirmed" ? "wallet.transactions.status.confirmed" : "wallet.transactions.status.pending")}
                       </span>
                     </li>
                   ))}
@@ -379,7 +383,7 @@ export default function WalletInterface() {
         {/* <div className="grid md:grid-cols-2 gap-4 mt-6">
           <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
             <div className="flex items-center justify-between">
-              <span className="text-ksc-gray">{chainName === 'xrpl' ? 'XRP' : 'AVAX'} 잔액</span>
+              <span className="text-ksc-gray">{t("wallet.overview.balance", { token: chainName === 'xrpl' ? 'XRP' : 'AVAX' })}</span>
               <span className="font-semibold text-ksc-mint">
                 {formatBalance(balance || '')} {chainName === 'xrpl' ? 'XRP' : 'AVAX'}
               </span>
@@ -387,7 +391,7 @@ export default function WalletInterface() {
           </div>
           <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
             <div className="flex items-center justify-between">
-              <span className="text-ksc-gray">KSC 잔액</span>
+              <span className="text-ksc-gray">{t("wallet.overview.kscBalance")}</span>
               <span className="font-semibold text-ksc-mint">
                 {formatBalance(kscBalance || '')} KSC
               </span>
@@ -401,9 +405,13 @@ export default function WalletInterface() {
         <div className="border-b border-ksc-box/50">
           <nav className="flex space-x-8 px-6">
             {[
-              { id: "overview", label: "개요", icon: "📊" },
-              { id: "send", label: "전송", icon: "💸" },
-              { id: "transactions", label: "거래내역", icon: "📋" },
+              { id: "overview", label: t("wallet.tabs.overview"), icon: "📊" },
+              { id: "send", label: t("wallet.tabs.send"), icon: "💸" },
+              {
+                id: "transactions",
+                label: t("wallet.tabs.transactions"),
+                icon: "📋",
+              },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -427,7 +435,7 @@ export default function WalletInterface() {
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-ksc-white">
-                  지갑 개요
+                  {t("wallet.overview.title")}
                 </h3>
                 <button
                   onClick={() => {
@@ -440,7 +448,7 @@ export default function WalletInterface() {
                   <RefreshCw
                     className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
                   />
-                  <span>새로고침</span>
+                  <span>{t("wallet.overview.refresh")}</span>
                 </button>
               </div>
               <div className="grid md:grid-cols-3 gap-4">
@@ -448,7 +456,9 @@ export default function WalletInterface() {
                   <div className="text-2xl font-bold text-ksc-mint">
                     {formatBalance(kscBalance || "")}
                   </div>
-                  <div className="text-sm text-ksc-gray">KSC 잔액</div>
+                  <div className="text-sm text-ksc-gray">
+                    {t("wallet.overview.kscBalance")}
+                  </div>
                 </div>
 
                 <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
@@ -456,7 +466,9 @@ export default function WalletInterface() {
                     {formatBalance(balance || "")}
                   </div>
                   <div className="text-sm text-ksc-gray">
-                    {chainName === "xrpl" ? "XRP" : "AVAX"} 잔액
+                    {t("wallet.overview.balance", {
+                      token: chainName === "xrpl" ? "XRP" : "AVAX",
+                    })}
                   </div>
                 </div>
 
@@ -464,12 +476,16 @@ export default function WalletInterface() {
                   <div className="text-2xl font-bold text-ksc-mint">
                     {transactions.length}
                   </div>
-                  <div className="text-sm text-ksc-gray">총 거래 수</div>
+                  <div className="text-sm text-ksc-gray">
+                    {t("wallet.overview.totalTransactions")}
+                  </div>
                 </div>
               </div>
 
               <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
-                <h4 className="font-semibold text-ksc-mint mb-2">최근 거래</h4>
+                <h4 className="font-semibold text-ksc-mint mb-2">
+                  {t("wallet.overview.recentTransactions")}
+                </h4>
                 {transactions.slice(0, 3).length > 0 ? (
                   <div className="space-y-2">
                     {transactions.slice(0, 3).map((tx) => (
@@ -490,11 +506,11 @@ export default function WalletInterface() {
                                 : "bg-error-100 text-error-800"
                             }`}
                           >
-                            {tx.txStatus === "confirmed"
-                              ? "완료"
-                              : tx.txStatus === "pending"
-                              ? "처리중"
-                              : "실패"}
+                            {t(
+                              `wallet.transactions.status.${
+                                tx.txStatus || "failed"
+                              }`
+                            )}
                           </span>
                           {/* {tx.explorerUrl && (
                             <a
@@ -511,7 +527,9 @@ export default function WalletInterface() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-ksc-gray">거래 내역이 없습니다.</p>
+                  <p className="text-ksc-gray">
+                    {t("wallet.transactions.noTransactions")}
+                  </p>
                 )}
               </div>
             </div>
@@ -519,32 +537,38 @@ export default function WalletInterface() {
 
           {activeTab === "send" && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-ksc-white">KSC 전송</h3>
+              <h3 className="text-lg font-semibold text-ksc-white">
+                {t("wallet.send.title")}
+              </h3>
 
               <form onSubmit={handleSend} className="space-y-4">
                 <div>
-                  <label className="label">받는 주소</label>
+                  <label className="label">
+                    {t("wallet.send.recipientAddress")}
+                  </label>
                   <input
                     type="text"
                     value={sendForm.to}
                     onChange={(e) =>
                       setSendForm((prev) => ({ ...prev, to: e.target.value }))
                     }
-                    placeholder="받는 주소를 입력하세요"
+                    placeholder={t("wallet.send.recipientAddressPlaceholder")}
                     className="input-field"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="label">전송 금액 (KSC)</label>
+                  <label className="label">
+                    {t("wallet.send.amount")} (KSC)
+                  </label>
                   <input
                     type="number"
                     value={sendForm.amount}
                     onChange={(e) =>
                       setSendForm((prev) => ({
                         ...prev,
-                        amount: Number(e.target.value),
+                        amount: e.target.value,
                       }))
                     }
                     placeholder="0.00"
@@ -556,7 +580,9 @@ export default function WalletInterface() {
                 </div>
 
                 <div>
-                  <label className="label">체인 선택</label>
+                  <label className="label">
+                    {t("wallet.send.chain")}
+                  </label>
                   <select
                     value={sendForm.chain}
                     onChange={(e) =>
@@ -567,8 +593,10 @@ export default function WalletInterface() {
                     }
                     className="input-field"
                   >
-                    <option value="xrpl">XRPL</option>
-                    <option value="avalanche">Avalanche</option>
+                    <option value="xrpl">{t("wallet.send.xrpl")}</option>
+                    <option value="avalanche">
+                      {t("wallet.send.avalanche")}
+                    </option>
                   </select>
                 </div>
 
@@ -577,7 +605,9 @@ export default function WalletInterface() {
                   disabled={isLoading || !sendForm.to || !sendForm.amount}
                   className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
                 >
-                  {isLoading ? "전송 중..." : "전송하기"}
+                  {isLoading
+                    ? t("wallet.send.sending")
+                    : t("wallet.send.send")}
                 </button>
               </form>
 
@@ -593,7 +623,7 @@ export default function WalletInterface() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-ksc-white">
-                  거래 내역
+                  {t("wallet.transactions.title")}
                 </h3>
                 <button
                   onClick={() => fetchTransactions()}
@@ -603,7 +633,7 @@ export default function WalletInterface() {
                   <RefreshCw
                     className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
                   />
-                  <span>새로고침</span>
+                  <span>{t("wallet.transactions.refresh")}</span>
                 </button>
               </div>
 
@@ -613,25 +643,25 @@ export default function WalletInterface() {
                     <thead className="bg-ksc-box/30">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          해시
+                          {t("wallet.transactions.hash")}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          보낸 주소
+                          {t("wallet.transactions.from")}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          받는 주소
+                          {t("wallet.transactions.to")}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          금액
+                          {t("wallet.transactions.amount")}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          상태
+                          {t("wallet.transactions.status.title")}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          시간
+                          {t("wallet.transactions.timestamp")}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          탐색기
+                          {t("wallet.transactions.explorer")}
                         </th>
                       </tr>
                     </thead>
@@ -660,11 +690,11 @@ export default function WalletInterface() {
                                   : "bg-error-100 text-error-800"
                               }`}
                             >
-                              {tx.txStatus === "confirmed"
-                                ? "완료"
-                                : tx.txStatus === "pending"
-                                ? "처리중"
-                                : "실패"}
+                              {t(
+                                `wallet.transactions.status.${
+                                  tx.txStatus || "failed"
+                                }`
+                              )}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-gray">
@@ -687,7 +717,9 @@ export default function WalletInterface() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-ksc-gray">거래 내역이 없습니다.</p>
+                  <p className="text-ksc-gray">
+                    {t("wallet.transactions.noTransactions")}
+                  </p>
                 </div>
               )}
             </div>

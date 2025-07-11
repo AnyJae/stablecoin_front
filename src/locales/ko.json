@@ -33,7 +33,7 @@
   "home": {
     "hero": {
       "title": {
-        "ksc" : "KSC",
+        "ksc": "KSC",
         "stablecoin": "스테이블코인"
       },
       "subtitle": "안전하고 신뢰할 수 있는 한국 원화 기반 스테이블코인",
@@ -81,16 +81,62 @@
     }
   },
   "wallet": {
-    "title": "지갑 관리",
+    "title": "KSC 지갑",
+    "description": "지갑을 연결하고 KSC를 관리하세요",
+    "mock": "모의",
+    "copyAddress": "주소 복사",
+    "disconnect": "연결 해제",
+    "tabs": {
+      "overview": "개요",
+      "send": "전송",
+      "transactions": "거래내역"
+    },
+    "overview": {
+      "title": "지갑 개요",
+      "refresh": "새로고침",
+      "kscBalance": "KSC 잔액",
+      "balance": "{{token}} 잔액",
+      "totalTransactions": "총 거래 수",
+      "recentTransactions": "최근 거래"
+    },
+    "send": {
+      "title": "KSC 전송",
+      "recipientAddress": "받는 주소",
+      "recipientAddressPlaceholder": "받는 주소를 입력하세요",
+      "amount": "전송 금액",
+      "chain": "체인 선택",
+      "xrpl": "엑스알피엘",
+      "avalanche": "아발란체",
+      "sending": "전송 중...",
+      "send": "전송하기"
+    },
+    "transactions": {
+      "title": "거래 내역",
+      "refresh": "새로고침",
+      "noTransactions": "거래 내역이 없습니다.",
+      "hash": "해시",
+      "from": "보낸 주소",
+      "to": "받는 주소",
+      "amount": "금액",
+      "status": {
+        "title": "상태",
+        "confirmed": "완료",
+        "pending": "처리중",
+        "failed": "실패"
+      },
+      "type": {
+        "instant": "즉시",
+        "batch": "배치",
+        "scheduled": "예약"
+      },
+      "timestamp": "시간",
+      "explorer": "탐색기"
+    },
     "connect": "지갑 연결",
-    "disconnect": "지갑 연결 해제",
     "balance": "잔액",
     "address": "주소",
     "network": "네트워크",
-    "transactions": "거래 내역",
-    "send": "전송",
     "receive": "받기",
-    "overview": "개요",
     "sendForm": {
       "title": "KSC 전송",
       "recipient": "받는 주소",
@@ -156,6 +202,31 @@
       "volume24h": "24시간 거래량",
       "noChange": "변동 없음"
     },
+    "systemStatus": {
+      "title": "시스템 상태",
+      "blockchain": "블록체인 연결",
+      "apiServer": "API 서버",
+      "database": "데이터베이스",
+      "normal": "정상",
+      "mockMode": "Mock 모드"
+    },
+    "recentActivity": {
+      "title": "최근 활동",
+      "lastUpdate": "마지막 업데이트",
+      "realtimeConnection": "실시간 연결",
+      "active": "활성",
+      "inactive": "비활성",
+      "walletStatus": "지갑 상태",
+      "connected": "연결됨",
+      "disconnected": "연결 안됨"
+    },
+    "tabs": {
+        "overview": "개요",
+        "market": "시장 데이터",
+        "collateral": "담보 현황",
+        "transactions": "거래 내역"
+    },
+    "underDevelopment": "이 기능은 개발 중입니다.",
     "trillion": "조",
     "hundredMillion": "억",
     "tenThousand": "만",
@@ -175,7 +246,8 @@
       "recipient": "수신자 주소",
       "amount": "금액",
       "description": "설명",
-      "send": "결제하기"
+      "send": "결제하기",
+      "descriptionPlaceholder": "결제 목적을 입력하세요"
     },
     "batchForm": {
       "recipient": "수신자",
@@ -212,8 +284,35 @@
       "alerts": "알림",
       "analytics": "분석"
     },
+    "overview": {
+      "totalValue": "총 담보 가치",
+      "kscSupply": "KSC 공급량",
+      "collateralRatio": "담보 비율",
+      "status": "상태",
+      "stable": "안정",
+      "risk": "위험",
+      "collateralRatioTrend": "담보 비율 추이 (최근 30일)"
+    },
+    "assets": {
+      "title": "담보자산 상세"
+    },
     "alerts": {
-      "stable": "담보 비율이 안정적으로 유지되고 있습니다."
+      "title": "알림 관리",
+      "collateralRatioDrop": "담보 비율 하락",
+      "collateralRatioDropMessage": "현재 담보 비율이 115%로 최소 요구 비율(110%)에 근접하고 있습니다.",
+      "assetPriceUpdate": "담보자산 가격 업데이트",
+      "assetPriceUpdateMessage": "USDT 가격이 1,500원에서 1,520원으로 상승했습니다.",
+      "severity": {
+        "high": "높음",
+        "medium": "중간",
+        "low": "낮음"
+      }
+    },
+    "analytics": {
+      "collateralRatioTrend": "담보 비율 추이",
+      "assetDistribution": "담보자산 분포",
+      "ratio": "비율",
+      "supplyAndValueTrend": "KSC 공급량 및 총 담보 가치 추이"
     },
     "errors": {
       "loadFailed": "담보자산 데이터를 불러올 수 없습니다."
@@ -229,8 +328,8 @@
     "logs": "로그",
     "contractInfo": {
       "title": "컨트랙트 정보",
-      "totalSupply": "총 공급량 (KSC)",
-      "totalMinted": "총 발행량 (KSC)",
+      "maxSupply": "최대 발행량 (KSC)",
+      "currentSupply": "현재 유통량 (KSC)",
       "totalBurned": "총 소각량 (KSC)",
       "loading": "컨트랙트 정보를 불러오는 중..."
     },
@@ -264,9 +363,7 @@
   "docs": {
     "title": "문서",
     "description": "KSC 스테이블코인 프로젝트 기술 문서 및 가이드",
-    "api": "API 문서",
-    "guide": "사용자 가이드",
-    "faq": "자주 묻는 질문",
+    "tableOfContents": "목차",
     "sections": {
       "overview": "개요",
       "architecture": "아키텍처",
@@ -274,6 +371,136 @@
       "api": "API 문서",
       "security": "보안",
       "deployment": "배포"
+    },
+    "project": {
+      "title": "KSC 스테이블코인 프로젝트 개요",
+      "description": "KSC(Korea Stable Coin)는 한국 원화와 1:1로 연동되는 스테이블코인입니다. XRPL과 Avalanche 블록체인의 하이브리드 아키텍처를 기반으로 안정성과 확장성을 모두 확보했습니다.",
+      "features": {
+        "title": "주요 특징",
+        "krwPeg": "한국 원화 1:1 연동",
+        "hybridArchitecture": "XRPL 및 Avalanche 하이브리드 아키텍처",
+        "realtimeMonitoring": "실시간 모니터링 및 긴급 제어 기능",
+        "walletSupport": "MetaMask 및 XUMM 지갑 지원",
+        "adminFunctions": "관리자 발행 및 소각 기능"
+      }
+    },
+    "architecture": {
+      "title": "시스템 아키텍처",
+      "frontend": "프론트엔드",
+      "backend": "백엔드",
+      "blockchain": "블록체인",
+      "frontendStack": {
+        "nextjs": "• Next.js 14 (App Router)",
+        "typescript": "• TypeScript",
+        "tailwind": "• Tailwind CSS",
+        "reactQuery": "• React Query",
+        "metamask": "• MetaMask 연동"
+      },
+      "backendStack": {
+        "nodejs": "• Node.js + Express",
+        "avalanche": "• Avalanche C-Chain 연동",
+        "xrpl": "• XRPL 연동",
+        "restful": "• RESTful API",
+        "security": "• 보안 미들웨어"
+      },
+      "blockchainStack": {
+        "avalanche": "• Avalanche C-Chain (ERC20)",
+        "xrpl": "• XRPL (Issued Currency)",
+        "solidity": "• Solidity 스마트 컨트랙트",
+        "hardhat": "• Hardhat 개발 환경"
+      }
+    },
+    "smartContract": {
+      "title": "KSCStablecoin 컨트랙트",
+      "mainFeatures": "주요 기능",
+      "securityFeatures": "보안 기능",
+      "adminFunctions": "관리자 기능",
+      "features": {
+        "erc20": "ERC20 표준 준수",
+        "adminMintBurn": "관리자 전용 발행 및 소각",
+        "emergencyPause": "긴급 일시정지 기능",
+        "reentrancyGuard": "재진입 공격 방지",
+        "eventLogging": "거래 및 관리 행위 이벤트 로깅"
+      },
+      "security": {
+        "ownable": "Ownable: 소유자에게 주요 기능 제한",
+        "pausable": "Pausable: 긴급 상황 시 컨트랙트 일시정지",
+        "reentrancyGuard": "ReentrancyGuard: 재진입 공격 방지",
+        "inputValidation": "함수 매개변수 입력값 검증"
+      },
+      "admin": {
+        "mint": "mint(address to, uint256 amount): 신규 토큰 발행",
+        "burn": "burn(address from, uint256 amount): 기존 토큰 소각",
+        "emergencyPause": "emergencyPause(): 컨트랙트 일시정지",
+        "emergencyUnpause": "emergencyUnpause(): 컨트랙트 재개"
+      }
+    },
+    "api": {
+      "title": "REST API 엔드포인트",
+      "avalanche": "Avalanche API",
+      "xrpl": "XRPL API",
+      "admin": "관리자 API",
+      "endpoints": {
+        "balance": "KSC 잔액 조회",
+        "contractInfo": "컨트랙트 정보 조회",
+        "transfer": "KSC 전송",
+        "transaction": "거래 내역 조회",
+        "xrplBalance": "XRP/KSC 잔액 조회",
+        "xrplTransfer": "XRPL을 통한 전송",
+        "mint": "KSC 발행",
+        "burn": "KSC 소각",
+        "pause": "컨트랙트 일시정지",
+        "unpause": "컨트랙트 재개"
+      }
+    },
+    "security": {
+      "title": "보안 정책",
+      "smartContract": "스마트 컨트랙트 보안",
+      "backend": "백엔드 보안",
+      "frontend": "프론트엔드 보안",
+      "smartContractFeatures": {
+        "openzeppelin": "OpenZeppelin 라이브러리 활용",
+        "reentrancyGuard": "재진입 공격 방지",
+        "accessControl": "역할 기반 접근 제어",
+        "emergencyPause": "긴급 일시정지 기능",
+        "inputValidation": "입력값 검증"
+      },
+      "backendFeatures": {
+        "cors": "CORS 정책 설정",
+        "rateLimiting": "요청 비율 제한",
+        "helmet": "Helmet을 사용한 보안 헤더 설정",
+        "inputValidation": "입력값 검증 (Joi)",
+        "errorHandling": "중앙화된 오류 처리"
+      },
+      "frontendFeatures": {
+        "metamask": "MetaMask를 통한 서명 검증",
+        "https": "HTTPS 강제 적용",
+        "xss": "XSS 방지 대책",
+        "envVars": "환경 변수의 안전한 관리"
+      }
+    },
+    "deployment": {
+      "title": "배포 가이드",
+      "devEnvironment": "개발 환경",
+      "labels": {
+        "nodejs": "Node.js:",
+        "npm": "npm:",
+        "metamask": "MetaMask:",
+        "hardhat": "Hardhat:"
+      },
+      "nodejs": "v18 이상",
+      "npm": "v8 이상",
+      "metamask": "브라우저 확장 프로그램 설치",
+      "hardhat": "스마트 컨트랙트 개발용",
+      "localDeployment": "로컬 배포",
+      "installDeps": "의존성 설치",
+      "runDev": "개발 서버 실행",
+      "buildProd": "프로덕션 빌드 생성",
+      "runTests": "테스트 실행",
+      "testnetDeployment": "테스트넷 배포",
+      "moveToContracts": "contracts 폴더로 이동",
+      "deployToFuji": "Avalanche Fuji 테스트넷에 배포",
+      "verifyContract": "Snowtrace에서 컨트랙트 검증"
     }
   },
   "errors": {
@@ -343,4 +570,4 @@
       "warning": "실제 투자나 거래 목적으로 사용하지 마시고, 교육 및 개발 목적으로만 활용해주세요."
     }
   }
-} 
+}

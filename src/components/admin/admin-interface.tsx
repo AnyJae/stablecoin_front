@@ -64,7 +64,7 @@ export function AdminInterface() {
                 {formatNumber(contractInfo.totalSupply)}
               </div>
               <div className="text-sm text-ksc-gray">
-                {t("admin.contractInfo.totalSupply")}
+                {t("admin.contractInfo.maxSupply")}
               </div>
             </div>
 
@@ -73,7 +73,7 @@ export function AdminInterface() {
                 {formatNumber(contractInfo.totalMinted)}
               </div>
               <div className="text-sm text-ksc-gray">
-                {t("admin.contractInfo.totalMinted")}
+                {t("admin.contractInfo.currentSupply")}
               </div>
             </div>
 
