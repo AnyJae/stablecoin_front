@@ -119,8 +119,8 @@ export default function WalletInterface() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* XRPL 지갑 연결 */}
-            <div className="bg-ksc-box rounded-lg p-6 border border-ksc-mint/20 hover:shadow-md hover:shadow-ksc-mint/10 transition-shadow">
-              <div className="flex items-center mb-4">
+            <div className="flex flex-col justify-between bg-ksc-box rounded-lg p-6 border border-ksc-mint/20 hover:shadow-md hover:shadow-ksc-mint/10 transition-shadow">
+              <div className="flex items-center">
                 <div className="w-12 h-12 bg-ksc-mint rounded-lg flex items-center justify-center mr-4">
                   <svg
                     className="w-6 h-6 text-ksc-black"
@@ -146,7 +146,7 @@ export default function WalletInterface() {
                 </div>
               </div>
 
-              <p className="text-ksc-gray mb-4">
+              <p className="text-ksc-gray">
                 {t("wallet.connection.xrpl.description")}
               </p>
 
@@ -162,8 +162,8 @@ export default function WalletInterface() {
             </div>
 
             {/* Avalanche 지갑 연결 */}
-            <div className="bg-ksc-box rounded-lg p-6 border border-ksc-mint/20 hover:shadow-md hover:shadow-ksc-mint/10 transition-shadow">
-              <div className="flex items-center mb-4">
+            <div className="flex flex-col justify-between bg-ksc-box rounded-lg p-6 border border-ksc-mint/20 hover:shadow-md hover:shadow-ksc-mint/10 transition-shadow">
+              <div className="flex items-center">
                 <div className="w-12 h-12 bg-ksc-mint rounded-lg flex items-center justify-center mr-4">
                   <svg
                     className="w-6 h-6 text-ksc-black"
@@ -189,7 +189,7 @@ export default function WalletInterface() {
                 </div>
               </div>
 
-              <p className="text-ksc-gray mb-4">
+              <p className="text-ksc-gray">
                 {t("wallet.connection.avalanche.description")}
               </p>
 
@@ -205,7 +205,7 @@ export default function WalletInterface() {
             </div>
 
             {/* Mock Wallet 연결 */}
-            <div className="bg-ksc-box rounded-lg p-6 border border-ksc-mint/20 hover:shadow-md hover:shadow-ksc-mint/10 transition-shadow">
+            <div className="flex flex-col justify-between bg-ksc-box rounded-lg p-6 border border-ksc-mint/20 hover:shadow-md hover:shadow-ksc-mint/10 transition-shadow">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-ksc-mint rounded-lg flex items-center justify-center mr-4">
                   <Zap className="w-6 h-6 text-ksc-black" />
@@ -228,7 +228,7 @@ export default function WalletInterface() {
                 <button
                   onClick={() => connectMockWallet("xrpl")}
                   disabled={isLoading}
-                  className="w-full btn-secondary text-sm"
+                  className="w-full btn-secondary text-sm text-sm hover:text-ksc-mint/80"
                 >
                   {isLoading
                     ? t("common.loading")
@@ -237,7 +237,7 @@ export default function WalletInterface() {
                 <button
                   onClick={() => connectMockWallet("avalanche")}
                   disabled={isLoading}
-                  className="w-full btn-secondary text-sm"
+                  className="w-full btn-secondary text-sm hover:text-ksc-mint/80"
                 >
                   {isLoading
                     ? t("common.loading")
@@ -638,7 +638,7 @@ export default function WalletInterface() {
               </div>
 
               {transactions.length > 0 ? (
-                <div className="overflow-x-auto">
+                <div>
                   <table className="min-w-full divide-y divide-ksc-box/50">
                     <thead className="bg-ksc-box/30">
                       <tr>
