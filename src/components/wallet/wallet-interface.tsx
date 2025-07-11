@@ -1,9 +1,16 @@
 "use client";
 
-import  { useState } from "react";
+import { useState } from "react";
 
 import { useLanguage } from "@/contexts/localization/LanguageContext";
-import { ExternalLink, RefreshCw, Copy, Check, Zap } from "lucide-react";
+import {
+  ExternalLink,
+  RefreshCw,
+  Copy,
+  Check,
+  Zap,
+  CircleX,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
@@ -14,7 +21,7 @@ export default function WalletInterface() {
   const { t } = useLanguage();
   const {
     address,
-    balance, 
+    balance,
     kscBalance,
     chainName,
     transactions,
@@ -26,18 +33,17 @@ export default function WalletInterface() {
     sendMockKsc,
   } = useWalletContext();
 
-  
+  const { connectAvalancheWallet, connectXrplEvmWallet, disconnectWallet } =
+    useWalletConnect();
 
-  const { connectAvalancheWallet, connectXrplEvmWallet, disconnectWallet} = useWalletConnect();
+  const { fetchBalance, fetchKscBalance, fetchTransactions } = useWalletData();
 
-const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
-
-  const {sendKsc} = useSendTokens();
+  const { sendKsc } = useSendTokens();
 
   const [sendForm, setSendForm] = useState({
     to: "",
     amount: 0,
-    memo:"",
+    memo: "",
     chain: "xrpl" as "xrpl" | "avalanche",
   });
 
@@ -45,9 +51,10 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
     "overview" | "send" | "transactions"
   >("overview");
   const [copiedAddress, setCopiedAddress] = useState(false);
-  const [paymentType, setPaymentType] = useState<"instant" | "batch" | "scheduled">("instant");
+  const [paymentType, setPaymentType] = useState<
+    "instant" | "batch" | "scheduled"
+  >("instant");
   const [scheduledAt, setScheduledAt] = useState<string | null>(null);
-
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +63,14 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
     if (isMock) {
       await sendMockKsc(sendForm.to, sendForm.amount);
     } else {
-      await sendKsc(sendForm.to, sendForm.amount, sendForm.memo, sendForm.chain, paymentType, scheduledAt);
+      await sendKsc(
+        sendForm.to,
+        sendForm.amount,
+        sendForm.memo,
+        sendForm.chain,
+        paymentType,
+        scheduledAt
+      );
     }
     setSendForm({ to: "", amount: 0, memo: "", chain: "xrpl" });
   };
@@ -64,7 +78,6 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
-
 
   const formatBalance = (balance: string) => {
     return parseFloat(balance).toLocaleString("ko-KR", {
@@ -79,7 +92,7 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
 
   const copyAddress = async () => {
     try {
-      await navigator.clipboard.writeText(address || '');
+      await navigator.clipboard.writeText(address || "");
       setCopiedAddress(true);
       toast.success(t("messages.addressCopied"));
       setTimeout(() => setCopiedAddress(false), 2000);
@@ -213,7 +226,7 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
 
               <div className="space-y-2">
                 <button
-                  onClick={() => connectMockWallet('xrpl')}
+                  onClick={() => connectMockWallet("xrpl")}
                   disabled={isLoading}
                   className="w-full btn-secondary text-sm"
                 >
@@ -222,7 +235,7 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
                     : t("wallet.connection.mock.xrplMock")}
                 </button>
                 <button
-                  onClick={() => connectMockWallet('avalanche')}
+                  onClick={() => connectMockWallet("avalanche")}
                   disabled={isLoading}
                   className="w-full btn-secondary text-sm"
                 >
@@ -291,9 +304,7 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
                 {isMock && <span className="badge-mock">MOCK</span>}
               </div>
               <div className="flex items-center space-x-2">
-                <p className="text-ksc-gray">
-                  {formatAddress(address || '')}
-                </p>
+                <p className="text-ksc-gray">{formatAddress(address || "")}</p>
                 <button
                   onClick={copyAddress}
                   className="p-1 hover:bg-ksc-box/50 rounded transition-colors"
@@ -316,22 +327,11 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
 
           <div className="flex items-center space-x-3">
             <button
-              onClick={() =>{
-                fetchBalance();
-                fetchKscBalance();
-              }}
-              disabled={isLoading}
-              className="p-2 hover:bg-ksc-box/50 rounded-lg transition-colors"
-              title="잔액 새로고침"
+              onClick={disconnectWallet}
+              className="flex items-center space-x-2 text-white hover:text-ksc-mint/80 text-sm"
             >
-              <RefreshCw
-                className={`w-4 h-4 text-ksc-gray hover:text-ksc-mint/80${
-                  isLoading ? "animate-spin" : ""
-                }`}
-              />
-            </button>
-            <button onClick={disconnectWallet} className="btn-secondary hover:text-ksc-mint/80">
-              연결 해제
+            <CircleX className="w-4 h-4" />
+              <span>연결 해제</span>
             </button>
           </div>
         </div>
@@ -376,7 +376,7 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
         )} */}
 
         {/* 잔액 정보 */}
-        <div className="grid md:grid-cols-2 gap-4 mt-6">
+        {/* <div className="grid md:grid-cols-2 gap-4 mt-6">
           <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
             <div className="flex items-center justify-between">
               <span className="text-ksc-gray">{chainName === 'xrpl' ? 'XRP' : 'AVAX'} 잔액</span>
@@ -393,9 +393,8 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
               </span>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
-
 
       {/* 탭 네비게이션 */}
       <div className="card mb-6">
@@ -426,16 +425,39 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
         <div className="p-6">
           {activeTab === "overview" && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-ksc-white">
-                지갑 개요
-              </h3>
-
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-ksc-white">
+                  지갑 개요
+                </h3>
+                <button
+                  onClick={() => {
+                    fetchBalance();
+                    fetchKscBalance();
+                  }}
+                  disabled={isLoading}
+                  className="flex items-center space-x-2 text-white hover:text-ksc-mint/80 text-sm"
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+                  />
+                  <span>새로고침</span>
+                </button>
+              </div>
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {formatBalance(kscBalance ||'')}
+                    {formatBalance(kscBalance || "")}
                   </div>
-                  <div className="text-sm text-ksc-gray">총 KSC 보유량</div>
+                  <div className="text-sm text-ksc-gray">KSC 잔액</div>
+                </div>
+
+                <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
+                  <div className="text-2xl font-bold text-ksc-mint">
+                    {formatBalance(balance || "")}
+                  </div>
+                  <div className="text-sm text-ksc-gray">
+                    {chainName === "xrpl" ? "XRP" : "AVAX"} 잔액
+                  </div>
                 </div>
 
                 <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
@@ -443,13 +465,6 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
                     {transactions.length}
                   </div>
                   <div className="text-sm text-ksc-gray">총 거래 수</div>
-                </div>
-
-                <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
-                  <div className="text-2xl font-bold text-ksc-mint">
-                    {chainName?.toUpperCase()}
-                  </div>
-                  <div className="text-sm text-ksc-gray">연결된 체인</div>
                 </div>
               </div>
 
@@ -581,9 +596,7 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
                   거래 내역
                 </h3>
                 <button
-                  onClick={() =>
-                    fetchTransactions()
-                  }
+                  onClick={() => fetchTransactions()}
                   disabled={isLoading}
                   className="flex items-center space-x-2 text-white hover:text-ksc-mint/80 text-sm"
                 >
@@ -626,7 +639,7 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
                       {transactions.map((tx) => (
                         <tr key={tx.id} className="hover:bg-ksc-box/30">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-ksc-white">
-                            {formatAddress(tx.txHash || '')}
+                            {formatAddress(tx.txHash || "")}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white">
                             {formatAddress(tx.fromAddress)}
@@ -635,7 +648,7 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
                             {formatAddress(tx.toAddress)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white">
-                            {formatBalance((tx.amount).toString())} {tx.tokenType}
+                            {formatBalance(tx.amount.toString())} {tx.tokenType}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
@@ -655,11 +668,11 @@ const {fetchBalance, fetchKscBalance, fetchTransactions} = useWalletData();
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-gray">
-                            {formatDate(tx.statusUpdatedAt || '')}
+                            {formatDate(tx.statusUpdatedAt || "")}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <a
-                              href={getExplorerUrl(tx.txHash || '', chainName!)}
+                              href={getExplorerUrl(tx.txHash || "", chainName!)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-ksc-white hover:text-ksc-mint/80"
