@@ -14,6 +14,7 @@ import { useLanguage } from "../localization/LanguageContext";
 import toast from "react-hot-toast";
 
 import { WalletTransaction } from "@/types/global.d";
+import { usePathname } from "next/navigation";
 
 interface WalletContextType {
   address: string | null;
@@ -58,7 +59,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [address, setAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
-  const [kscBalance, setKscBalance] = useState<string>('0');
+  const [kscBalance, setKscBalance] = useState<string>("0");
   const [chainId, setChainId] = useState<number | null>(null);
   const [chainName, setChainName] = useState<"xrpl" | "avalanche" | null>(null);
   const [isMock, setIsMock] = useState<boolean>(false);
@@ -67,6 +68,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
+
+  const pathname = usePathname(); //현재 경로
 
   // Mock 지갑 연결
   const connectMockWallet = useCallback(async (chain: "xrpl" | "avalanche") => {
@@ -112,12 +115,13 @@ export function WalletProvider({ children }: WalletProviderProps) {
           );
         }
 
-
         if (kscBalance < amount) {
           throw new Error("잔액이 부족합니다.");
         }
 
-        const newKscBalance = (parseFloat(kscBalance) - parseFloat(amount)).toFixed(2);
+        const newKscBalance = (
+          parseFloat(kscBalance) - parseFloat(amount)
+        ).toFixed(2);
         setKscBalance(newKscBalance);
 
         const mockTransaction: WalletTransaction = {
@@ -127,7 +131,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
           toAddress: to,
           txStatus: "pending",
           paymentType: "instant",
-          fee: 0.0003,
+          fee: "0.003",
           amount: amount,
           tokenType: chainName === "avalanche" ? "A_KSC" : "X_KSC",
           createdAt: new Date().toISOString(),
@@ -202,7 +206,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         if (localStorage.getItem(DISCONNECT_FLAG_KEY) === "true") {
           setAddress(null);
           setBalance(null);
-          setKscBalance('0');
+          setKscBalance("0");
           setChainId(null);
           setChainName(null);
           setIsConnected(false);
@@ -266,7 +270,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
           // 에러 발생 시 모든 상태 초기화
           setAddress(null);
           setBalance(null);
-          setKscBalance('0');
+          setKscBalance("0");
           setChainId(null);
           setChainName(null);
           setIsConnected(false);
@@ -293,7 +297,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
           // 지갑 연결 해제
           setAddress(null);
           setBalance(null);
-          setKscBalance('0');
+          setKscBalance("0");
           setChainId(null);
           setChainName(null);
           setIsConnected(false);
@@ -367,6 +371,14 @@ export function WalletProvider({ children }: WalletProviderProps) {
       };
     }
   }, []);
+
+  
+  //경로 변경 시 에러 상태 초기화
+  useEffect(() => {
+    if (error !== null) {
+      setError(null);
+    }
+  }, [pathname]);
 
   return (
     <WalletContext.Provider value={contextValue}>
