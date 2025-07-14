@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Users, Clock, History } from "lucide-react";
+import { Send, Users, Clock, History, Zap } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/contexts/localization/LanguageContext";
 import { Transaction } from "ethers";
@@ -10,6 +10,7 @@ import { useWalletData } from "@/hooks/useWalletData";
 import { send } from "process";
 import { useSendTokens } from "@/hooks/useSendTokens";
 import { formatDate } from "@/utils/formatters";
+import { useWalletConnect } from "@/hooks/useWalletConnect";
 
 interface PaymentForm {
   to: string;
@@ -33,7 +34,8 @@ interface ScheduledPaymentForm {
 export function PaymentInterface() {
   const { t } = useLanguage();
   const { fetchTransactions } = useWalletData();
-  const { address, transactions, chainName } = useWalletContext();
+  const { address, transactions, chainName, isConnected, error } = useWalletContext();
+  const {connectAvalancheWallet, connectXrplEvmWallet} = useWalletConnect();
   const { sendKsc } = useSendTokens();
   const [activeTab, setActiveTab] = useState<
     "instant" | "batch" | "scheduled" | "history"
@@ -217,6 +219,114 @@ export function PaymentInterface() {
       ].map((item, i) => (i === index ? value : item)),
     }));
   };
+
+  if (!isConnected) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="card">
+          <h2 className="text-2xl font-bold text-ksc-white mb-6 text-center">
+            {t("wallet.connect")}
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* XRPL 지갑 연결 */}
+            <div className="flex flex-col justify-between gap-8 bg-ksc-box rounded-lg p-6 border border-ksc-mint/20 hover:shadow-md hover:shadow-ksc-mint/10 transition-shadow">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-ksc-mint rounded-lg flex items-center justify-center mr-4">
+                  <svg
+                    className="w-6 h-6 text-ksc-black"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-ksc-white">
+                    {t("wallet.connection.xrpl.title")}
+                  </h3>
+                  <p className="text-sm text-ksc-gray">
+                    {t("wallet.connection.xrpl.subtitle")}
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-ksc-gray">
+                {t("wallet.connection.xrpl.description")}
+              </p>
+
+              <button
+                onClick={connectXrplEvmWallet}
+                disabled={isLoading}
+                className="w-full btn-primary"
+              >
+                {isLoading
+                  ? t("common.loading")
+                  : t("wallet.connection.xrpl.connect")}
+              </button>
+            </div>
+
+            {/* Avalanche 지갑 연결 */}
+            <div className="flex flex-col justify-between gap-8 bg-ksc-box rounded-lg p-6 border border-ksc-mint/20 hover:shadow-md hover:shadow-ksc-mint/10 transition-shadow">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-ksc-mint rounded-lg flex items-center justify-center mr-4">
+                  <svg
+                    className="w-6 h-6 text-ksc-black"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-ksc-white">
+                    {t("wallet.connection.avalanche.title")}
+                  </h3>
+                  <p className="text-sm text-ksc-gray">
+                    {t("wallet.connection.avalanche.subtitle")}
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-ksc-gray">
+                {t("wallet.connection.avalanche.description")}
+              </p>
+
+              <button
+                onClick={connectAvalancheWallet}
+                disabled={isLoading}
+                className="w-full btn-primary"
+              >
+                {isLoading
+                  ? t("common.loading")
+                  : t("wallet.connection.avalanche.connect")}
+              </button>
+            </div>
+
+        
+          </div>
+
+          {error && (
+            <div className="mt-6 p-4 bg-error-100 border border-error-200 rounded-lg">
+              <p className="text-error-600">{t("errors.walletConnection")}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto p-6">
