@@ -2,6 +2,7 @@ import { useLanguage } from "@/contexts/localization/LanguageContext";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
+import { ethers } from "ethers";
 
 //localStorage 키 (지갑 연결 수동 해제 상태)
 const DISCONNECT_FLAG_KEY = "wallet_disconnected_permanently";
@@ -34,6 +35,8 @@ export const useWalletConnect = () => {
     setIsMock,
     setIsLoading,
     setError,
+    setSigner,
+    setProvider,
   } = useWalletContext();
 
   //지갑 연결
@@ -44,10 +47,7 @@ export const useWalletConnect = () => {
       try {
         // 메타마스크가 없을 경우
         if (typeof window.ethereum === "undefined") {
-          setError("메타마스크가 설치되어 있지 않습니다.");
-          toast.error(t("errors.metaMaskNotFound"));
-          setIsLoading(false);
-          return;
+          throw new Error(t("errors.metaMaskNotFound"))
         }
 
         localStorage.removeItem(DISCONNECT_FLAG_KEY);
@@ -89,20 +89,45 @@ export const useWalletConnect = () => {
           }
         }
 
+        // ethers.js BrowserProvider,Signer생성
+        const _provider = new ethers.BrowserProvider(window.ethereum);
+        const _signer = await _provider.getSigner(); 
+
         // WalletContext 상태 업데이트
         setAddress(address);
         setIsConnected(true);
         setChainId(Number(config.chainId)); // 십진수로 변환
         setChainName(targetChain === "avalanche" ? "avalanche" : "xrpl");
         setIsMock(false);
+        setProvider(_provider);
+        setSigner(_signer);
+
+        // 지갑 정보 백엔드에 저장
+        // try{
+        //   const res = await fetch("/api/wallet", {
+        //     method: "POST",
+        //     headers: {
+        //       "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify({
+        //       address,
+        //       name: null,
+        //       networkType: targetChain === "avalanche" ? "avalanche" : "xrpl",
+        //     }),
+        //   });
+
+        //   console.log("Wallet save response:", res)
+        // } catch (e) {
+        //   console.error("Failed to save wallet:", e);
+        // }
 
         toast.success(t(`messages.walletConnected`));
       } catch (e) {
         const errorMessage =
           e instanceof Error ? e.message : t("errors.walletConnection");
         setError(errorMessage);
-        toast.error(t("errors.walletConnection"));
         console.error(`${targetChain} wallet connection error:`, e);
+        throw new Error(errorMessage);
       } finally {
         setIsLoading(false);
       }

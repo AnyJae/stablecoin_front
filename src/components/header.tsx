@@ -25,10 +25,21 @@ export function Header() {
   const [walletDropdown, setWalletDropdown] = useState(false);
   const { connectAvalancheWallet, connectXrplEvmWallet, disconnectWallet } =
     useWalletConnect();
-  const { isConnected, address, balance, kscBalance, isLoading } =
-    useWalletContext();
+  const { isConnected, address, isLoading, error } = useWalletContext();
   const { t } = useLanguage();
   const pathname = usePathname();
+
+  const handleConnectWallet = async (chain: "xrpl" | "avalanche") => {
+    try {
+      if (chain == "xrpl") {
+        await connectXrplEvmWallet();
+      } else {
+        await connectAvalancheWallet();
+      }
+    } catch (err:any) {
+      toast.error(err.message);
+    }
+  };
 
   return (
     <header className="w-full bg-ksc-box/80 backdrop-blur-sm border-b border-ksc-box sticky top-0 z-50">
@@ -136,7 +147,10 @@ export function Header() {
                   className="btn-secondary flex items-center space-x-2"
                   title={t("wallet.disconnect")}
                 >
-                  <LogOut className="w-4 h-4 hover:text-ksc-mint" strokeWidth={3} />
+                  <LogOut
+                    className="w-4 h-4 hover:text-ksc-mint"
+                    strokeWidth={3}
+                  />
                   {/* <span>{t("wallet.disconnect")}</span> */}
                 </button>
               </div>
@@ -164,14 +178,14 @@ export function Header() {
                     <div className="absolute right-0 top-full w-48 bg-ksc-box border border-ksc-gray rounded-lg shadow-lg z-50 pointer-events-auto">
                       <button
                         className="w-full px-4 py-2 text-left hover:bg-ksc-mint/10 hover:text-ksc-mint transition-colors"
-                        onClick={connectAvalancheWallet}
+                        onClick={() => handleConnectWallet("avalanche")}
                         disabled={isLoading}
                       >
                         Avalanche 지갑 연결
                       </button>
                       <button
                         className="w-full px-4 py-2 text-left hover:bg-ksc-mint/10 hover:text-ksc-mint transition-colors"
-                        onClick={connectXrplEvmWallet}
+                        onClick={() => handleConnectWallet("xrpl")}
                         disabled={isLoading}
                       >
                         XRPL 지갑 연결
@@ -259,9 +273,7 @@ export function Header() {
                     <div className="px-3 py-2 bg-ksc-gray rounded-md">
                       <div className="flex items-center space-x-2 mb-1">
                         <User className="w-4 h-4 text-ksc-mint" />
-                        <span className="text-sm font-medium">
-                          {address}
-                        </span>
+                        <span className="text-sm font-medium">{address}</span>
                       </div>
                       {/* <p className="text-xs text-ksc-gray-light">
                         {balance

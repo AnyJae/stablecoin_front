@@ -39,7 +39,7 @@ export default function WalletInterface() {
 
   const { fetchBalance, fetchKscBalance, fetchTransactions } = useWalletData();
 
-  const { sendKsc } = useSendTokens();
+  const { sendKsc, sendKscForTest } = useSendTokens();
 
   const [sendForm, setSendForm] = useState({
     to: "",
@@ -64,13 +64,13 @@ export default function WalletInterface() {
     if (isMock) {
       await sendMockKsc(sendForm.to, sendForm.amount);
     } else {
-      await sendKsc(
+      await sendKscForTest(
         sendForm.to,
         sendForm.amount,
-        sendForm.memo,
         sendForm.chain,
         paymentType,
-        scheduledAt
+        sendForm.memo,
+        new Date().toISOString()
       );
     }
     setSendForm({ to: "", amount: "", memo: "", chain: "xrpl" });
@@ -232,13 +232,12 @@ export default function WalletInterface() {
               </div>
             </div>
           </div>
-
-          {error && (
+        </div>
+        {error && (
             <div className="mt-6 p-4 bg-error-100 border border-error-200 rounded-lg">
-              <p className="text-error-600">{t("errors.walletConnection")}</p>
+              <p className="text-error-600 text-center" >{error}</p>
             </div>
           )}
-        </div>
       </div>
     );
   }
@@ -566,9 +565,7 @@ export default function WalletInterface() {
                 </div>
 
                 <div>
-                  <label className="label">
-                    {t("wallet.send.chain")}
-                  </label>
+                  <label className="label">{t("wallet.send.chain")}</label>
                   <select
                     value={sendForm.chain}
                     onChange={(e) =>
@@ -579,10 +576,8 @@ export default function WalletInterface() {
                     }
                     className="input-field"
                   >
-                    <option value="xrpl">{t("wallet.send.xrpl")}</option>
-                    <option value="avalanche">
-                      {t("wallet.send.avalanche")}
-                    </option>
+                    <option value="xrpl">XRPL</option>
+                    <option value="avalanche">Avalanche</option>
                   </select>
                 </div>
 
@@ -591,9 +586,7 @@ export default function WalletInterface() {
                   disabled={isLoading || !sendForm.to || !sendForm.amount}
                   className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
                 >
-                  {isLoading
-                    ? t("wallet.send.sending")
-                    : t("wallet.send.send")}
+                  {isLoading ? t("wallet.send.sending") : t("wallet.send.send")}
                 </button>
               </form>
 

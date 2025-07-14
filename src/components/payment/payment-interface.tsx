@@ -34,9 +34,10 @@ interface ScheduledPaymentForm {
 export function PaymentInterface() {
   const { t } = useLanguage();
   const { fetchTransactions } = useWalletData();
-  const { address, transactions, chainName, isConnected, error } = useWalletContext();
-  const {connectAvalancheWallet, connectXrplEvmWallet} = useWalletConnect();
-  const { sendKsc } = useSendTokens();
+  const { address, transactions, chainName, isConnected, error } =
+    useWalletContext();
+  const { connectAvalancheWallet, connectXrplEvmWallet } = useWalletConnect();
+  const { sendKsc, sendKscForTest } = useSendTokens();
   const [activeTab, setActiveTab] = useState<
     "instant" | "batch" | "scheduled" | "history"
   >("instant");
@@ -72,13 +73,13 @@ export function PaymentInterface() {
     setIsLoading(true);
 
     try {
-      await sendKsc(
+      await sendKscForTest(
         instantForm.to,
         instantForm.amount,
-        instantForm.description,
         chainName,
         "instant",
-        null
+        instantForm.description,
+        new Date().toISOString()
       );
       toast.success(t("payment.messages.success"));
       setInstantForm({ to: "", amount: "", description: "" });
@@ -111,13 +112,13 @@ export function PaymentInterface() {
       const amount = batchForm.amounts[i];
 
       try {
-        await sendKsc(
+        await sendKscForTest(
           recipient,
           amount,
-          batchForm.description,
           chainName,
           "batch",
-          null
+          batchForm.description,
+          new Date().toISOString()
         );
       } catch (error) {
         toast.error(t("payment.errors.processing"));
@@ -148,12 +149,12 @@ export function PaymentInterface() {
     setIsLoading(true);
 
     try {
-      await sendKsc(
+      await sendKscForTest(
         scheduledForm.to,
         scheduledForm.amount,
-        scheduledForm.description,
         chainName,
         "scheduled",
+        scheduledForm.description,
         scheduledForm.scheduledTime
       );
       toast.success(t("payment.messages.success"));
@@ -314,16 +315,13 @@ export function PaymentInterface() {
                   : t("wallet.connection.avalanche.connect")}
               </button>
             </div>
-
-        
           </div>
-
-          {error && (
-            <div className="mt-6 p-4 bg-error-100 border border-error-200 rounded-lg">
-              <p className="text-error-600">{t("errors.walletConnection")}</p>
-            </div>
-          )}
         </div>
+        {error && (
+          <div className="mt-6 p-4 bg-error-100 border border-error-200 rounded-lg">
+            <p className="text-error-600 text-center">{error}</p>
+          </div>
+        )}
       </div>
     );
   }
@@ -508,16 +506,7 @@ export function PaymentInterface() {
             <button
               type="submit"
               disabled={isLoading}
-              onClick={() =>
-                sendKsc(
-                  instantForm.to,
-                  instantForm.amount,
-                  instantForm.description,
-                  "xrpl",
-                  "instant",
-                  null
-                )
-              }
+              onClick={handleInstantPayment}
               className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-blue text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               {isLoading ? t("common.processing") : t("payment.sendForm.send")}
@@ -612,6 +601,7 @@ export function PaymentInterface() {
             <button
               type="submit"
               disabled={isLoading}
+              onClick={handleBatchPayment}
               className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-gray text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               {isLoading ? t("common.processing") : t("payment.batchExecute")}
@@ -705,16 +695,7 @@ export function PaymentInterface() {
             <button
               type="submit"
               disabled={isLoading}
-              onClick={() =>
-                sendKsc(
-                  scheduledForm.to,
-                  scheduledForm.amount,
-                  scheduledForm.description,
-                  "xrpl",
-                  "scheduled",
-                  scheduledForm.scheduledTime
-                )
-              }
+              onClick={handleScheduledPayment}
               className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-gray text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               {isLoading
@@ -750,10 +731,10 @@ export function PaymentInterface() {
                         }`}
                       >
                         {payment.paymentType === "instant"
-                          ?(t("wallet.transactions.type.instant"))
+                          ? t("wallet.transactions.type.instant")
                           : payment.paymentType === "batch"
-                          ? (t("wallet.transactions.type.batch"))
-                          : (t("wallet.transactions.type.scheduled"))}
+                          ? t("wallet.transactions.type.batch")
+                          : t("wallet.transactions.type.scheduled")}
                       </span>
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
