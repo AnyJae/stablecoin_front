@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest, { params }: { params: { address: string } }) {
-      console.log("❗❗❗❗❗❗ API ROUTE EXECUTION STARTED ❗❗❗❗❗❗");
       const { address } = params;
 
   //Mocking (개발용)

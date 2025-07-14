@@ -69,8 +69,6 @@ export default function WalletInterface() {
         sendForm.amount,
         sendForm.chain,
         paymentType,
-        sendForm.memo,
-        new Date().toISOString()
       );
     }
     setSendForm({ to: "", amount: "", memo: "", chain: "xrpl" });

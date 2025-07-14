@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { Header } from "@/components/header";
 import { PaymentInterface } from "@/components/payment/payment-interface";
 import { useLanguage } from "@/contexts/localization/LanguageContext";
 

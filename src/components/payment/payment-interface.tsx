@@ -78,8 +78,7 @@ export function PaymentInterface() {
         instantForm.amount,
         chainName,
         "instant",
-        instantForm.description,
-        new Date().toISOString()
+        instantForm.description
       );
       toast.success(t("payment.messages.success"));
       setInstantForm({ to: "", amount: "", description: "" });
@@ -117,8 +116,7 @@ export function PaymentInterface() {
           amount,
           chainName,
           "batch",
-          batchForm.description,
-          new Date().toISOString()
+          batchForm.description
         );
       } catch (error) {
         toast.error(t("payment.errors.processing"));
@@ -412,7 +410,7 @@ export function PaymentInterface() {
         </button>
 
         <button
-          onClick={() => setActiveTab("history")}
+          onClick={() => {setActiveTab("history"); fetchTransactions();}}
           className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors group ${
             activeTab === "history"
               ? "bg-ksc-blue text-white"
