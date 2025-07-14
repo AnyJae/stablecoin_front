@@ -18,7 +18,7 @@ import { WalletTransaction } from "@/types/global.d";
 interface WalletContextType {
   address: string | null;
   balance: string | null;
-  kscBalance: string | null;
+  kscBalance: string;
   isConnected: boolean;
   chainId: number | null;
   chainName: "xrpl" | "avalanche" | null;
@@ -31,7 +31,7 @@ interface WalletContextType {
 
   setAddress: (address: string | null) => void;
   setBalance: (balance: string | null) => void;
-  setKscBalance: (balance: string | null) => void;
+  setKscBalance: (balance: string) => void;
   setIsConnected: (connected: boolean) => void;
   setChainId: (chainId: number | null) => void;
   setChainName: (chainName: "xrpl" | "avalanche" | null) => void;
@@ -42,7 +42,7 @@ interface WalletContextType {
   setProvider: (provider: ethers.BrowserProvider | null) => void;
   setSigner: (signer: ethers.Signer | null) => void;
   connectMockWallet: (chain: "xrpl" | "avalanche") => void;
-  sendMockKsc: (to: string, amount: number) => Promise<void>;
+  sendMockKsc: (to: string, amount: string) => Promise<void>;
 }
 
 //localStorage 키 (지갑 연결 수동 해제 상태)
@@ -58,7 +58,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [address, setAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
-  const [kscBalance, setKscBalance] = useState<string | null>(null);
+  const [kscBalance, setKscBalance] = useState<string>('0');
   const [chainId, setChainId] = useState<number | null>(null);
   const [chainName, setChainName] = useState<"xrpl" | "avalanche" | null>(null);
   const [isMock, setIsMock] = useState<boolean>(false);
@@ -77,13 +77,13 @@ export function WalletProvider({ children }: WalletProviderProps) {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500)); // 0.5초 지연
       const mockData = MOCK_WALLET_DATA[chain];
-      const mockTransactions = generateMockTransactions(mockData.address);
+      // const mockTransactions = generateMockTransactions(mockData.address);
 
       setAddress(mockData.address);
       setBalance(mockData.balance);
       setKscBalance(mockData.kscBalance);
       setChainName(chain);
-      setTransactions(mockTransactions);
+      setTransactions([]);
 
       toast.success(`${chain.toUpperCase()} Mock 지갑이 연결되었습니다.`);
     } catch (err) {
@@ -99,7 +99,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
   //Mock KSC 전송
   const sendMockKsc = useCallback(
-    async (to: string, amount: number) => {
+    async (to: string, amount: string) => {
       setIsLoading(true);
       setError(null);
 
@@ -112,25 +112,26 @@ export function WalletProvider({ children }: WalletProviderProps) {
           );
         }
 
-        const currentKscBalance = parseFloat(kscBalance);
 
-        if (currentKscBalance < amount) {
+        if (kscBalance < amount) {
           throw new Error("잔액이 부족합니다.");
         }
 
-        const newKscBalance = (currentKscBalance - amount).toFixed(2);
+        const newKscBalance = (parseFloat(kscBalance) - parseFloat(amount)).toFixed(2);
         setKscBalance(newKscBalance);
 
         const mockTransaction: WalletTransaction = {
           id: "txid_" + Math.random().toString(36).substring(2, 9),
           txHash: "0x" + Math.random().toString(36).substring(2, 15),
-          targetAddress: to,
+          fromAddress: address,
+          toAddress: to,
           txStatus: "pending",
-          txType: "instant",
+          paymentType: "instant",
           fee: 0.0003,
           amount: amount,
           tokenType: chainName === "avalanche" ? "A_KSC" : "X_KSC",
-          paidAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          statusUpdatedAt: new Date().toISOString(),
           memo: "Mock KSC 전송",
         };
         setTransactions((prev) => [mockTransaction, ...prev]);
@@ -201,7 +202,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         if (localStorage.getItem(DISCONNECT_FLAG_KEY) === "true") {
           setAddress(null);
           setBalance(null);
-          setKscBalance(null);
+          setKscBalance('0');
           setChainId(null);
           setChainName(null);
           setIsConnected(false);
@@ -265,7 +266,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
           // 에러 발생 시 모든 상태 초기화
           setAddress(null);
           setBalance(null);
-          setKscBalance(null);
+          setKscBalance('0');
           setChainId(null);
           setChainName(null);
           setIsConnected(false);
@@ -292,7 +293,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
           // 지갑 연결 해제
           setAddress(null);
           setBalance(null);
-          setKscBalance(null);
+          setKscBalance('0');
           setChainId(null);
           setChainName(null);
           setIsConnected(false);
