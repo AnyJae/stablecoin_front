@@ -150,16 +150,16 @@
     },
     "connection": {
       "xrpl": {
-        "title": "XRPL Wallet",
-        "subtitle": "XRP Ledger Based",
-        "description": "Trade and manage KSC on XRP Ledger.",
-        "connect": "Connect XRPL Wallet"
+        "title": "XRPL EVM",
+        "subtitle": "MetaMask Supported",
+        "description": "Trade and manage KSC on XRPL EVM Sidechain.",
+        "connect": "Connect Wallet"
       },
       "avalanche": {
-        "title": "Avalanche Wallet",
+        "title": "Avalanche",
         "subtitle": "MetaMask Supported",
         "description": "Trade and manage KSC on Avalanche C-Chain.",
-        "connect": "Connect Avalanche Wallet"
+        "connect": "Connect Wallet"
       },
       "mock": {
         "title": "Mock Wallet",
@@ -268,7 +268,9 @@
     "errors": {
       "processing": "Error occurred during payment processing.",
       "batchProcessing": "Error occurred during batch payment processing.",
-      "scheduledProcessing": "Error occurred during scheduled payment registration."
+      "scheduledProcessing": "Error occurred during scheduled payment registration.",
+      "disconnect": "Wallet not connected or invalid network",
+      "insufficient" : "Your KSC balance is insufficient"
     }
   },
   "collateral": {
@@ -511,7 +513,10 @@
     "networkError": "Network error occurred",
     "serverError": "Server error occurred",
     "invalidNetwork": "Invalid network",
-    "metaMaskNotFound": "MetaMask wallet not found"
+    "metaMaskNotFound": "MetaMask wallet not found",
+    "serverReturnedError": "Server returned error",
+    "abortError": "Request timed out.",
+    "unexpectedError": "An unexpected error occurred."
   },
   "common": {
     "processing": "Processing...",
