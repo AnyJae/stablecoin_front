@@ -18,6 +18,7 @@ import { usePathname } from "next/navigation";
 
 interface WalletContextType {
   address: string | null;
+  addressId: string;
   balance: string | null;
   kscBalance: string;
   isConnected: boolean;
@@ -31,6 +32,7 @@ interface WalletContextType {
   signer: ethers.Signer | null;
 
   setAddress: (address: string | null) => void;
+  setAddressId: (addressId: string) => void;
   setBalance: (balance: string | null) => void;
   setKscBalance: (balance: string) => void;
   setIsConnected: (connected: boolean) => void;
@@ -58,6 +60,7 @@ interface WalletProviderProps {
 export function WalletProvider({ children }: WalletProviderProps) {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [address, setAddress] = useState<string | null>(null);
+  const [addressId, setAddressId] = useState<string>("");
   const [balance, setBalance] = useState<string | null>(null);
   const [kscBalance, setKscBalance] = useState<string>("0");
   const [chainId, setChainId] = useState<number | null>(null);
@@ -70,6 +73,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
 
   const pathname = usePathname(); //현재 경로
+
+  const { t, language } = useLanguage();
 
   // Mock 지갑 연결
   const connectMockWallet = useCallback(async (chain: "xrpl" | "avalanche") => {
@@ -163,10 +168,9 @@ export function WalletProvider({ children }: WalletProviderProps) {
     ]
   );
 
-  const { t } = useLanguage();
-
   const contextValue: WalletContextType = {
     address,
+    addressId,
     balance,
     kscBalance,
     isConnected,
@@ -180,6 +184,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     signer,
 
     setAddress,
+    setAddressId,
     setBalance,
     setKscBalance,
     setIsConnected,
@@ -205,6 +210,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         // 지갑 연결 해제 플래그 확인하여 상태 업데이트
         if (localStorage.getItem(DISCONNECT_FLAG_KEY) === "true") {
           setAddress(null);
+          setAddressId("");
           setBalance(null);
           setKscBalance("0");
           setChainId(null);
@@ -246,6 +252,49 @@ export function WalletProvider({ children }: WalletProviderProps) {
               currentChain = "xrpl";
             }
 
+            // 지갑 정보 POST - 지갑 ID 받아오기
+            try {
+              const res = await fetch("/api/wallet/post-wallet", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "accept-language": language,
+                },
+                body: JSON.stringify({
+                  address: connectedAddress,
+                  networkType: currentChain === "avalanche" ? "AVAX" : "XRPL",
+                }),
+              });
+
+              //에러 처리
+              if (!res.ok) {
+                let errData: any;
+                try {
+                  errData = await res.json();
+                } catch (jsonParseError) {
+                  // JSON 파싱 에러
+                  console.error(
+                    "Failed to parse API route error response JSON:",
+                    jsonParseError
+                  );
+                  throw new Error(t("errors.networkError"));
+                }
+                const clientErrorMessage =
+                  errData.message || t("errors.unexpectedError");
+
+                throw new Error(clientErrorMessage);
+              }
+
+              //성공 시 아이디 상태 저장
+              const data = await res.json();
+              setAddressId(data.data.id);
+
+              console.log("Wallet save response:", res);
+            } catch (err: any) {
+              console.error("Failed to save wallet:", err);
+              throw new Error(err.message);
+            }
+
             // WalletInfo 상태 업데이트
             setAddress(connectedAddress);
             setChainId(chainId);
@@ -255,6 +304,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
           } else {
             // 계정이 연결되어 있지 않은 경우 초기화
             setAddress(null);
+            setAddressId("");
             setChainId(null);
             setChainName(null);
             setIsConnected(false);
@@ -267,8 +317,10 @@ export function WalletProvider({ children }: WalletProviderProps) {
             "지갑 초기화에 실패했습니다. " +
               (err instanceof Error ? err.message : String(err))
           );
+          toast.error(t(`errors.initWalletError`));
           // 에러 발생 시 모든 상태 초기화
           setAddress(null);
+          setAddressId("");
           setBalance(null);
           setKscBalance("0");
           setChainId(null);
@@ -288,14 +340,18 @@ export function WalletProvider({ children }: WalletProviderProps) {
     //이벤트 리스너 설정
     if (window.ethereum) {
       //계정 변경/해제 이벤트 리스너
-      const handleAccountsChanged = async (newAccounts: string[]) => {
+      const handleAccountsChanged = async () => {
         setIsLoading(true);
 
+        const accounts: string[] = await window.ethereum.request({
+          method: "eth_accounts",
+        });
         const currentProvider = new ethers.BrowserProvider(window.ethereum);
 
-        if (newAccounts.length === 0) {
+        if (accounts.length === 0) {
           // 지갑 연결 해제
           setAddress(null);
+          setAddressId("");
           setBalance(null);
           setKscBalance("0");
           setChainId(null);
@@ -310,24 +366,83 @@ export function WalletProvider({ children }: WalletProviderProps) {
           localStorage.setItem(DISCONNECT_FLAG_KEY, "true");
           toast.success(t("messages.walletDisconnected"));
         } else {
-          setAddress(newAccounts[0]);
-          setIsConnected(true);
-          localStorage.removeItem(DISCONNECT_FLAG_KEY);
+          // 지갑 정보 POST - 지갑 ID 받아오기
+          try {
+            const currentProvider = new ethers.BrowserProvider(window.ethereum);
+            let currentChain: "xrpl" | "avalanche" | null = null;
+            if (currentProvider) {
+              // provider가 있다면 네트워크 정보 갱신
+              const network = await currentProvider.getNetwork();
+              const chainId = Number(network.chainId);
 
-          if (currentProvider) {
-            // provider가 이미 있다면 Signer 갱신
-            try {
-              const _signer = await currentProvider.getSigner();
-              setSigner(_signer);
-            } catch (signerError) {
-              console.error(
-                "Failed to get signer on account change:",
-                signerError
-              );
-              setSigner(null);
+              if (chainId === 43114 || chainId === 43113) {
+                // Avalanche
+                currentChain = "avalanche";
+              } else if (chainId === 1449000) {
+                currentChain = "xrpl";
+              }
             }
+            const res = await fetch("/api/wallet/post-wallet", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "accept-language": language,
+              },
+              body: JSON.stringify({
+                address: accounts[0],
+                networkType: currentChain === "avalanche" ? "AVAX" : "XRPL",
+              }),
+            });
+
+            //에러 처리
+            if (!res.ok) {
+              let errData: any;
+              try {
+                errData = await res.json();
+              } catch (jsonParseError) {
+                // JSON 파싱 에러
+                console.error(
+                  "Failed to parse API route error response JSON:",
+                  jsonParseError
+                );
+                throw new Error(t("errors.networkError"));
+              }
+              const clientErrorMessage =
+                errData.message || t("errors.unexpectedError");
+
+              throw new Error(clientErrorMessage);
+            }
+
+            //성공 시 상태 변경
+
+            if (currentProvider) {
+              // provider가 이미 있다면 Signer 갱신
+              try {
+                const _signer = await currentProvider.getSigner();
+                setSigner(_signer);
+              } catch (signerError) {
+                console.error(
+                  "Failed to get signer on account change:",
+                  signerError
+                );
+                setSigner(null);
+              }
+            }
+
+            const data = await res.json();
+            setAddressId(data.data.id);
+
+            setAddress(accounts[0]);
+            setIsConnected(true);
+            localStorage.removeItem(DISCONNECT_FLAG_KEY);
+            toast.success(t("messages.accountChanged"));
+
+            console.log("Wallet save response:", res);
+          } catch (err: any) {
+            console.error("Failed to change wallet:", err);
+            toast.error(t(`errors.accountChangeError`));
+            throw new Error(err.message);
           }
-          toast.success(t("messages.accountChanged"));
         }
         setIsLoading(false);
       };
@@ -335,18 +450,61 @@ export function WalletProvider({ children }: WalletProviderProps) {
       //네트워크 변경 이벤트 리스너
       const handleChainChanged = async () => {
         setIsLoading(true); // 상태 변경 시작
+
+        const accounts: string[] = await window.ethereum.request({
+          method: "eth_accounts",
+        });
+
         const currentProvider = new ethers.BrowserProvider(window.ethereum);
+        let currentChain: "xrpl" | "avalanche" | null = null;
         if (currentProvider) {
           // provider가 있다면 네트워크 정보 갱신
           const network = await currentProvider.getNetwork();
           const chainId = Number(network.chainId);
-          let currentChain: "xrpl" | "avalanche" | null = null;
+
           if (chainId === 43114 || chainId === 43113) {
             // Avalanche
             currentChain = "avalanche";
           } else if (chainId === 1449000) {
             currentChain = "xrpl";
           }
+        }
+        // 지갑 정보 POST - 지갑 ID 받아오기
+        try {
+          const res = await fetch("/api/wallet/post-wallet", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "accept-language": language,
+            },
+            body: JSON.stringify({
+              address: accounts[0],
+              networkType: currentChain === "avalanche" ? "AVAX" : "XRPL",
+            }),
+          });
+
+          //에러 처리
+          if (!res.ok) {
+            let errData: any;
+            try {
+              errData = await res.json();
+            } catch (jsonParseError) {
+              // JSON 파싱 에러
+              console.error(
+                "Failed to parse API route error response JSON:",
+                jsonParseError
+              );
+              throw new Error(t("errors.networkError"));
+            }
+            const clientErrorMessage =
+              errData.message || t("errors.unexpectedError");
+
+            throw new Error(clientErrorMessage);
+          }
+
+          //성공 시 상태 저장
+          const data = await res.json();
+          setAddressId(data.data.id);
 
           setChainId(chainId);
           setChainName(currentChain);
@@ -354,7 +512,14 @@ export function WalletProvider({ children }: WalletProviderProps) {
           toast.success(
             t("messages.networkChanged", { chainName: currentChain || "" })
           );
+
+          console.log("Wallet save response:", res);
+        } catch (err: any) {
+          console.error("Failed to save wallet:", err);
+          toast.error(t(`errors.networkChangeError`));
+          throw new Error(err.message);
         }
+
         setIsLoading(false);
       };
 
@@ -372,7 +537,6 @@ export function WalletProvider({ children }: WalletProviderProps) {
     }
   }, []);
 
-  
   //경로 변경 시 에러 상태 초기화
   useEffect(() => {
     if (error !== null) {
