@@ -26,7 +26,7 @@ const CHAIN_CONFIGS = {
 };
 
 export const useWalletConnect = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const {
     setAddress,
     setIsConnected,
@@ -47,7 +47,7 @@ export const useWalletConnect = () => {
       try {
         // 메타마스크가 없을 경우
         if (typeof window.ethereum === "undefined") {
-          throw new Error(t("errors.metaMaskNotFound"))
+          throw new Error(t("errors.metaMaskNotFound"));
         }
 
         localStorage.removeItem(DISCONNECT_FLAG_KEY);
@@ -91,9 +91,46 @@ export const useWalletConnect = () => {
 
         // ethers.js BrowserProvider,Signer생성
         const _provider = new ethers.BrowserProvider(window.ethereum);
-        const _signer = await _provider.getSigner(); 
+        const _signer = await _provider.getSigner();
 
-        // WalletContext 상태 업데이트
+        // 지갑 정보 백엔드에 저장
+        try {
+          const res = await fetch("/api/wallet/post-wallet", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "accept-language": language,
+            },
+            body: JSON.stringify({
+              address,
+              networkType: targetChain === "avalanche" ? "AVAX" : "XRPL",
+            }),
+          });
+
+          //에러 처리
+          if (!res.ok) {
+            let errData: any;
+            try {
+              errData = await res.json();
+            } catch (jsonParseError) {
+              // JSON 파싱 에러
+              console.error(
+                "Failed to parse API route error response JSON:",
+                jsonParseError
+              );
+              throw new Error(t("errors.networkError"));
+            }
+            const clientErrorMessage =
+              errData.message || t("errors.unexpectedError");
+
+            throw new Error(clientErrorMessage);
+          }
+          console.log("Wallet save response:", res);
+        } catch (err: any) {
+          console.error("Failed to save wallet:", err);
+          throw new Error(err.message)
+        }
+                // WalletContext 상태 업데이트
         setAddress(address);
         setIsConnected(true);
         setChainId(Number(config.chainId)); // 십진수로 변환
@@ -101,27 +138,7 @@ export const useWalletConnect = () => {
         setIsMock(false);
         setProvider(_provider);
         setSigner(_signer);
-
-        // 지갑 정보 백엔드에 저장
-        // try{
-        //   const res = await fetch("/api/wallet", {
-        //     method: "POST",
-        //     headers: {
-        //       "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify({
-        //       address,
-        //       name: null,
-        //       networkType: targetChain === "avalanche" ? "avalanche" : "xrpl",
-        //     }),
-        //   });
-
-        //   console.log("Wallet save response:", res)
-        // } catch (e) {
-        //   console.error("Failed to save wallet:", e);
-        // }
-
-        toast.success(t(`messages.walletConnected`));
+    
       } catch (e) {
         const errorMessage =
           e instanceof Error ? e.message : t("errors.walletConnection");
@@ -164,8 +181,6 @@ export const useWalletConnect = () => {
     setError(null);
 
     localStorage.setItem(DISCONNECT_FLAG_KEY, "true");
-
-    toast.success(t("messages.walletDisconnected"));
   }, []);
 
   return {
