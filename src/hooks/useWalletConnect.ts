@@ -3,32 +3,17 @@ import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { useCallback } from "react";
 import toast from "react-hot-toast";
 import { ethers } from "ethers";
+import { XRPL_EVM_CHAIN_CONFIG } from "@/constants/xrplEvm";
+import { AVALANCHE_CHAIN_CONFIG } from "@/constants/avalanche";
 
 //localStorage 키 (지갑 연결 수동 해제 상태)
 const DISCONNECT_FLAG_KEY = "wallet_disconnected_permanently";
-
-// 각 체인별 설정 정보 (📍실제 Chain ID, RPC URL 등으로 업데이트 필요📍)
-const CHAIN_CONFIGS = {
-  avalanche: {
-    chainId: "0xa869", // Avalanche Fuji Testnet (43113)
-    chainName: "Avalanche Fuji Testnet",
-    nativeCurrency: { name: "AVAX", symbol: "AVAX", decimals: 18 },
-    rpcUrls: ["https://api.avax-test.network/ext/bc/C/rpc"],
-    blockExplorerUrls: ["https://testnet.snowtrace.io"],
-  },
-  "xrpl-evm": {
-    chainId: "0x161c28", // XRPL EVM Sidechain Testnet (1449000)
-    chainName: "XRPL EVM Sidechain Testnet",
-    nativeCurrency: { name: "XRP", symbol: "XRP", decimals: 18 },
-    rpcUrls: ["https://rpc.testnet.xrplevm.org"],
-    blockExplorerUrls: ["https://explorer.testnet.xrplevm.org/"],
-  },
-};
 
 export const useWalletConnect = () => {
   const { t, language } = useLanguage();
   const {
     setAddress,
+    setAddressId,
     setIsConnected,
     setChainId,
     setChainName,
@@ -52,7 +37,8 @@ export const useWalletConnect = () => {
 
         localStorage.removeItem(DISCONNECT_FLAG_KEY);
 
-        const config = CHAIN_CONFIGS[targetChain];
+
+        const config = targetChain == "xrpl-evm" ? XRPL_EVM_CHAIN_CONFIG : AVALANCHE_CHAIN_CONFIG;
 
         // 계정 요청 (MetaMask 팝업 띄움)
         const accounts: string[] = await window.ethereum.request({
@@ -125,6 +111,11 @@ export const useWalletConnect = () => {
 
             throw new Error(clientErrorMessage);
           }
+
+          //성공 시 아이디 상태 저장
+          const data = await res.json();
+          setAddressId(data.data.id);
+
           console.log("Wallet save response:", res);
         } catch (err: any) {
           console.error("Failed to save wallet:", err);
