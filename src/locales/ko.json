@@ -507,6 +507,9 @@
   },
   "errors": {
     "walletConnection": "지갑 연결에 실패했습니다",
+    "initWalletError": "지갑 초기화에 실패했습니다",
+    "accountChangeError": "계정 전환에 실패했습니다",
+    "networkChangeError": "네트워크 전환에 실패했습니다",
     "transactionFailed": "거래가 실패했습니다",
     "insufficientBalance": "잔액이 부족합니다",
     "invalidAddress": "유효하지 않은 주소입니다",

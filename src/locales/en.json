@@ -507,6 +507,9 @@
   },
   "errors": {
     "walletConnection": "Failed to connect wallet",
+    "initWalletError": "Failed to initialize wallet",
+    "accountChangeError": "Failed to change account",
+    "networkChangeError": "Failed to change network",
     "transactionFailed": "Transaction failed",
     "insufficientBalance": "Insufficient balance",
     "invalidAddress": "Invalid address",
