@@ -12,8 +12,8 @@ export interface WalletTransaction {
   txHash: string | null;
   fromAddress: string;
   toAddress: string;
-  txStatus: "pending" | "confirmed" | "failed";
-  paymentType: "instant" | "batch" | "scheduled";
+  txStatus: "pending" | "confirmed" | "failed" | "PENDING" | "CONFIRMED" | "FAILED";
+  paymentType: "instant" | "batch" | "scheduled" | "INSTANT" | "BATCH" | "SCHEDULED";
   fee: string | null;
   amount: string;
   tokenType: "A_KSC" | "X_KSC";
