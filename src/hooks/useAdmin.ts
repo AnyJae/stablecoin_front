@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import toast from 'react-hot-toast';
+import { useLanguage } from "@/contexts/localization/LanguageContext";
+import { useWalletContext } from "@/contexts/wallet/WalletContext";
+import { useState, useEffect, useCallback } from "react";
+import toast from "react-hot-toast";
 
 export interface ContractInfo {
   name: string;
@@ -15,180 +17,200 @@ export interface ContractInfo {
 
 export const useAdmin = () => {
   const [contractInfo, setContractInfo] = useState<ContractInfo | null>(null);
+  const [supplyInfo, setSupplyInfo] = useState({
+    maxSupply: "",
+    totalSupply: "",
+    totalBurned: "",
+    networkType: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 컨트랙트 정보 조회
-  const fetchContractInfo = useCallback(async () => {
+  const { chainName } = useWalletContext();
+  const { t, language } = useLanguage();
+
+  // KSC 공급량 정보 조회
+  const fetchSupplyInfo = useCallback(async () => {
     try {
-      const response = await fetch('/api/avalanche/contract-info');
+      const response = await fetch(
+        `/api/external/get-tokenSupply/${chainName == "xrpl" ? "XRPL" : "AVAX"}`,{
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "accept-language": language,
+            },}
+      );
       const data = await response.json();
-      
+
       if (data.success) {
-        setContractInfo(data.data);
+        setSupplyInfo(data.data);
       } else {
-        throw new Error(data.error || '컨트랙트 정보 조회에 실패했습니다.');
+        throw new Error(t(`errors.loadDataError`));
       }
-    } catch (err) {
-      console.error('Contract info fetch error:', err);
-      // 모의 데이터 (개발용)
-      setContractInfo({
-        name: 'Korea Stable Coin',
-        symbol: 'KSC',
-        decimals: '18',
-        totalSupply: '1000000.00',
-        totalMinted: '500000.00',
-        totalBurned: '50000.00',
-        paused: false,
-        contractAddress: '0x0000000000000000000000000000000000000000',
-        explorerUrl: 'https://testnet.snowtrace.io'
+    } catch (err: any) {
+      console.error("Contract info fetch error:", err);
+      setError(err.message);
+      setSupplyInfo({
+        maxSupply: "-",
+        totalSupply: "-",
+        totalBurned: "-",
+        networkType: "-",
       });
-      toast.error('컨트랙트 정보 조회에 실패했습니다. (개발 모드)');
     }
   }, []);
 
   // KSC 발행
-  const mintKSC = useCallback(async (to: string, amount: string) => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch('/api/admin/mint', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to,
-          amount
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        toast.success('KSC 발행이 완료되었습니다.');
-        // 컨트랙트 정보 새로고침
-        await fetchContractInfo();
-      } else {
-        throw new Error(data.message || '발행에 실패했습니다.');
+  const mintKSC = useCallback(
+    async (to: string, amount: string) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch("/api/admin/mint", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            to,
+            amount,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          toast.success("KSC 발행이 완료되었습니다.");
+          // 컨트랙트 정보 새로고침
+          await fetchSupplyInfo();
+        } else {
+          throw new Error(data.message || "발행에 실패했습니다.");
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "발행에 실패했습니다.";
+        setError(errorMessage);
+        toast.error(errorMessage);
+        console.error("Mint KSC error:", err);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '발행에 실패했습니다.';
-      setError(errorMessage);
-      toast.error(errorMessage);
-      console.error('Mint KSC error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchContractInfo]);
+    },
+     [fetchSupplyInfo]
+  );
 
   // KSC 소각
-  const burnKSC = useCallback(async (from: string, amount: string) => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch('/api/admin/burn', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from,
-          amount
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        toast.success('KSC 소각이 완료되었습니다.');
-        // 컨트랙트 정보 새로고침
-        await fetchContractInfo();
-      } else {
-        throw new Error(data.message || '소각에 실패했습니다.');
+  const burnKSC = useCallback(
+    async (from: string, amount: string) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch("/api/admin/burn", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from,
+            amount,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          toast.success("KSC 소각이 완료되었습니다.");
+          // 컨트랙트 정보 새로고침
+          await fetchSupplyInfo();
+        } else {
+          throw new Error(data.message || "소각에 실패했습니다.");
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "소각에 실패했습니다.";
+        setError(errorMessage);
+        toast.error(errorMessage);
+        console.error("Burn KSC error:", err);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '소각에 실패했습니다.';
-      setError(errorMessage);
-      toast.error(errorMessage);
-      console.error('Burn KSC error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchContractInfo]);
+    },
+     [fetchSupplyInfo]
+  );
 
   // 긴급 일시정지
   const emergencyPause = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch('/api/admin/pause', {
-        method: 'POST'
+      const response = await fetch("/api/admin/pause", {
+        method: "POST",
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
-        toast.success('긴급 일시정지가 적용되었습니다.');
+        toast.success("긴급 일시정지가 적용되었습니다.");
         // 컨트랙트 정보 새로고침
-        await fetchContractInfo();
+        await fetchSupplyInfo();
       } else {
-        throw new Error(data.message || '일시정지에 실패했습니다.');
+        throw new Error(data.message || "일시정지에 실패했습니다.");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '일시정지에 실패했습니다.';
+      const errorMessage =
+        err instanceof Error ? err.message : "일시정지에 실패했습니다.";
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error('Emergency pause error:', err);
+      console.error("Emergency pause error:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [fetchContractInfo]);
+  },  [fetchSupplyInfo]);
 
   // 일시정지 해제
   const emergencyUnpause = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch('/api/admin/unpause', {
-        method: 'POST'
+      const response = await fetch("/api/admin/unpause", {
+        method: "POST",
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
-        toast.success('일시정지가 해제되었습니다.');
+        toast.success("일시정지가 해제되었습니다.");
         // 컨트랙트 정보 새로고침
-        await fetchContractInfo();
+        await fetchSupplyInfo();
       } else {
-        throw new Error(data.message || '일시정지 해제에 실패했습니다.');
+        throw new Error(data.message || "일시정지 해제에 실패했습니다.");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '일시정지 해제에 실패했습니다.';
+      const errorMessage =
+        err instanceof Error ? err.message : "일시정지 해제에 실패했습니다.";
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error('Emergency unpause error:', err);
+      console.error("Emergency unpause error:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [fetchContractInfo]);
+  },  [fetchSupplyInfo]);
 
-  // 컴포넌트 마운트 시 컨트랙트 정보 조회
+  // 컴포넌트 마운트 시 공급량 정보 조회
   useEffect(() => {
-    fetchContractInfo();
-  }, [fetchContractInfo]);
+   fetchSupplyInfo();
+  },  [fetchSupplyInfo]);
 
   return {
-    contractInfo,
+    supplyInfo,
     mintKSC,
     burnKSC,
     emergencyPause,
     emergencyUnpause,
     isLoading,
-    error
+    error,
   };
-}; 
+};

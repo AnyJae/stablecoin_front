@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useLanguage } from "@/contexts/localization/LanguageContext";
+import { formatWeiToKsc } from "@/utils/formatters";
 
 export function AdminInterface() {
   const { t } = useLanguage();
   const {
-    contractInfo,
+    supplyInfo,
     mintKSC,
     burnKSC,
     emergencyPause,
@@ -54,40 +55,40 @@ export function AdminInterface() {
       {/* 컨트랙트 정보 */}
       <div className="card p-6 mb-6">
         <h2 className="text-xl font-bold text-ksc-white mb-4">
-          {t("admin.contractInfo.title")}
+          {t("admin.supplyInfo.title")}
         </h2>
 
-        {contractInfo ? (
+        {supplyInfo ? (
           <div className="grid md:grid-cols-3 gap-4">
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatNumber(contractInfo.totalSupply)}
+                {formatWeiToKsc(supplyInfo.maxSupply)}
               </div>
               <div className="text-sm text-ksc-gray">
-                {t("admin.contractInfo.maxSupply")}
+                {t("admin.supplyInfo.maxSupply")}
               </div>
             </div>
 
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatNumber(contractInfo.totalMinted)}
+                {formatWeiToKsc(supplyInfo.totalSupply)}
               </div>
               <div className="text-sm text-ksc-gray">
-                {t("admin.contractInfo.currentSupply")}
+                {t("admin.supplyInfo.currentSupply")}
               </div>
             </div>
 
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatNumber(contractInfo.totalBurned)}
+                {formatWeiToKsc(supplyInfo.totalBurned)}
               </div>
               <div className="text-sm text-ksc-gray">
-                {t("admin.contractInfo.totalBurned")}
+                {t("admin.supplyInfo.totalBurned")}
               </div>
             </div>
           </div>
         ) : (
-          <p className="text-ksc-gray">{t("admin.contractInfo.loading")}</p>
+          <p className="text-ksc-gray">{t("admin.supplyInfo.loading")}</p>
         )}
       </div>
 
