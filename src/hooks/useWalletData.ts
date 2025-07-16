@@ -1,6 +1,6 @@
 import { useLanguage } from "@/contexts/localization/LanguageContext";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ethers } from "ethers";
 import { delay } from "@/utils/helpers";
@@ -8,6 +8,7 @@ import { delay } from "@/utils/helpers";
 export const useWalletData = () => {
   const {
     address,
+    addressId,
     chainName,
     provider,
     isConnected,
@@ -24,7 +25,9 @@ export const useWalletData = () => {
     setError,
   } = useWalletContext();
 
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  const [txCount, setTxCount] = useState('');
 
   //Avalanche or XRPL 네이티브 토큰 잔액 조회
   const fetchBalance = useCallback(async () => {
@@ -57,39 +60,90 @@ export const useWalletData = () => {
 
     try {
       console.log("잔액 조회 시도");
-      const response = await fetch(`/api/${chainName}/get-balance/${address}`);
+      const response = await fetch(
+        `/api/wallet/get-wallet/${addressId}/${
+          chainName === "avalanche" ? "AVAX" : "XRPL"
+        }`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "accept-language": language,
+            },}
+      );
+
       const data = await response.json();
       if (data.success) {
-        setKscBalance(data.data.formattedBalance);
+        setKscBalance(data.data.kscBalance || '-');
       } else {
-        throw new Error(data.error.message || "잔액 조회에 실패했습니다");
+        throw new Error("잔액 조회에 실패했습니다");
       }
     } catch (err: any) {
       console.log("KSC Balance fetch error: ", err);
-      toast.error("잔액 조회에 실패했습니다");
-      setKscBalance("0");
+      toast.error("KSC 잔액 조회에 실패했습니다");
+      setError(err.message);
+      setKscBalance("-");
     } finally {
       await delay(500);
       setIsLoading(false);
     }
-  }, [address, chainName, setKscBalance]);
+  }, [address, isMock, chainName, setKscBalance]);
+
+  //거래 내역 수 조회
+  const fetchTxCount = useCallback(async () => {
+    //유효성 검사
+    if (!address || !chainName || isMock) {
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const response = await fetch(
+        `/api/wallet/get-wallet/${addressId}/${
+          chainName === "avalanche" ? "AVAX" : "XRPL"
+        }`,{
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "accept-language": language,
+            },}
+      );
+
+      const data = await response.json();
+      if (data.success) {
+        setTxCount(data.data.successfulTransactions);
+      } else {
+        throw new Error("거래 수 조회에 실패했습니다");
+      }
+    } catch (err: any) {
+      console.log("KSC Balance fetch error: ", err);
+      toast.error("거래 내역 수 조회에 실패했습니다");
+      setError(err.message);
+      setTxCount("-");
+    } finally {
+      await delay(500);
+      setIsLoading(false);
+    }
+  }, [address, chainName, isMock, setTxCount]);
 
   //주소별 트랜잭션 내역 조회
   const fetchTransactions = useCallback(async () => {
     setIsLoading(true);
     if (!address || isMock) return;
     try {
-      setTimeout(() => {}, 5000);
-
       console.log("트랜잭션 조회 시도");
-      const response = await fetch(`/api/transaction/get-history/${address}`);
+      const response = await fetch(`/api/transaction/get-history/${address}/${chainName ==='xrpl'? "XRPL": "AVAX"}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "accept-language": language,
+            },});
       const data = await response.json();
 
       console.log("백엔드 응답: ", data);
       if (data.success) {
         setTransactions(data.data.items || []);
+        console.log('트랜잭션 히스토리', data.data.items);
       } else {
-        throw new Error(data.error.message || "거래 내역 조회에 실패했습니다");
+        throw new Error(data.message || "거래 내역 조회에 실패했습니다");
       }
     } catch (err: any) {
       console.error("Transaction fetch error:", err);
@@ -99,31 +153,33 @@ export const useWalletData = () => {
       await delay(500);
       setIsLoading(false);
     }
-  }, [address, setTransactions]);
+  }, [address, isMock,setTransactions]);
 
   useEffect(() => {
     if ((isConnected || isMock) && address && chainName) {
       fetchBalance();
       fetchKscBalance();
+      fetchTxCount();
       fetchTransactions();
     } else {
-      setBalance("0");
-      setKscBalance("0");
+      setBalance("-");
+      setKscBalance("-");
+      setTxCount("-")
       setTransactions([]);
     }
   }, [
     isConnected,
     isMock,
     address,
-    chainName,
-    fetchBalance,
-    fetchKscBalance,
-    fetchTransactions,
+    addressId,
+    chainName
   ]);
 
   return {
+    txCount,
     fetchBalance,
     fetchKscBalance,
+    fetchTxCount,
     fetchTransactions,
   };
 };
