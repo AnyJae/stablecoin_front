@@ -7,7 +7,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   let body: {
-    status: "pending" | "confirmed" | "failed";
+    status: "pending" | "confirmed" | "failed" | "PENDING"| "CONFIRMED" | "FAILED";
     fee: string | null;
   };
 
