@@ -721,31 +721,31 @@ export function PaymentInterface() {
                     <div className="flex items-center space-x-2 mb-2">
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
-                          payment.paymentType === "instant"
+                          payment.paymentType === "INSTANT"
                             ? "bg-blue-600"
-                            : payment.paymentType === "batch"
+                            : payment.paymentType === "BATCH"
                             ? "bg-green-600"
                             : "bg-yellow-600"
                         }`}
                       >
-                        {payment.paymentType === "instant"
+                        {payment.paymentType === "INSTANT"
                           ? t("wallet.transactions.type.instant")
-                          : payment.paymentType === "batch"
+                          : payment.paymentType === "BATCH"
                           ? t("wallet.transactions.type.batch")
                           : t("wallet.transactions.type.scheduled")}
                       </span>
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
-                          payment.txStatus === "confirmed"
+                          payment.txStatus === "CONFIRMED"
                             ? "bg-green-600"
-                            : payment.txStatus === "pending"
+                            : payment.txStatus === "PENDING"
                             ? "bg-yellow-600"
                             : "bg-red-600"
                         }`}
                       >
-                        {payment.txStatus === "confirmed"
+                        {payment.txStatus === "CONFIRMED"
                           ? t("wallet.transactions.status.confirmed")
-                          : payment.txStatus === "pending"
+                          : payment.txStatus === "PENDING"
                           ? t("wallet.transactions.status.pending")
                           : t("wallet.transactions.status.failed")}
                       </span>
