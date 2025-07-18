@@ -37,7 +37,7 @@ export function PaymentInterface() {
   const { address, transactions, chainName, isConnected, error } =
     useWalletContext();
   const { connectAvalancheWallet, connectXrplEvmWallet } = useWalletConnect();
-  const { sendKsc, sendKscForTest } = useSendTokens();
+  const { sendInstantForTest, sendBatchForTest, sendScheduledForTest } = useSendTokens();
   const [activeTab, setActiveTab] = useState<
     "instant" | "batch" | "scheduled" | "history"
   >("instant");
@@ -73,11 +73,11 @@ export function PaymentInterface() {
     setIsLoading(true);
 
     try {
-      await sendKscForTest(
+      await sendInstantForTest(
         instantForm.to,
         instantForm.amount,
         chainName,
-        "instant",
+        "INSTANT",
         instantForm.description
       );
       toast.success(t("payment.messages.success"));
@@ -106,23 +106,18 @@ export function PaymentInterface() {
     e.preventDefault();
 
     setIsLoading(true);
-    for (let i = 0; i < batchForm.recipients.length; i++) {
-      const recipient = batchForm.recipients[i];
-      const amount = batchForm.amounts[i];
 
-      try {
-        await sendKscForTest(
-          recipient,
-          amount,
-          chainName,
-          "batch",
-          batchForm.description
-        );
-      } catch (error) {
-        toast.error(t("payment.errors.processing"));
-        setIsLoading(false);
-        return;
-      }
+    try {
+      await sendBatchForTest(
+        batchForm.recipients,
+        batchForm.amounts,
+        chainName,
+        batchForm.description
+      );
+    } catch (err) {
+      toast.error(t("payment.errors.processing"));
+      setIsLoading(false);
+      return;
     }
 
     setIsLoading(false);
@@ -147,13 +142,12 @@ export function PaymentInterface() {
     setIsLoading(true);
 
     try {
-      await sendKscForTest(
+      await sendScheduledForTest(
         scheduledForm.to,
         scheduledForm.amount,
         chainName,
-        "scheduled",
-        scheduledForm.description,
-        scheduledForm.scheduledTime
+        scheduledForm.scheduledTime,
+        scheduledForm.description
       );
       toast.success(t("payment.messages.success"));
       setScheduledForm({
@@ -410,7 +404,10 @@ export function PaymentInterface() {
         </button>
 
         <button
-          onClick={() => {setActiveTab("history"); fetchTransactions();}}
+          onClick={() => {
+            setActiveTab("history");
+            fetchTransactions();
+          }}
           className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors group ${
             activeTab === "history"
               ? "bg-ksc-blue text-white"
