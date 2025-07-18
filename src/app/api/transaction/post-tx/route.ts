@@ -3,12 +3,10 @@ import { toast } from "react-hot-toast";
 import { NextRequest, NextResponse } from "next/server";
 
 // 개별 트랜잭션 생성
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { network: string; paymentType: string } }
-) {
-
+export async function POST(request: NextRequest) {
   let body: {
+    networkType: string;
+    paymentType: string;
     fromAddress: string;
     toAddress: string;
     txHash: string | null;
@@ -17,8 +15,6 @@ export async function POST(
     memo?: string | null;
   };
 
-  //동적 경로 파라미터
-  const { network, paymentType } = params;
 
   try {
     body = await request.json();
@@ -27,7 +23,7 @@ export async function POST(
     const backendUrl =
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
     const response = await fetch(
-      `${backendUrl}/api/transaction/${network}/${paymentType.toUpperCase()}`,
+      `${backendUrl}/api/transaction`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

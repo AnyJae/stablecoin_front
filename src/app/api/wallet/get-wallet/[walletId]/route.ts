@@ -4,16 +4,16 @@ import { NextRequest, NextResponse } from "next/server";
 //지갑 정보 조회 - 잔액 및 거래 내역 수 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string; networkType: string } }
+  { params }: { params: { walletId: string } }
 ) {
-  const { id, networkType } = params;
+  const { walletId } = params;
   const lang = request.headers.get("accept-language") || "en";
 
   try {
     const backendUrl =
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
     const response = await fetch(
-      `${backendUrl}/api/wallet/${id}/${networkType}`,
+      `${backendUrl}/api/wallet/${walletId}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -56,8 +56,8 @@ export async function GET(
       let errMessage = getFetchErrorMessage(lang, "backendLogicFailed");
       if (data.statusCode === 400) {
         errMessage = getFetchErrorMessage(lang, "badRequest");
-      } else if (data.statusCode === 404) {
-        errMessage = getFetchErrorMessage(lang, "walletNotFound");
+      } else if(data.statusCode === 404){
+        errMessage =getFetchErrorMessage(lang, "walletNotFound");
       } else if (data.statusCode === 422) {
         errMessage = getFetchErrorMessage(lang, "invalidData");
       } else if (data.statusCode === 500) {

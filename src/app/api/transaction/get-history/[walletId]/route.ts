@@ -6,9 +6,9 @@ import toast from "react-hot-toast";
 //지갑 주소별 거래 내역 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { address: string; networkType: string } }
+  { params }: { params: { walletId: string } }
 ) {
-  const { address, networkType } = params;
+  const { walletId } = params;
   const lang = request.headers.get("accept-language") || "en";
 
   //Mocnking (개발용)
@@ -75,7 +75,7 @@ export async function GET(
     const backendUrl =
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
     const response = await fetch(
-      `${backendUrl}/api/transaction/history/${address}/${networkType}`,
+      `${backendUrl}/api/transaction/history/${walletId}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },

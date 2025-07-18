@@ -37,11 +37,11 @@ export const useWalletData = () => {
         const balanceWei = await provider.getBalance(address);
         setBalance(ethers.formatEther(balanceWei));
       } else {
-        setBalance("0");
+        setBalance("-");
       }
     } catch (err) {
-      console.error("네이티브 토큰 잔액 조회에 실패했습니다", err);
-      setBalance("0");
+      toast.error(t(`wallet.errors.nativeTokenLoadError`));
+      setBalance("-");
     } finally {
       await delay(500);
       setIsLoading(false);
@@ -61,9 +61,7 @@ export const useWalletData = () => {
     try {
       console.log("잔액 조회 시도");
       const response = await fetch(
-        `/api/wallet/get-wallet/${addressId}/${
-          chainName === "avalanche" ? "AVAX" : "XRPL"
-        }`, {
+        `/api/wallet/get-wallet/${addressId}`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -73,7 +71,8 @@ export const useWalletData = () => {
 
       const data = await response.json();
       if (data.success) {
-        setKscBalance(data.data.kscBalance || '-');
+        setKscBalance('500');
+        //setKscBalance(data.data.kscBalance || '-');
       } else {
         throw new Error("잔액 조회에 실패했습니다");
       }
@@ -97,9 +96,7 @@ export const useWalletData = () => {
     }
     try {
       const response = await fetch(
-        `/api/wallet/get-wallet/${addressId}/${
-          chainName === "avalanche" ? "AVAX" : "XRPL"
-        }`,{
+        `/api/wallet/get-wallet/${addressId}`,{
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -130,7 +127,7 @@ export const useWalletData = () => {
     if (!address || isMock) return;
     try {
       console.log("트랜잭션 조회 시도");
-      const response = await fetch(`/api/transaction/get-history/${address}/${chainName ==='xrpl'? "XRPL": "AVAX"}`, {
+      const response = await fetch(`/api/transaction/get-history/${addressId}`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
