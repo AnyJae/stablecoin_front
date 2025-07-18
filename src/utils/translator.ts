@@ -7,7 +7,8 @@ const errorTranslations = {
     networkConnectionProblem: "백엔드 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요",
     unexpectedError: "예상치 못한 서버 오류가 발생했습니다",
     badRequest: '잘못된 요청입니다',
-    invalidData: "데이터 검증에 실패했습니다"
+    invalidData: "데이터 검증에 실패했습니다",
+    walletNotFound: "지갑을 찾을 수 없습니다"
 
   },
   'en': {
@@ -18,7 +19,8 @@ const errorTranslations = {
     networkConnectionProblem: "Could not connect to the backend server. Please try again later",
     unexpectedError: "An unexpected server error occurred",
     badRequest: "Bad request",
-    invalidData: "Failed to validate data"
+    invalidData: "Failed to validate data",
+    walletNotFound: "Wallet not found"
   }
 };
 
