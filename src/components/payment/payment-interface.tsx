@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Users, Clock, History, Zap } from "lucide-react";
+import { Send, Users, Clock, History, Zap, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/contexts/localization/LanguageContext";
 import { Transaction } from "ethers";
@@ -33,11 +33,21 @@ interface ScheduledPaymentForm {
 
 export function PaymentInterface() {
   const { t } = useLanguage();
-  const { fetchTransactions } = useWalletData();
+  const {
+    fetchTransactions,
+    txHistory,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalTransactions,
+    totalPages,
+  } = useWalletData();
   const { address, transactions, chainName, isConnected, error } =
     useWalletContext();
   const { connectAvalancheWallet, connectXrplEvmWallet } = useWalletConnect();
-  const { sendInstantForTest, sendBatchForTest, sendScheduledForTest } = useSendTokens();
+  const { sendInstantForTest, sendBatchForTest, sendScheduledForTest } =
+    useSendTokens();
   const [activeTab, setActiveTab] = useState<
     "instant" | "batch" | "scheduled" | "history"
   >("instant");
@@ -211,6 +221,19 @@ export function PaymentInterface() {
         field === "recipient" ? "recipients" : "amounts"
       ].map((item, i) => (i === index ? value : item)),
     }));
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // 페이지당 항목 수 변경 핸들러
+  const handleItemsPerPageChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setItemsPerPage(Number(event.target.value));
+    setCurrentPage(1); // 항목 수 변경 시 첫 페이지로 리셋
   };
 
   if (!isConnected) {
@@ -709,9 +732,44 @@ export function PaymentInterface() {
             {t("payment.history")}
           </h2>
 
+{/* 페이지네이션 컨트롤 */}
+          <div className="flex justify-between items-center mt-6">
+            <div>
+              <select
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="bg-ksc-gray border border-ksc-gray-light rounded-md px-3 py-2"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+              </select>
+              <span className="ml-2 text-ksc-gray-light text-sm">
+                {t("pagination.itemsPerPage")} ({itemsPerPage})
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
+              >
+                <ChevronLeft />
+              </button>
+              <span className="text-ksc-white">
+                 {currentPage} / {totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
+              >
+                <ChevronRight />
+              </button>
+            </div>
+          </div>
           <div className="space-y-4">
-            {/* 모의 결제 이력 데이터 */}
-            {transactions.map((payment) => (
+            {txHistory.map((payment) => (
               <div key={payment.id} className="bg-ksc-gray rounded-lg p-4">
                 <div className="flex justify-between items-start">
                   <div>
@@ -764,6 +822,8 @@ export function PaymentInterface() {
               </div>
             ))}
           </div>
+
+          
         </div>
       )}
     </div>
