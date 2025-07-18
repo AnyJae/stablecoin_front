@@ -15,6 +15,8 @@ import toast from "react-hot-toast";
 
 import { WalletTransaction } from "@/types/global.d";
 import { usePathname } from "next/navigation";
+import { XRPL_EVM_CHAIN_CONFIG } from "@/constants/xrplEvm";
+import { AVALANCHE_CHAIN_CONFIG } from "@/constants/avalanche";
 
 interface WalletContextType {
   address: string | null;
@@ -243,12 +245,11 @@ export function WalletProvider({ children }: WalletProviderProps) {
             // 연결된 체인 정보 가져오기
             const network = await _provider.getNetwork();
             const chainId = Number(network.chainId);
-            const chainName = network.name;
             let currentChain: "xrpl" | "avalanche" | null = null;
 
-            if (chainId === 43114 || chainId === 43113) {
+            if (chainId === AVALANCHE_CHAIN_CONFIG.chainId) {
               currentChain = "avalanche";
-            } else if (chainId === 1440002) {
+            } else if (chainId === XRPL_EVM_CHAIN_CONFIG.chainId) {
               currentChain = "xrpl";
             }
 
