@@ -8,7 +8,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { walletId: string } }
 ) {
+  //동적 파라미터
   const { walletId } = params;
+  //쿼리 파라미터
+  const limit = Number(request.nextUrl.searchParams.get("limit")) || 10
+  const page = Number(request.nextUrl.searchParams.get("page")) || 1;
+
   const lang = request.headers.get("accept-language") || "en";
 
   //Mocnking (개발용)
@@ -69,13 +74,13 @@ export async function GET(
   //   return NextResponse.json(mockData);
   // }
 
-  console.log("👍GET TXs API ROUTE HIT:", request.url, params);
 
- try {
+
+  try {
     const backendUrl =
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
     const response = await fetch(
-      `${backendUrl}/api/transaction/history/${walletId}`,
+      `${backendUrl}/api/transaction/history/${walletId}?limit=${limit}&currentPage=${page}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
