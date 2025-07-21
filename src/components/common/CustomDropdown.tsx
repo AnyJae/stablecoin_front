@@ -6,11 +6,11 @@ import styled, { css } from "styled-components";
 
 interface  CustomDropdownProps {
   _onChange: (selectedOption: any) => void;
-  _options: (string)[];
+  _options: (string|number)[];
   _defaultOption: number;
-  _placeholder : string;
-  _border: string,
-  _width: number;
+  _placeholder? : string;
+  _border?: string,
+  _width?: number;
 }
 
 export function CustomDropdown({
