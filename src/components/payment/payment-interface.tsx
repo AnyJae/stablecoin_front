@@ -9,8 +9,9 @@ import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { useWalletData } from "@/hooks/useWalletData";
 import { send } from "process";
 import { useSendTokens } from "@/hooks/useSendTokens";
-import { formatDate } from "@/utils/formatters";
+import { formatDate, formatWeiToKsc } from "@/utils/formatters";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
+import { CustomDropdown } from "../common/CustomDropdown";
 
 interface PaymentForm {
   to: string;
@@ -35,6 +36,7 @@ export function PaymentInterface() {
   const { t } = useLanguage();
   const {
     fetchTransactions,
+    txCount,
     txHistory,
     currentPage,
     setCurrentPage,
@@ -43,7 +45,7 @@ export function PaymentInterface() {
     totalTransactions,
     totalPages,
   } = useWalletData();
-  const { address, transactions, chainName, isConnected, error } =
+  const { address, chainName, isConnected, error } =
     useWalletContext();
   const { connectAvalancheWallet, connectXrplEvmWallet } = useWalletConnect();
   const { sendInstantForTest, sendBatchForTest, sendScheduledForTest } =
@@ -87,7 +89,6 @@ export function PaymentInterface() {
         instantForm.to,
         instantForm.amount,
         chainName,
-        "INSTANT",
         instantForm.description
       );
       toast.success(t("payment.messages.success"));
@@ -230,9 +231,10 @@ export function PaymentInterface() {
 
   // 페이지당 항목 수 변경 핸들러
   const handleItemsPerPageChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
+    selectedOption: any
   ) => {
-    setItemsPerPage(Number(event.target.value));
+    console.log("선택한 표시 페이지 수: ", selectedOption)
+    setItemsPerPage(Number(selectedOption.value));
     setCurrentPage(1); // 항목 수 변경 시 첫 페이지로 리셋
   };
 
@@ -734,18 +736,10 @@ export function PaymentInterface() {
 
 {/* 페이지네이션 컨트롤 */}
           <div className="flex justify-between items-center mt-6">
-            <div>
-              <select
-                value={itemsPerPage}
-                onChange={handleItemsPerPageChange}
-                className="bg-ksc-gray border border-ksc-gray-light rounded-md px-3 py-2"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-              </select>
-              <span className="ml-2 text-ksc-gray-light text-sm">
-                {t("pagination.itemsPerPage")} ({itemsPerPage})
+            <div className="flex items-center">
+              <CustomDropdown _onChange={handleItemsPerPageChange} _options={[5, 10, 20]} _defaultOption={1} _width={60}/>
+              <span className="ml-2 text-ksc-gray-light text-sm ml-0">
+                {t("pagination.itemsPerPage")}
               </span>
             </div>
             <div className="flex items-center space-x-2">
@@ -768,6 +762,8 @@ export function PaymentInterface() {
               </button>
             </div>
           </div>
+
+          {/* 트랜잭션 데이터 */}
           <div className="space-y-4">
             {txHistory.map((payment) => (
               <div key={payment.id} className="bg-ksc-gray rounded-lg p-4">
@@ -808,7 +804,7 @@ export function PaymentInterface() {
                     <p className="text-sm text-ksc-gray-light">
                       {payment.fromAddress} → {payment.toAddress}
                     </p>
-                    <p className="font-semibold">{payment.amount} KSC</p>
+                    <p className="font-semibold">{formatWeiToKsc(payment.amount)} KSC</p>
                     <p className="text-sm text-ksc-gray-light">
                       {payment.memo}
                     </p>
