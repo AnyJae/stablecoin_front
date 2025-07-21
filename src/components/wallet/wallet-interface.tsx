@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useLanguage } from "@/contexts/localization/LanguageContext";
 import {
@@ -10,13 +10,16 @@ import {
   Check,
   Zap,
   CircleX,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { useWalletData } from "@/hooks/useWalletData";
 import { useSendTokens } from "@/hooks/useSendTokens";
-import { formatAddress, formatAmount, formatDate } from "@/utils/formatters";
+import { formatAddress, formatWeiToKsc, formatDate } from "@/utils/formatters";
+import { CustomDropdown } from "../common/CustomDropdown";
 
 export default function WalletInterface() {
   const { t } = useLanguage();
@@ -25,7 +28,6 @@ export default function WalletInterface() {
     balance,
     kscBalance,
     chainName,
-    transactions,
     isConnected,
     isLoading,
     error,
@@ -37,9 +39,22 @@ export default function WalletInterface() {
   const { connectAvalancheWallet, connectXrplEvmWallet, disconnectWallet } =
     useWalletConnect();
 
-  const { fetchBalance, fetchKscBalance, fetchTransactions, fetchTxCount, txCount } = useWalletData();
+  const {
+    fetchBalance,
+    fetchKscBalance,
+    fetchTransactions,
+    fetchTxCount,
+    txCount,
+    txHistory,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalTransactions,
+    totalPages,
+  } = useWalletData();
 
-  const { sendKsc, sendKscForTest } = useSendTokens();
+  const { sendInstant, sendInstantForTest } = useSendTokens();
 
   const [sendForm, setSendForm] = useState({
     to: "",
@@ -64,12 +79,7 @@ export default function WalletInterface() {
     if (isMock) {
       await sendMockKsc(sendForm.to, sendForm.amount);
     } else {
-      await sendKscForTest(
-        sendForm.to,
-        sendForm.amount,
-        sendForm.chain,
-        paymentType,
-      );
+      await sendInstantForTest(sendForm.to, sendForm.amount, sendForm.chain);
     }
     setSendForm({ to: "", amount: "", memo: "", chain: "xrpl" });
   };
@@ -92,6 +102,23 @@ export default function WalletInterface() {
       return `https://testnet.snowtrace.io/tx/${hash}`;
     }
   };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // 페이지당 항목 수 변경 핸들러
+  const handleItemsPerPageChange = (selectedOption: any) => {
+    console.log("선택한 표시 페이지 수: ", selectedOption);
+    setItemsPerPage(Number(selectedOption.value));
+    setCurrentPage(1); // 항목 수 변경 시 첫 페이지로 리셋
+  };
+
+  useEffect(()=>{
+    setItemsPerPage(5);
+    fetchTransactions();
+  },[])
 
   if (!isConnected && !isMock) {
     return (
@@ -232,10 +259,10 @@ export default function WalletInterface() {
           </div>
         </div>
         {error && (
-            <div className="mt-6 p-4 bg-error-100 border border-error-200 rounded-lg">
-              <p className="text-error-600 text-center" >{error}</p>
-            </div>
-          )}
+          <div className="mt-6 p-4 bg-error-100 border border-error-200 rounded-lg">
+            <p className="text-error-600 text-center">{error}</p>
+          </div>
+        )}
       </div>
     );
   }
@@ -284,7 +311,8 @@ export default function WalletInterface() {
                 <h2 className="text-xl font-bold text-ksc-white">
                   {t("wallet.title", {
                     chainName: chainName === "xrpl" ? "XRPL" : "Avalanche",
-                  })}  ({chainName === "xrpl" ? "XRPL" : "Avalanche"})
+                  })}{" "}
+                  ({chainName === "xrpl" ? "XRPL" : "Avalanche"})
                 </h2>
                 {isMock && (
                   <span className="badge-mock">{t("wallet.mock")}</span>
@@ -420,6 +448,7 @@ export default function WalletInterface() {
                 <h3 className="text-lg font-semibold text-ksc-white">
                   {t("wallet.overview.title")}
                 </h3>
+
                 <button
                   onClick={() => {
                     fetchBalance();
@@ -439,7 +468,7 @@ export default function WalletInterface() {
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {formatAmount(kscBalance || "")}
+                    {kscBalance || ""}
                   </div>
                   <div className="text-sm text-ksc-gray">
                     {t("wallet.overview.kscBalance")}
@@ -448,7 +477,7 @@ export default function WalletInterface() {
 
                 <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {formatAmount(balance || "")}
+                    {balance || ""}
                   </div>
                   <div className="text-sm text-ksc-gray">
                     {t("wallet.overview.balance", {
@@ -471,15 +500,15 @@ export default function WalletInterface() {
                 <h4 className="font-semibold text-ksc-mint mb-2">
                   {t("wallet.overview.recentTransactions")}
                 </h4>
-                {transactions.slice(0, 3).length > 0 ? (
+                {txHistory.slice(0, 3).length > 0 ? (
                   <div className="space-y-2">
-                    {transactions.slice(0, 3).map((tx) => (
+                    {txHistory.slice(0, 3).map((tx) => (
                       <div
                         key={tx.id}
                         className="flex items-center justify-between text-sm"
                       >
                         <span className="text-ksc-gray">
-                          {tx.amount} KSC
+                          {formatWeiToKsc(tx.amount)} KSC
                         </span>
                         <div className="flex items-center space-x-2">
                           <span
@@ -616,7 +645,7 @@ export default function WalletInterface() {
                 </button>
               </div>
 
-              {transactions.length > 0 ? (
+              {txHistory.length > 0 ? (
                 <div>
                   <table className="min-w-full divide-y divide-ksc-box/50">
                     <thead className="bg-ksc-box/30">
@@ -645,7 +674,7 @@ export default function WalletInterface() {
                       </tr>
                     </thead>
                     <tbody className="bg-ksc-box/20 divide-y divide-ksc-box/30">
-                      {transactions.map((tx) => (
+                      {txHistory.map((tx) => (
                         <tr key={tx.id} className="hover:bg-ksc-box/30">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-ksc-white text-center">
                             {formatAddress(tx.txHash || "")}
@@ -657,7 +686,7 @@ export default function WalletInterface() {
                             {formatAddress(tx.toAddress)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white text-right text-center">
-                            {formatAmount(tx.amount.toString())}&nbsp; KSC
+                            {formatWeiToKsc(tx.amount)}&nbsp; KSC
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             <span
@@ -669,7 +698,6 @@ export default function WalletInterface() {
                                   : "bg-error-100 text-error-800"
                               }`}
                             >
-                              
                               {t(
                                 `wallet.transactions.status.${
                                   tx.txStatus.toLowerCase() || "FAILED"
@@ -678,7 +706,9 @@ export default function WalletInterface() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-gray text-center">
-                            {tx.txStatus === 'PENDING'?  formatDate(tx.createdAt) : formatDate(tx.statusUpdatedAt || "")}
+                            {tx.txStatus === "PENDING"
+                              ? formatDate(tx.createdAt)
+                              : formatDate(tx.statusUpdatedAt || "")}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <a
@@ -694,16 +724,55 @@ export default function WalletInterface() {
                       ))}
                     </tbody>
                   </table>
+                  
                 </div>
+                
               ) : (
                 <div className="text-center py-8">
                   <p className="text-ksc-gray">
                     {t("wallet.transactions.noTransactions")}
                   </p>
                 </div>
-              )}
+              )
+              
+              }
+                        {/* 페이지네이션 컨트롤 */}
+              <div className="flex justify-between items-center mt-6">
+                <div className="flex items-center">
+                  <CustomDropdown
+                    _onChange={handleItemsPerPageChange}
+                    _options={[5, 10, 20]}
+                    _defaultOption={0}
+                    _width={60}
+                  />
+                  <span className="ml-2 text-ksc-gray-light text-sm ml-0">
+                    {t("pagination.itemsPerPage")}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
+                  >
+                    <ChevronLeft />
+                  </button>
+                  <span className="text-ksc-white">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
+                  >
+                    <ChevronRight />
+                  </button>
+                </div>
+              </div>
             </div>
+            
           )}
+
         </div>
       </div>
     </div>
