@@ -56,11 +56,11 @@ export const useWalletConnect = () => {
         });
 
         // 타겟 체인으로 전환 시도
-        if (currentChainId !== config.chainId) {
+        if (currentChainId !== config.chainId.toString()) {
           try {
             await window.ethereum.request({
               method: "wallet_switchEthereumChain",
-              params: [{ chainId: config.chainId }],
+              params: [{ chainId: config.chainId.toString() }],
             });
           } catch (switchError: any) {
             if (switchError.code === 4902) {
@@ -124,7 +124,7 @@ export const useWalletConnect = () => {
                 // WalletContext 상태 업데이트
         setAddress(address);
         setIsConnected(true);
-        setChainId(Number(config.chainId)); // 십진수로 변환
+        setChainId(config.chainId); 
         setChainName(targetChain === "avalanche" ? "avalanche" : "xrpl");
         setIsMock(false);
         setProvider(_provider);
@@ -146,9 +146,7 @@ export const useWalletConnect = () => {
       setIsConnected,
       setChainId,
       setChainName,
-      setIsMock,
-      setIsLoading,
-      setError,
+      setIsMock
     ]
   );
 

@@ -24,7 +24,7 @@ interface WalletContextType {
   balance: string | null;
   kscBalance: string;
   isConnected: boolean;
-  chainId: number | null;
+  chainId: string |null;
   chainName: "xrpl" | "avalanche" | null;
   isMock?: boolean;
   transactions: WalletTransaction[];
@@ -38,7 +38,7 @@ interface WalletContextType {
   setBalance: (balance: string | null) => void;
   setKscBalance: (balance: string) => void;
   setIsConnected: (connected: boolean) => void;
-  setChainId: (chainId: number | null) => void;
+  setChainId: (chainId: string | null) => void;
   setChainName: (chainName: "xrpl" | "avalanche" | null) => void;
   setIsMock: (connected: boolean) => void;
   setTransactions: (transactions: WalletTransaction[]) => void;
@@ -65,7 +65,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const [addressId, setAddressId] = useState<string>("");
   const [balance, setBalance] = useState<string | null>(null);
   const [kscBalance, setKscBalance] = useState<string>("0");
-  const [chainId, setChainId] = useState<number | null>(null);
+  const [chainId, setChainId] = useState<string | null>(null);
   const [chainName, setChainName] = useState<"xrpl" | "avalanche" | null>(null);
   const [isMock, setIsMock] = useState<boolean>(false);
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
@@ -244,7 +244,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
             // 연결된 체인 정보 가져오기
             const network = await _provider.getNetwork();
-            const chainId = Number(network.chainId);
+            const chainId = network.chainId.toString();
             let currentChain: "xrpl" | "avalanche" | null = null;
 
             if (chainId === AVALANCHE_CHAIN_CONFIG.chainId) {
