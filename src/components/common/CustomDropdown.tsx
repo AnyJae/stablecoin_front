@@ -4,6 +4,15 @@ import Dropdown from "react-dropdown";
 import "react-dropdown/style.css";
 import styled, { css } from "styled-components";
 
+interface  CustomDropdownProps {
+  _onChange: (selectedOption: any) => void;
+  _options: (string)[];
+  _defaultOption: number;
+  _placeholder : string;
+  _border: string,
+  _width: number;
+}
+
 export function CustomDropdown({
   _onChange,
   _options,
@@ -11,7 +20,7 @@ export function CustomDropdown({
   _placeholder = "Select an option",
   _border= 'none',
   _width=60
-}) {
+}: CustomDropdownProps) {
   return (
     <StyledDropdown
       options={_options}
@@ -67,7 +76,7 @@ const StyledDropdown = styled(Dropdown)`
   .Dropdown-arrow-wrapper{
     margin-left: 10px;
     display: flex;
-    align-items: center;
+    align-items: center
   }
 
   .Dropdown-menu {
