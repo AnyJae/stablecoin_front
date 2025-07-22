@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { ethers } from "ethers";
 import { delay } from "@/utils/helpers";
 import { WalletTransaction } from "@/types/global";
+import { formatWeiToKsc } from "@/utils/formatters";
 
 export const useWalletData = () => {
   const {
@@ -44,7 +45,8 @@ export const useWalletData = () => {
     try {
       if (address && provider) {
         const balanceWei = await provider.getBalance(address);
-        setBalance(ethers.formatEther(balanceWei));
+        console.log("네이티브 토큰 잔액", balanceWei);
+        setBalance(formatWeiToKsc(balanceWei.toString()));
       } else {
         setBalance("-");
       }
@@ -80,8 +82,8 @@ export const useWalletData = () => {
 
       const data = await response.json();
       if (data.success) {
-        setKscBalance("500");
-        //setKscBalance(data.data.kscBalance || '-');
+        setKscBalance("500.00");
+        // setKscBalance(formatWeiToKsc(data.data.kscBalance) || '-');
       } else {
         throw new Error("잔액 조회에 실패했습니다");
       }
@@ -157,12 +159,10 @@ export const useWalletData = () => {
       );
       const data = await response.json();
 
-      console.log("백엔드 응답: ", data);
       if (data.success) {
         setTxHistory(data.data.items || []);
         setTotalTransactions(data.data.pagination.totalCount);
         setTotalPages(data.data.pagination.totalPage);
-        console.log("트랜잭션 히스토리", data.data.items);
       } else {
         throw new Error(data.message || "거래 내역 조회에 실패했습니다");
       }
