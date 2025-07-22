@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { ethers } from "ethers";
 import { useWalletData } from "./useWalletData";
 import { delay } from "@/utils/helpers";
+import { ReceiptIcon } from "lucide-react";
 
 // 📍컨트랙트 주소 (실제 배포 후 변경 필요)📍
 const KSC_CONTRACT_ADDRESS = {
@@ -38,26 +39,46 @@ export const useSendTokens = () => {
   const { fetchBalance, fetchKscBalance, fetchTransactions, fetchTxCount } =
     useWalletData();
 
+  const [sendError, setSendError] = useState("");
+
   // 즉시 전송 함수
   const sendInstant = useCallback(
     async (
       toAddress: string,
       amount: string,
       network: "xrpl" | "avalanche" | null,
-      paymentType: "INSTANT",
       memo?: string
     ) => {
       // 유효 상태 체크
-      console.log(kscBalance, amount);
       if (!isConnected || !address || !signer || !provider || !network) {
-        toast.error(t("payment.errors.disconnect"));
-        throw new Error("disconnect");
+        setSendError(t("payment.errors.disconnect"));
+        return "client-side-validation-fail";
       }
 
       // KSC 잔액 부족 체크 (프론트에서 1차적으로 체크)
       if (Number(kscBalance) < Number(amount)) {
-        toast.error(t("payment.errors.insufficient"));
-        throw new Error(t("payment.errors.insufficient"));
+        setSendError(t("payment.errors.insufficient"));
+        return "client-side-validation-fail";
+      }
+
+      //시스템 헬스 체크
+      try {
+        const response = await fetch(`/api/health/get-system`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "accept-language": language,
+          },
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          setSendError(t("payment.errors.systemUnavailable"));
+          return "client-side-validation-fail";
+        }
+      } catch (err: any) {
+        setSendError(t("payment.errors.systemUnavailable"));
+        return "client-side-validation-fail";
       }
 
       // KSC 전송
@@ -97,20 +118,19 @@ export const useSendTokens = () => {
             },
             body: JSON.stringify({
               networkType: network === "xrpl" ? "XRPL" : "AVAX",
-              paymentType: paymentType.toUpperCase(),
+              paymentType: "INSTANT",
               fromAddress: address,
               toAddress,
               txHash: tx.hash,
-              amount,
+              amount: amountWei.toString(),
               memo,
             }),
           });
           const data = await response.json();
 
           if (!data.success) {
-            throw new Error(
-              data.error.message || "트랜잭션 저장에 실패했습니다"
-            );
+            toast.error(t(`payment.errors.saveTxError`));
+            return;
           } else {
             txId = data.data.id; // 트랜잭션 아이디 추출
             fetchTransactions();
@@ -119,8 +139,8 @@ export const useSendTokens = () => {
             fetchKscBalance();
           }
         } catch (err) {
-          console.log("Transaction post error: ", err);
-          toast.error("트랜잭션 저장에 실패했습니다");
+          toast.error(t(`payment.errors.saveTxError`));
+          return;
         }
 
         toast.promise(tx.wait(), {
@@ -139,9 +159,10 @@ export const useSendTokens = () => {
         //데이터 상태 업데이트
         if (receipt && receipt.status === 1) {
           // 트랜잭션 성공
+          toast.success(t(`payment.messages.success`));
           // 백엔드에 트랜잭션 상태 업데이트
           try {
-            await fetch(`/api/transaction/patch-tx/${txId}`, {
+            const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
               method: "PATCH",
               headers: {
                 "Content-Type": "application/json",
@@ -149,11 +170,23 @@ export const useSendTokens = () => {
               },
               body: JSON.stringify({
                 status: "CONFIRMED",
-                gasFeeInWei: gasFeeInWei.toString(),
+                fee: gasFeeInWei.toString(),
               }),
             });
+
+            const data = await response.json();
+
+            console.log("백엔드로부터 받은 응답: ", data);
+
+            if (!data.success) {
+              throw new Error(
+                data.error.message || "트랜잭션 수정에 실패했습니다"
+              );
+            } else {
+              fetchTransactions();
+            }
           } catch (err) {
-            console.error("Transaction status update error:", err);
+            console.error("트랜잭션 상태 업데이트 실패:", err);
           }
 
           // 상태(잔액 및 트랜잭션 내역) 업데이트
@@ -161,48 +194,34 @@ export const useSendTokens = () => {
           fetchKscBalance();
           fetchTxCount();
           fetchTransactions();
-
-          return {
-            success: true,
-            transactionHash: receipt.hash,
-            message: "전송이 성공적으로 완료되었습니다",
-          };
         } else {
-          // 트랜잭션 실패 (status 0)
-          // 백엔드에 트랜잭션 상태 업데이트
+          // 트랜잭션 실패
+          toast.error(t(`payment.errors.processing`));
+          //백엔드에 트랜잭션 상태 업데이트
           try {
-            await fetch(`/api/transaction/patch-tx/${txId}`, {
+            const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
               method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                "accept-language": language,
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 status: "FAILED",
-                gasFeeInWei: gasFeeInWei.toString(),
+                fee: gasFeeInWei.toString(),
               }),
             });
-          } catch (err) {
-            console.error("Transaction status update error:", err);
-          }
+            const data = await response.json();
 
-          // 상태(잔액 및 트랜잭션 내역) 업데이트
-          fetchBalance();
-          fetchKscBalance();
-          fetchTxCount();
-          fetchTransactions();
-          throw new Error("트랜잭션이 실패했습니다");
+            if (!data.success) {
+              throw new Error(
+                data.error.message || "트랜잭션 수정에 실패했습니다"
+              );
+            } else {
+              fetchTransactions();
+            }
+          } catch (err) {
+            console.error("트랜잭션 상태 업데이트 실패", err);
+          }
         }
       } catch (err) {
-        console.error("KSC send error:", err);
-        const errorMessage =
-          err instanceof Error ? err.message : "전송에 실패했습니다.";
-        setError(errorMessage);
-
-        return {
-          success: false,
-          message: errorMessage,
-        };
+        console.log("결제 처리 중 오류 발생: ", err);
       }
     },
     [fetchBalance, fetchKscBalance, fetchTransactions]
@@ -219,8 +238,8 @@ export const useSendTokens = () => {
       // 유효 상태 체크
       console.log(kscBalance, amounts);
       if (!isConnected || !address || !signer || !provider || !network) {
-        toast.error(t("payment.errors.disconnect"));
-        throw new Error("disconnect");
+        setSendError(t("payment.errors.disconnect"));
+        return "client-side-validation-fail";
       }
 
       // KSC 잔액 부족 체크 (프론트에서 1차적으로 체크)
@@ -229,8 +248,28 @@ export const useSendTokens = () => {
         0
       );
       if (parseFloat(kscBalance) < totalAmountToSend) {
-        toast.error(t("payment.errors.insufficient"));
-        throw new Error(t("payment.errors.insufficient"));
+        setSendError(t("payment.errors.insufficient"));
+        return "client-side-validation-fail";
+      }
+
+      //시스템 헬스 체크
+      try {
+        const response = await fetch(`/api/health/get-system`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "accept-language": language,
+          },
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          setSendError(t("payment.errors.systemUnavailable"));
+          return "client-side-validation-fail";
+        }
+      } catch (err: any) {
+        setSendError(t("payment.errors.systemUnavailable"));
+        return "client-side-validation-fail";
       }
 
       // KSC 전송
@@ -277,7 +316,7 @@ export const useSendTokens = () => {
                 fromAddress: address,
                 toAddress: toAddr,
                 txHash: tx.Hash,
-                amount: amountsWei[index], // 각 개별 금액
+                amount: amountsWei[index].toString(), // 각 개별 금액
                 memo: memo,
               }),
             });
@@ -312,7 +351,8 @@ export const useSendTokens = () => {
 
         // 모든 개별 트랜잭션 저장이 실패한 경우
         if (individualBackendTxIds.length === 0) {
-          throw new Error("모든 개별 트랜잭션 저장에 실패했습니다.");
+          toast.error(t(`payment.errors.saveTxError`));
+          return;
         }
 
         // 트랜잭션 확정 대기 및 토스트 메시지
@@ -329,6 +369,12 @@ export const useSendTokens = () => {
         const gasPrice = receipt.effectiveGasPrice;
         const gasFeeInWei = gasUsed * gasPrice;
 
+        if (receipt.status === 1) {
+          toast.success(t(`payment.messages.success`));
+        } else {
+          toast.error(t(`payment.errors.processing`));
+        }
+
         //트랜잭션 상태 업데이트
         const finalStatus =
           receipt && receipt.status === 1 ? "CONFIRMED" : "FAILED";
@@ -336,7 +382,7 @@ export const useSendTokens = () => {
         // 백엔드에 각 개별 트랜잭션의 상태 업데이트 (개별 PATCH 호출)
         const patchTxPromises = individualBackendTxIds.map(async (txId) => {
           try {
-            await fetch(`/api/transaction/patch-tx/${txId}`, {
+            const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
               method: "PATCH",
               headers: {
                 "Content-Type": "application/json",
@@ -347,6 +393,15 @@ export const useSendTokens = () => {
                 fee: gasFeeInWei.toString(),
               }),
             });
+            const data = await response.json();
+
+            if (!data.success) {
+              throw new Error(
+                data.error.message || "트랜잭션 수정에 실패했습니다"
+              );
+            } else {
+              fetchTransactions();
+            }
           } catch (err) {
             console.error(
               `Failed to patch individual transaction ${txId} in backend:`,
@@ -364,10 +419,7 @@ export const useSendTokens = () => {
         fetchTxCount();
         fetchTransactions();
       } catch (err) {
-        console.error("KSC send error:", err);
-        const errorMessage =
-          err instanceof Error ? err.message : "전송에 실패했습니다.";
-        setError(errorMessage);
+        console.error("결제 처리 중 오류 발생", err);
       }
     },
     [fetchBalance, fetchKscBalance, fetchTransactions]
@@ -380,28 +432,56 @@ export const useSendTokens = () => {
     toAddress: string,
     amount: string,
     network: "xrpl" | "avalanche" | null,
-    paymentType: "INSTANT",
     memo?: string
   ) => {
     // 유효 상태 체크
-    console.log("현재 시각", new Date().toISOString());
-    console.log(kscBalance, amount);
-
+    // 유효 상태 체크
     if (!isConnected || !address || !signer || !provider || !network) {
-      toast.error(t("payment.errors.disconnect"));
-      throw new Error("disconnect");
+      console.log(
+        "유효 상태 체크",
+        isConnected,
+        address,
+        signer,
+        provider,
+        network
+      );
+      setSendError(t("payment.errors.disconnect"));
+      return "client-side-validation-fail";
     }
 
     // KSC 잔액 부족 체크 (프론트에서 1차적으로 체크)
     if (Number(kscBalance) < Number(amount)) {
-      toast.error(t("payment.errors.insufficient"));
-      throw new Error("insufficient");
+      setSendError(t("payment.errors.insufficient"));
+      return "client-side-validation-fail";
+    }
+
+    //시스템 헬스 체크
+    try {
+      const response = await fetch(`/api/health/get-system`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "accept-language": language,
+        },
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        setSendError(t("payment.errors.systemUnavailable"));
+        return "client-side-validation-fail";
+      }
+    } catch (err: any) {
+      setSendError(t("payment.errors.systemUnavailable"));
+      return "client-side-validation-fail";
     }
 
     try {
       // 가짜 트랜잭션 해시 생성
       const mockTxHash = ethers.hexlify(ethers.randomBytes(32));
       let txId = "";
+
+      const amountWei = ethers.parseUnits(amount.toString(), 18);
+      console.log("amountWei", amountWei);
 
       // 트랜잭션 내역 백엔드에 저장
       try {
@@ -413,25 +493,28 @@ export const useSendTokens = () => {
           },
           body: JSON.stringify({
             networkType: network === "xrpl" ? "XRPL" : "AVAX",
-            paymentType: paymentType.toUpperCase(),
+            paymentType: "INSTANT",
             fromAddress: address,
             toAddress,
             txHash: mockTxHash,
-            amount,
+            amount: amountWei.toString(),
             memo,
           }),
         });
         const data = await response.json();
         if (!data.success) {
-          throw new Error(data.error.message || "트랜잭션 저장에 실패했습니다");
+          toast.error(t(`payment.errors.saveTxError`));
+          return;
         } else {
           txId = data.data.id; // 트랜잭션 아이디 추출
           fetchTransactions();
-          toast.success("트랜잭션 저장에 성공했습니다");
+          fetchBalance();
+          fetchTxCount();
+          fetchKscBalance();
         }
       } catch (err) {
-        console.log("Transaction POST error: ", err);
-        toast.error("트랜잭션 저장에 실패했습니다🚫");
+        toast.error(t(`payment.errors.saveTxError`));
+        return;
       }
 
       await delay(10000);
@@ -452,6 +535,7 @@ export const useSendTokens = () => {
       //데이터 상태 업데이트
       if (mockReceipt && mockReceipt.status === 1) {
         // 트랜잭션 성공
+        toast.success(t(`payment.messages.success`));
         // 백엔드에 트랜잭션 상태 업데이트
         try {
           const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
@@ -478,9 +562,7 @@ export const useSendTokens = () => {
             fetchTransactions();
           }
         } catch (err) {
-          toast.error("트랜잭션 수정에 실패했습니다🚫");
-          console.error("Transaction status update error:", err);
-          throw new Error("트랜잭션 수정에 실패했습니다");
+          console.error("트랜잭션 상태 업데이트 실패:", err);
         }
 
         // 상태(잔액 및 트랜잭션 내역) 업데이트
@@ -488,18 +570,12 @@ export const useSendTokens = () => {
         fetchKscBalance();
         fetchTxCount();
         fetchTransactions();
-
-        toast.success("테스트 전송이 완료되었습니다!");
-
-        return {
-          success: true,
-          transactionHash: mockReceipt.hash,
-          message: "테스트 전송이 성공적으로 완료되었습니다",
-        };
       } else {
-        // 트랜잭션 실패 시나리오
+        // 트랜잭션 실패
+        toast.error(t(`payment.errors.processing`));
+        //백엔드에 트랜잭션 상태 업데이트
         try {
-          await fetch(`/api/transaction/patch-tx/${txId}`, {
+          const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -507,22 +583,21 @@ export const useSendTokens = () => {
               fee: gasFeeInWei.toString(),
             }),
           });
+          const data = await response.json();
+
+          if (!data.success) {
+            throw new Error(
+              data.error.message || "트랜잭션 수정에 실패했습니다"
+            );
+          } else {
+            fetchTransactions();
+          }
         } catch (err) {
-          console.error("Transaction status update error:", err);
+          console.error("트랜잭션 상태 업데이트 실패", err);
         }
-        throw new Error("테스트 트랜잭션이 실패했습니다");
       }
     } catch (err) {
-      console.error("KSC send test error:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "테스트 전송에 실패했습니다.";
-      setError(errorMessage);
-      toast.error(errorMessage);
-
-      return {
-        success: false,
-        message: errorMessage,
-      };
+      console.log("결제 처리 중 오류 발생: ", err);
     }
   };
 
@@ -534,13 +609,12 @@ export const useSendTokens = () => {
       network: "xrpl" | "avalanche" | null,
       memo?: string
     ) => {
-      console.log("수신자 목록:", toAddresses);
-      console.log("전송 금액 목록: ", amounts);
 
       // 유효 상태 체크
+      console.log("유효 상태 체크:", isConnected, address, signer, provider, network);
       if (!isConnected || !address || !signer || !provider || !network) {
-        toast.error(t("payment.errors.disconnect"));
-        throw new Error("disconnect");
+        setSendError(t("payment.errors.disconnect"));
+        return "client-side-validation-fail";
       }
 
       // KSC 잔액 부족 체크 (프론트에서 1차적으로 체크)
@@ -549,8 +623,28 @@ export const useSendTokens = () => {
         0
       );
       if (parseFloat(kscBalance) < totalAmountToSend) {
-        toast.error(t("payment.errors.insufficient"));
-        throw new Error(t("payment.errors.insufficient"));
+        setSendError(t("payment.errors.insufficient"));
+        return "client-side-validation-fail";
+      }
+
+      //시스템 헬스 체크
+      try {
+        const response = await fetch(`/api/health/get-system`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "accept-language": language,
+          },
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          setSendError(t("payment.errors.systemUnavailable"));
+          return "client-side-validation-fail";
+        }
+      } catch (err: any) {
+        setSendError(t("payment.errors.systemUnavailable"));
+        return "client-side-validation-fail";
       }
 
       // KSC 전송
@@ -623,10 +717,16 @@ export const useSendTokens = () => {
         const gasFeeInWei = mockReceipt.gasUsed * mockReceipt.effectiveGasPrice;
         const finalStatus = mockReceipt.status === 1 ? "CONFIRMED" : "FAILED";
 
+        if (mockReceipt.status === 1) {
+          toast.success(t(`payment.messages.success`));
+        } else {
+          toast.error(t(`payment.errors.processing`));
+        }
+
         // 백엔드에 각 개별 트랜잭션의 상태 업데이트 (개별 PATCH 호출)
         const patchTxPromises = individualBackendTxIds.map(async (txId) => {
           try {
-            await fetch(`/api/transaction/patch-tx/${txId}`, {
+            const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
               method: "PATCH",
               headers: {
                 "Content-Type": "application/json",
@@ -637,6 +737,15 @@ export const useSendTokens = () => {
                 fee: gasFeeInWei.toString(),
               }),
             });
+            const data = await response.json();
+
+            if (!data.success) {
+              throw new Error(
+                data.error.message || "트랜잭션 수정에 실패했습니다"
+              );
+            } else {
+              fetchTransactions();
+            }
           } catch (err) {
             console.error(
               `Failed to patch individual transaction ${txId} in backend:`,
@@ -654,10 +763,7 @@ export const useSendTokens = () => {
         fetchTxCount();
         fetchTransactions();
       } catch (err) {
-        console.error("KSC send error:", err);
-        const errorMessage =
-          err instanceof Error ? err.message : "전송에 실패했습니다.";
-        setError(errorMessage);
+        console.error("결제 처리 중 오류 발생", err);
       }
     },
     [fetchBalance, fetchKscBalance, fetchTransactions]
@@ -722,13 +828,13 @@ export const useSendTokens = () => {
 
       await delay(10000);
 
-        // 상태(잔액 및 트랜잭션 내역) 업데이트
-        fetchBalance();
-        fetchKscBalance();
-        fetchTxCount();
-        fetchTransactions();
+      // 상태(잔액 및 트랜잭션 내역) 업데이트
+      fetchBalance();
+      fetchKscBalance();
+      fetchTxCount();
+      fetchTransactions();
 
-        toast.success("테스트 전송이 완료되었습니다!");
+      toast.success("테스트 전송이 완료되었습니다!");
     } catch (err) {
       console.error("KSC send test error:", err);
       const errorMessage =
@@ -743,5 +849,13 @@ export const useSendTokens = () => {
     }
   };
 
-  return { sendInstant, sendBatch, sendInstantForTest, sendBatchForTest, sendScheduledForTest };
+  return {
+    sendInstant,
+    sendBatch,
+    sendInstantForTest,
+    sendBatchForTest,
+    sendScheduledForTest,
+    sendError,
+    setSendError,
+  };
 };
