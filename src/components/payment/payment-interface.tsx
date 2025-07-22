@@ -72,7 +72,7 @@ export function PaymentInterface() {
     "instant" | "batch" | "scheduled" | "history"
   >("instant");
 
-  const [scheduledAt, setScheduledAt] = useState<string | null>(null);
+  const [sendLoading, setSendLoading] = useState(false);
 
   // 즉시 결제 폼
   const [instantForm, setInstantForm] = useState<PaymentForm>({
@@ -99,7 +99,7 @@ export function PaymentInterface() {
   // 즉시 결제 처리
   const handleInstantPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setSendLoading(true);
 
     try {
       const result = await sendInstant(
@@ -113,7 +113,7 @@ export function PaymentInterface() {
     } catch (error) {
       toast.error(t("payment.errors.processing"));
     } finally {
-      setIsLoading(false);
+      setSendLoading(false);
     }
 
     // try {
@@ -133,7 +133,7 @@ export function PaymentInterface() {
   const handleBatchPayment = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setIsLoading(true);
+    setSendLoading(true);
 
     try {
       const result = await sendBatch(
@@ -147,7 +147,7 @@ export function PaymentInterface() {
     } catch (err) {
       toast.error(t("payment.errors.processing"));
     } finally {
-      setIsLoading(false);
+      setSendLoading(false);
     }
 
     //API 호출 시뮬레이션
@@ -165,7 +165,7 @@ export function PaymentInterface() {
   // 예약 결제 처리
   const handleScheduledPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setSendLoading(true);
 
     try {
       const result = await sendScheduledForTest(
@@ -188,7 +188,7 @@ export function PaymentInterface() {
     } catch (error) {
       toast.error(t("payment.errors.processing"));
     } finally {
-      setIsLoading(false);
+      setSendLoading(false);
     }
 
     //API 호출 시뮬레이션
@@ -547,7 +547,7 @@ export function PaymentInterface() {
             <button
               type="submit"
               disabled={
-                isLoading ||
+                sendLoading ||
                 !instantForm.amount ||
                 !instantForm.to ||
                 !!sendError
@@ -555,7 +555,7 @@ export function PaymentInterface() {
               onClick={handleInstantPayment}
               className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
             >
-              {isLoading ? t("common.processing") : t("payment.sendForm.send")}
+              {sendLoading ? t("common.processing") : t("payment.sendForm.send")}
             </button>
           </form>
           {sendError && (
@@ -654,7 +654,7 @@ export function PaymentInterface() {
             <button
               type="submit"
               disabled={
-                isLoading ||
+                sendLoading ||
                 batchForm.recipients.some((r) => r === "") ||
                 batchForm.amounts.some((a) => a === "") ||
                 !!sendError
@@ -662,7 +662,7 @@ export function PaymentInterface() {
               onClick={handleBatchPayment}
               className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
             >
-              {isLoading ? t("common.processing") : t("payment.batchExecute")}
+              {sendLoading ? t("common.processing") : t("payment.batchExecute")}
             </button>
           </form>
           {sendError && (
@@ -757,7 +757,7 @@ export function PaymentInterface() {
             <button
               type="submit"
               disabled={
-                isLoading ||
+                sendLoading ||
                 !scheduledForm.to ||
                 !scheduledForm.amount ||
                 !scheduledForm.scheduledTime
@@ -765,7 +765,7 @@ export function PaymentInterface() {
               onClick={handleScheduledPayment}
               className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
             >
-              {isLoading
+              {sendLoading
                 ? t("payment.scheduledForm.registering")
                 : t("payment.scheduledForm.register")}
             </button>
