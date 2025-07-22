@@ -41,6 +41,8 @@ export const useSendTokens = () => {
 
   const [sendError, setSendError] = useState("");
 
+  const evmAddressRegex = /^0x[0-9a-fA-F]{40}$/; // EVM 주소 형식 정규 표현식
+
   // 즉시 전송 함수
   const sendInstant = useCallback(
     async (
@@ -52,6 +54,12 @@ export const useSendTokens = () => {
       // 유효 상태 체크
       if (!isConnected || !address || !signer || !provider || !network) {
         setSendError(t("payment.errors.disconnect"));
+        return "client-side-validation-fail";
+      }
+
+      // 수신자 지갑 주소 형식 체크
+      if (!evmAddressRegex.test(toAddress)) {
+        setSendError(t("payment.errors.invalidAddress"));
         return "client-side-validation-fail";
       }
 
@@ -242,6 +250,14 @@ export const useSendTokens = () => {
         return "client-side-validation-fail";
       }
 
+      // 수신자 지갑 주소 체크
+      for (let i = 0; i < toAddresses.length; i++) {
+        if (evmAddressRegex.test(toAddresses[i])) {
+          setSendError(t("payment.errors.invalidAddress"));
+          return "client-side-validation-fail";
+        }
+      }
+
       // KSC 잔액 부족 체크 (프론트에서 1차적으로 체크)
       const totalAmountToSend = amounts.reduce(
         (acc, currentAmount) => acc + parseFloat(currentAmount),
@@ -250,6 +266,14 @@ export const useSendTokens = () => {
       if (parseFloat(kscBalance) < totalAmountToSend) {
         setSendError(t("payment.errors.insufficient"));
         return "client-side-validation-fail";
+      }
+
+      // 수신자 지갑 주소 체크
+      for (let i = 0; i < toAddresses.length; i++) {
+        if (!evmAddressRegex.test(toAddresses[i])) {
+          setSendError(t("payment.errors.invalidAddress"));
+          return "client-side-validation-fail";
+        }
       }
 
       //시스템 헬스 체크
@@ -435,7 +459,6 @@ export const useSendTokens = () => {
     memo?: string
   ) => {
     // 유효 상태 체크
-    // 유효 상태 체크
     if (!isConnected || !address || !signer || !provider || !network) {
       console.log(
         "유효 상태 체크",
@@ -446,6 +469,12 @@ export const useSendTokens = () => {
         network
       );
       setSendError(t("payment.errors.disconnect"));
+      return "client-side-validation-fail";
+    }
+
+    // 수신자 지갑 주소 형식 체크
+    if (!evmAddressRegex.test(toAddress)) {
+      setSendError(t("payment.errors.invalidAddress"));
       return "client-side-validation-fail";
     }
 
@@ -609,14 +638,27 @@ export const useSendTokens = () => {
       network: "xrpl" | "avalanche" | null,
       memo?: string
     ) => {
-
       // 유효 상태 체크
-      console.log("유효 상태 체크:", isConnected, address, signer, provider, network);
+      console.log(
+        "유효 상태 체크:",
+        isConnected,
+        address,
+        signer,
+        provider,
+        network
+      );
       if (!isConnected || !address || !signer || !provider || !network) {
         setSendError(t("payment.errors.disconnect"));
         return "client-side-validation-fail";
       }
 
+      // 수신자 지갑 주소 체크
+      for (let i = 0; i < toAddresses.length; i++) {
+        if (!evmAddressRegex.test(toAddresses[i])) {
+          setSendError(t("payment.errors.invalidAddress"));
+          return "client-side-validation-fail";
+        }
+      }
       // KSC 잔액 부족 체크 (프론트에서 1차적으로 체크)
       const totalAmountToSend = amounts.reduce(
         (acc, currentAmount) => acc + parseFloat(currentAmount),
