@@ -60,6 +60,8 @@ export function PaymentInterface() {
   const { connectAvalancheWallet, connectXrplEvmWallet } = useWalletConnect();
   const {
     sendInstant,
+    sendBatch,
+    sendScheduled,
     sendInstantForTest,
     sendBatchForTest,
     sendScheduledForTest,
@@ -100,7 +102,7 @@ export function PaymentInterface() {
     setIsLoading(true);
 
     try {
-      const result = await sendInstantForTest(
+      const result = await sendInstant(
         instantForm.to,
         instantForm.amount,
         chainName,
@@ -134,14 +136,14 @@ export function PaymentInterface() {
     setIsLoading(true);
 
     try {
-      const result = await sendBatchForTest(
+      const result = await sendBatch(
         batchForm.recipients,
         batchForm.amounts,
         chainName,
         batchForm.description
       );
       if (result == "client-side-validation-fail") return;
-      setBatchForm({ recipients: [""], amounts: [""], description: "" });
+      // setBatchForm({ recipients: [""], amounts: [""], description: "" });
     } catch (err) {
       toast.error(t("payment.errors.processing"));
     } finally {
@@ -166,14 +168,17 @@ export function PaymentInterface() {
     setIsLoading(true);
 
     try {
-      await sendScheduledForTest(
+      const result = await sendScheduledForTest(
         scheduledForm.to,
         scheduledForm.amount,
         chainName,
         scheduledForm.scheduledTime,
         scheduledForm.description
       );
-      toast.success(t("payment.messages.success"));
+
+
+      if(result == "client-side-validation-fail") return;
+      
       setScheduledForm({
         to: "",
         amount: "",
@@ -701,14 +706,13 @@ export function PaymentInterface() {
               <input
                 type="number"
                 value={scheduledForm.amount}
-                onChange={(e) =>{
+                onChange={(e) => {
                   setScheduledForm((prev) => ({
                     ...prev,
                     amount: e.target.value,
-                  }))
+                  }));
                   setSendError("");
-                }
-                }
+                }}
                 placeholder="0"
                 min="0"
                 step="0.01"
@@ -721,11 +725,15 @@ export function PaymentInterface() {
               <label className="block text-sm font-medium mb-2">
                 {t("payment.scheduledForm.time")}
               </label>
-              <FutureDateTimePicker _value={scheduledForm.scheduledTime} _onChange={(e:any) =>
+              <FutureDateTimePicker
+                _value={scheduledForm.scheduledTime}
+                _onChange={(e: any) =>
                   setScheduledForm((prev) => ({
                     ...prev,
                     scheduledTime: e.target.value,
-                  }))}/>
+                  }))
+                }
+              />
             </div>
 
             <div>
@@ -748,7 +756,12 @@ export function PaymentInterface() {
 
             <button
               type="submit"
-              disabled={isLoading || !scheduledForm.to || !scheduledForm.amount || !scheduledForm.scheduledTime}
+              disabled={
+                isLoading ||
+                !scheduledForm.to ||
+                !scheduledForm.amount ||
+                !scheduledForm.scheduledTime
+              }
               onClick={handleScheduledPayment}
               className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
             >
@@ -822,7 +835,7 @@ export function PaymentInterface() {
           {/* 트랜잭션 데이터 */}
           <div className="space-y-4">
             {txHistory.map((payment) => (
-              <div key={payment.id} className="bg-ksc-gray rounded-lg p-4">
+              <div key={payment.id} className="bg-ksc-box rounded-lg p-4">
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center space-x-2 mb-2">
@@ -831,8 +844,8 @@ export function PaymentInterface() {
                           payment.paymentType === "INSTANT"
                             ? "bg-blue-600"
                             : payment.paymentType === "BATCH"
-                            ? "bg-green-600"
-                            : "bg-yellow-600"
+                            ? "bg-purple-600"
+                            : "bg-yellow-500"
                         }`}
                       >
                         {payment.paymentType === "INSTANT"
@@ -844,10 +857,10 @@ export function PaymentInterface() {
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
                           payment.txStatus === "CONFIRMED"
-                            ? "bg-green-600"
+                            ? "bg-secondary-400"
                             : payment.txStatus === "PENDING"
-                            ? "bg-yellow-600"
-                            : "bg-red-600"
+                            ? "bg-green-600"
+                            : "bg-red-500"
                         }`}
                       >
                         {payment.txStatus === "CONFIRMED"
@@ -856,20 +869,22 @@ export function PaymentInterface() {
                           ? t("wallet.transactions.status.pending")
                           : t("wallet.transactions.status.failed")}
                       </span>
+                      <p className="text-sm text-ksc-gray-light">
+                        {payment.memo}
+                      </p>
                     </div>
-                    <p className="text-sm text-ksc-gray-light">
+                    <p className="text-xs text-ksc-gray-light">
                       {payment.fromAddress} → {payment.toAddress}
                     </p>
-                    <p className="font-semibold">
+                    <p className="font-semibold mt-3">
                       {formatWeiToKsc(payment.amount)} KSC
-                    </p>
-                    <p className="text-sm text-ksc-gray-light">
-                      {payment.memo}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-ksc-gray-light">
-                      {formatDate(payment.statusUpdatedAt)}
+                      {payment.txStatus === "PENDING"
+                        ? formatDate(payment.createdAt)
+                        : formatDate(payment.statusUpdatedAt || "")}
                     </p>
                   </div>
                 </div>
