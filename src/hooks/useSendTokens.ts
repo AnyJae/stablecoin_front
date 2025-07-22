@@ -168,7 +168,6 @@ export const useSendTokens = () => {
         //데이터 상태 업데이트
         if (receipt && receipt.status === 1) {
           // 트랜잭션 성공
-          toast.success(t(`payment.messages.success`));
           // 백엔드에 트랜잭션 상태 업데이트
           try {
             const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
@@ -205,7 +204,6 @@ export const useSendTokens = () => {
           fetchTransactions();
         } else {
           // 트랜잭션 실패
-          toast.error(t(`payment.errors.processing`));
           //백엔드에 트랜잭션 상태 업데이트
           try {
             const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
@@ -385,12 +383,6 @@ export const useSendTokens = () => {
         const gasUsed = BigInt(receipt.gasUsed);
         const gasPrice = BigInt(receipt.gasPrice);
         const gasFeeInWei = gasUsed * gasPrice;
-
-        if (receipt.status === 1) {
-          toast.success(t(`payment.messages.success`));
-        } else {
-          toast.error(t(`payment.errors.processing`));
-        }
 
         //트랜잭션 상태 업데이트
         const finalStatus =
@@ -575,7 +567,6 @@ export const useSendTokens = () => {
         //데이터 상태 업데이트
         if (receipt && receipt.status === 1) {
           // 트랜잭션 성공
-          toast.success(t(`payment.messages.success`));
           // 백엔드에 트랜잭션 상태 업데이트
           try {
             const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
@@ -612,7 +603,6 @@ export const useSendTokens = () => {
           fetchTransactions();
         } else {
           // 트랜잭션 실패
-          toast.error(t(`payment.errors.processing`));
           //백엔드에 트랜잭션 상태 업데이트
           try {
             const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
