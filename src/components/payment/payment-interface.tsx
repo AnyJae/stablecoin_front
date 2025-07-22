@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Users, Clock, History, Zap, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Send,
+  Users,
+  Clock,
+  History,
+  Zap,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/contexts/localization/LanguageContext";
 import { Transaction } from "ethers";
@@ -12,6 +21,7 @@ import { useSendTokens } from "@/hooks/useSendTokens";
 import { formatDate, formatWeiToKsc } from "@/utils/formatters";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
 import { CustomDropdown } from "../common/CustomDropdown";
+import { FutureDateTimePicker } from "../common/input/FutureDateTimePicker";
 
 interface PaymentForm {
   to: string;
@@ -45,15 +55,20 @@ export function PaymentInterface() {
     totalTransactions,
     totalPages,
   } = useWalletData();
-  const { address, chainName, isConnected, error } =
+  const { address, chainName, isConnected, error, isLoading, setIsLoading } =
     useWalletContext();
   const { connectAvalancheWallet, connectXrplEvmWallet } = useWalletConnect();
-  const { sendInstantForTest, sendBatchForTest, sendScheduledForTest } =
-    useSendTokens();
+  const {
+    sendInstant,
+    sendInstantForTest,
+    sendBatchForTest,
+    sendScheduledForTest,
+    sendError,
+    setSendError,
+  } = useSendTokens();
   const [activeTab, setActiveTab] = useState<
     "instant" | "batch" | "scheduled" | "history"
   >("instant");
-  const [isLoading, setIsLoading] = useState(false);
 
   const [scheduledAt, setScheduledAt] = useState<string | null>(null);
 
@@ -85,13 +100,13 @@ export function PaymentInterface() {
     setIsLoading(true);
 
     try {
-      await sendInstantForTest(
+      const result = await sendInstantForTest(
         instantForm.to,
         instantForm.amount,
         chainName,
         instantForm.description
       );
-      toast.success(t("payment.messages.success"));
+      if (result == "client-side-validation-fail") return;
       setInstantForm({ to: "", amount: "", description: "" });
     } catch (error) {
       toast.error(t("payment.errors.processing"));
@@ -119,21 +134,19 @@ export function PaymentInterface() {
     setIsLoading(true);
 
     try {
-      await sendBatchForTest(
+      const result = await sendBatchForTest(
         batchForm.recipients,
         batchForm.amounts,
         chainName,
         batchForm.description
       );
+      if (result == "client-side-validation-fail") return;
+      setBatchForm({ recipients: [""], amounts: [""], description: "" });
     } catch (err) {
       toast.error(t("payment.errors.processing"));
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    setIsLoading(false);
-    toast.success(t("payment.messages.success"));
-    setBatchForm({ recipients: [""], amounts: [""], description: "" });
 
     //API 호출 시뮬레이션
     // try {
@@ -230,10 +243,8 @@ export function PaymentInterface() {
   };
 
   // 페이지당 항목 수 변경 핸들러
-  const handleItemsPerPageChange = (
-    selectedOption: any
-  ) => {
-    console.log("선택한 표시 페이지 수: ", selectedOption)
+  const handleItemsPerPageChange = (selectedOption: any) => {
+    console.log("선택한 표시 페이지 수: ", selectedOption);
     setItemsPerPage(Number(selectedOption.value));
     setCurrentPage(1); // 항목 수 변경 시 첫 페이지로 리셋
   };
@@ -348,7 +359,10 @@ export function PaymentInterface() {
       {/* 탭 네비게이션 */}
       <div className="flex space-x-1 bg-ksc-gray-dark rounded-lg p-1">
         <button
-          onClick={() => setActiveTab("instant")}
+          onClick={() => {
+            setActiveTab("instant");
+            setSendError("");
+          }}
           className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors group ${
             activeTab === "instant"
               ? "bg-ksc-blue text-white"
@@ -475,9 +489,10 @@ export function PaymentInterface() {
               <input
                 type="text"
                 value={instantForm.to}
-                onChange={(e) =>
-                  setInstantForm((prev) => ({ ...prev, to: e.target.value }))
-                }
+                onChange={(e) => {
+                  setInstantForm((prev) => ({ ...prev, to: e.target.value }));
+                  setSendError("");
+                }}
                 placeholder="0x..."
                 className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
                 required
@@ -491,16 +506,17 @@ export function PaymentInterface() {
               <input
                 type="number"
                 value={instantForm.amount}
-                onChange={(e) =>
+                onChange={(e) => {
                   setInstantForm((prev) => ({
                     ...prev,
                     amount: e.target.value,
-                  }))
-                }
+                  }));
+                  setSendError("");
+                }}
                 placeholder="0"
                 min="0"
                 step="0.01"
-                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
+                className=" w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
                 required
               />
             </div>
@@ -525,13 +541,23 @@ export function PaymentInterface() {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={
+                isLoading ||
+                !instantForm.amount ||
+                !instantForm.to ||
+                !!sendError
+              }
               onClick={handleInstantPayment}
-              className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-blue text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
             >
               {isLoading ? t("common.processing") : t("payment.sendForm.send")}
             </button>
           </form>
+          {sendError && (
+            <div className="p-4 bg-error-100 border border-error-200 rounded-lg flex justify-center mt-5">
+              <p className="text-error-600">{sendError}</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -553,9 +579,10 @@ export function PaymentInterface() {
                   <input
                     type="text"
                     value={recipient}
-                    onChange={(e) =>
-                      updateRecipient(index, "recipient", e.target.value)
-                    }
+                    onChange={(e) => {
+                      updateRecipient(index, "recipient", e.target.value);
+                      setSendError("");
+                    }}
                     placeholder="0x..."
                     className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
                     required
@@ -569,9 +596,10 @@ export function PaymentInterface() {
                   <input
                     type="number"
                     value={batchForm.amounts[index]}
-                    onChange={(e) =>
-                      updateRecipient(index, "amount", e.target.value)
-                    }
+                    onChange={(e) => {
+                      updateRecipient(index, "amount", e.target.value);
+                      setSendError("");
+                    }}
                     placeholder="0"
                     min="0"
                     step="0.01"
@@ -620,13 +648,23 @@ export function PaymentInterface() {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={
+                isLoading ||
+                batchForm.recipients.some((r) => r === "") ||
+                batchForm.amounts.some((a) => a === "") ||
+                !!sendError
+              }
               onClick={handleBatchPayment}
-              className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-gray text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
             >
               {isLoading ? t("common.processing") : t("payment.batchExecute")}
             </button>
           </form>
+          {sendError && (
+            <div className="p-4 bg-error-100 border border-error-200 rounded-lg flex justify-center mt-5">
+              <p className="text-error-600">{sendError}</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -646,9 +684,10 @@ export function PaymentInterface() {
               <input
                 type="text"
                 value={scheduledForm.to}
-                onChange={(e) =>
-                  setScheduledForm((prev) => ({ ...prev, to: e.target.value }))
-                }
+                onChange={(e) => {
+                  setScheduledForm((prev) => ({ ...prev, to: e.target.value }));
+                  setSendError("");
+                }}
                 placeholder="0x..."
                 className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
                 required
@@ -662,11 +701,13 @@ export function PaymentInterface() {
               <input
                 type="number"
                 value={scheduledForm.amount}
-                onChange={(e) =>
+                onChange={(e) =>{
                   setScheduledForm((prev) => ({
                     ...prev,
                     amount: e.target.value,
                   }))
+                  setSendError("");
+                }
                 }
                 placeholder="0"
                 min="0"
@@ -680,18 +721,11 @@ export function PaymentInterface() {
               <label className="block text-sm font-medium mb-2">
                 {t("payment.scheduledForm.time")}
               </label>
-              <input
-                type="datetime-local"
-                value={scheduledForm.scheduledTime}
-                onChange={(e) =>
+              <FutureDateTimePicker _value={scheduledForm.scheduledTime} _onChange={(e:any) =>
                   setScheduledForm((prev) => ({
                     ...prev,
                     scheduledTime: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 bg-ksc-gray rounded-lg border border-ksc-gray-light focus:border-2 focus:border-ksc-mint focus:ring-0 focus:outline-none"
-                required
-              />
+                  }))}/>
             </div>
 
             <div>
@@ -714,30 +748,52 @@ export function PaymentInterface() {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !scheduledForm.to || !scheduledForm.amount || !scheduledForm.scheduledTime}
               onClick={handleScheduledPayment}
-              className="w-full bg-ksc-blue hover:text-ksc-mint disabled:bg-ksc-gray text-lg text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
             >
               {isLoading
                 ? t("payment.scheduledForm.registering")
                 : t("payment.scheduledForm.register")}
             </button>
           </form>
+          {sendError && (
+            <div className="p-4 bg-error-100 border border-error-200 rounded-lg flex justify-center mt-5">
+              <p className="text-error-600">{sendError}</p>
+            </div>
+          )}
         </div>
       )}
 
       {/* 결제 내역 */}
       {activeTab === "history" && (
         <div className="bg-ksc-gray-dark rounded-lg p-6">
-          <h2 className="text-2xl font-semibold mb-6 flex items-center">
-            <History className="mr-2" />
-            {t("payment.history")}
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold mb-6 flex items-center">
+              <History className="mr-2" />
+              {t("payment.history")}
+            </h2>
+            <button
+              onClick={() => fetchTransactions()}
+              disabled={isLoading}
+              className="flex items-center space-x-2 text-white hover:text-ksc-mint/80 text-sm"
+            >
+              <RefreshCw
+                className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+              />
+              <span>{t("wallet.transactions.refresh")}</span>
+            </button>
+          </div>
 
-{/* 페이지네이션 컨트롤 */}
-          <div className="flex justify-between items-center mt-6">
+          {/* 페이지네이션 컨트롤 */}
+          <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <CustomDropdown _onChange={handleItemsPerPageChange} _options={[5, 10, 20]} _defaultOption={1} _width={60}/>
+              <CustomDropdown
+                _onChange={handleItemsPerPageChange}
+                _options={[5, 10, 20]}
+                _defaultOption={1}
+                _width={60}
+              />
               <span className="ml-2 text-ksc-gray-light text-sm ml-0">
                 {t("pagination.itemsPerPage")}
               </span>
@@ -751,7 +807,7 @@ export function PaymentInterface() {
                 <ChevronLeft />
               </button>
               <span className="text-ksc-white">
-                 {currentPage} / {totalPages}
+                {currentPage} / {totalPages}
               </span>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
@@ -804,7 +860,9 @@ export function PaymentInterface() {
                     <p className="text-sm text-ksc-gray-light">
                       {payment.fromAddress} → {payment.toAddress}
                     </p>
-                    <p className="font-semibold">{formatWeiToKsc(payment.amount)} KSC</p>
+                    <p className="font-semibold">
+                      {formatWeiToKsc(payment.amount)} KSC
+                    </p>
                     <p className="text-sm text-ksc-gray-light">
                       {payment.memo}
                     </p>
@@ -818,8 +876,6 @@ export function PaymentInterface() {
               </div>
             ))}
           </div>
-
-          
         </div>
       )}
     </div>
