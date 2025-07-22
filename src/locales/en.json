@@ -176,6 +176,9 @@
       "mock": "MOCK WALLET CONNECTED",
       "mockDescription": "This screen is a test Mock Wallet environment.",
       "mockNote": "(Not connected to real blockchain)"
+    },
+    "errors":{
+      "nativeTokenLoadError" : "Fail to load native token"
     }
   },
   "dashboard": {
@@ -266,11 +269,15 @@
       "scheduledSuccess": "Scheduled payment registered successfully!"
     },
     "errors": {
-      "processing": "Error occurred during payment processing.",
-      "batchProcessing": "Error occurred during batch payment processing.",
-      "scheduledProcessing": "Error occurred during scheduled payment registration.",
+      "processing": "Error occurred during payment processing",
+      "batchProcessing": "Error occurred during batch payment processing",
+      "scheduledProcessing": "Error occurred during scheduled payment registration",
       "disconnect": "Wallet not connected or invalid network",
-      "insufficient" : "Your KSC balance is insufficient"
+      "insufficient" : "Your KSC balance is insufficient",
+      "systemUnavailable": "The service is currently unavailable",
+      "saveTxError": "failed to save transaction data",
+      "invalidAddress": "Invalid recipient address format",
+      "invalidTime": "Please set the scheduled time that is after the current time"
     }
   },
   "collateral": {
@@ -328,8 +335,8 @@
     "users": "User Management",
     "settings": "Settings",
     "logs": "Logs",
-    "contractInfo": {
-      "title": "Contract Information",
+    "supplyInfo": {
+      "title": "Token Information",
       "maxSupply": "Max Supply (KSC)",
       "currentSupply": "Current Supply (KSC)",
       "totalBurned": "Total Burned (KSC)",
@@ -519,7 +526,8 @@
     "metaMaskNotFound": "MetaMask wallet not found",
     "serverReturnedError": "Server returned error",
     "abortError": "Request timed out.",
-    "unexpectedError": "An unexpected error occurred."
+    "unexpectedError": "An unexpected error occurred.",
+    "loadDataError": "Failed to load information"
   },
   "common": {
     "processing": "Processing...",
@@ -540,6 +548,11 @@
     "walletDisconnected": "Wallet disconnected",
     "accountChanged": "Account changed",
     "networkChanged": "Network changed to {{chainName}}"
+  },
+    "pagination":{
+    "itemsPerPage": "rows per page",
+    "previous": "Previous",
+    "next": "Next"
   },
   "footer": {
     "description": "KSC is a Korean Won-based stablecoin that provides stable and efficient digital asset transactions through innovative blockchain technology.",

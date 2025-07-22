@@ -121,7 +121,7 @@
       "status": {
         "title": "상태",
         "confirmed": "완료",
-        "pending": "처리중",
+        "pending": "처리 중",
         "failed": "실패"
       },
       "type": {
@@ -176,6 +176,9 @@
       "mock": "MOCK WALLET 연결됨",
       "mockDescription": "이 화면은 테스트용 Mock Wallet 환경입니다.",
       "mockNote": "(실제 블록체인과 연결되지 않음)"
+    },
+    "errors": {
+      "nativeTokenLoadError": "네이티브 토큰 잔액 조회 실패"
     }
   },
   "dashboard": {
@@ -221,10 +224,10 @@
       "disconnected": "연결 안됨"
     },
     "tabs": {
-        "overview": "개요",
-        "market": "시장 데이터",
-        "collateral": "담보 현황",
-        "transactions": "거래 내역"
+      "overview": "개요",
+      "market": "시장 데이터",
+      "collateral": "담보 현황",
+      "transactions": "거래 내역"
     },
     "underDevelopment": "이 기능은 개발 중입니다.",
     "trillion": "조",
@@ -270,7 +273,11 @@
       "batchProcessing": "배치 결제 처리 중 오류가 발생했습니다.",
       "scheduledProcessing": "예약 결제 등록 중 오류가 발생했습니다.",
       "disconnect": "지갑이 연결되지 않거나 유효하지 않은 네트워크입니다",
-      "insufficient": "KSC 잔액이 부족합니다"
+      "insufficient": "KSC 잔액이 부족합니다",
+      "systemUnavailable": "현재 서비스 이용을 할 수 없습니다",
+      "saveTxError": "거래 내역 저장에 실패했습니다",
+      "invalidAddress": "수신자 주소 형식이 올바르지 않습니다",
+      "invalidTime": "현재 시간 이후의 예약 시간을 선택해 주세요"
     }
   },
   "collateral": {
@@ -328,8 +335,8 @@
     "users": "사용자 관리",
     "settings": "설정",
     "logs": "로그",
-    "contractInfo": {
-      "title": "컨트랙트 정보",
+    "supplyInfo": {
+      "title": "토큰 정보",
       "maxSupply": "최대 발행량 (KSC)",
       "currentSupply": "현재 유통량 (KSC)",
       "totalBurned": "총 소각량 (KSC)",
@@ -519,7 +526,8 @@
     "metaMaskNotFound": "MetaMask 지갑을 찾을 수 없습니다",
     "serverReturnedError": "서버에서 에러 반환",
     "abortError": "요청 시간이 초과되었습니다",
-    "unexpectedError" : "예상치 못한 오류가 발생했습니다"
+    "unexpectedError": "예상치 못한 오류가 발생했습니다",
+    "loadDataError": "정보를 불러오는 네 실패했습니다"
   },
   "common": {
     "processing": "처리 중...",
@@ -540,6 +548,11 @@
     "walletDisconnected": "지갑 연결이 해제되었습니다",
     "accountChanged": "계정이 변경되었습니다",
     "networkChanged": "네트워크가 {{chainName}}로 변경되었습니다"
+  },
+  "pagination": {
+    "itemsPerPage": "줄 보기",
+    "previous": "이전",
+    "next": "다음"
   },
   "footer": {
     "description": "한국 원화 기반 스테이블코인 KSC는 혁신적인 블록체인 기술을 통해 안정적이고 효율적인 디지털 자산 거래를 제공합니다.",
