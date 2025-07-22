@@ -577,7 +577,7 @@ export default function WalletInterface() {
                     {t("wallet.send.amount")} (KSC)
                   </label>
                   <input
-                    type="number"
+                    type="float"
                     value={sendForm.amount}
                     onChange={(e) =>
                       setSendForm((prev) => ({
@@ -586,14 +586,13 @@ export default function WalletInterface() {
                       }))
                     }
                     placeholder="0.00"
-                    step="0.01"
                     min="0"
                     className="input-field"
                     required
                   />
                 </div>
 
-                <div>
+                {/* <div>
                   <label className="label">{t("wallet.send.chain")}</label>
                   <select
                     value={sendForm.chain}
@@ -608,7 +607,7 @@ export default function WalletInterface() {
                     <option value="xrpl">XRPL</option>
                     <option value="avalanche">Avalanche</option>
                   </select>
-                </div>
+                </div> */}
 
                 <button
                   type="submit"
@@ -692,9 +691,9 @@ export default function WalletInterface() {
                             <span
                               className={`px-2 py-1 text-xs font-medium rounded-full ${
                                 tx.txStatus === "CONFIRMED"
-                                  ? "bg-success-100 text-success-800"
+                                  ? "bg-secondary-400 text-secondary-100"
                                   : tx.txStatus === "PENDING"
-                                  ? "bg-warning-100 text-warning-800"
+                                  ? "bg-green-200 text-green-800"
                                   : "bg-error-100 text-error-800"
                               }`}
                             >
