@@ -52,9 +52,10 @@ export default function WalletInterface() {
     setItemsPerPage,
     totalTransactions,
     totalPages,
+    
   } = useWalletData();
 
-  const { sendInstant, sendInstantForTest } = useSendTokens();
+  const { sendInstant, sendInstantForTest, sendError, setSendError } = useSendTokens();
 
   const [sendForm, setSendForm] = useState({
     to: "",
@@ -70,18 +71,28 @@ export default function WalletInterface() {
   const [paymentType, setPaymentType] = useState<
     "instant" | "batch" | "scheduled"
   >("instant");
-  const [scheduledAt, setScheduledAt] = useState<string | null>(null);
+
+  const [sendLoading, setSendLoading] = useState(false);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sendForm.to || !sendForm.amount) return;
+    setSendLoading(true);
+
+    let result;
 
     if (isMock) {
-      await sendMockKsc(sendForm.to, sendForm.amount);
+      result = await sendMockKsc(sendForm.to, sendForm.amount);
     } else {
-      await sendInstantForTest(sendForm.to, sendForm.amount, sendForm.chain);
+      result = await sendInstant(sendForm.to, sendForm.amount, sendForm.chain);
+    }
+
+    if(result == "client-side-validation-fail") {
+      setSendLoading(false);
+      return;
     }
     setSendForm({ to: "", amount: "", memo: "", chain: "xrpl" });
+    setSendLoading(false);
   };
 
   const copyAddress = async () => {
@@ -115,10 +126,10 @@ export default function WalletInterface() {
     setCurrentPage(1); // 항목 수 변경 시 첫 페이지로 리셋
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     setItemsPerPage(5);
     fetchTransactions();
-  },[])
+  }, []);
 
   if (!isConnected && !isMock) {
     return (
@@ -514,9 +525,9 @@ export default function WalletInterface() {
                           <span
                             className={`px-2 py-1 rounded text-xs ${
                               tx.txStatus === "CONFIRMED"
-                                ? "bg-success-100 text-success-800"
+                                ? "bg-secondary-400 text-secondary-100"
                                 : tx.txStatus === "PENDING"
-                                ? "bg-warning-100 text-warning-800"
+                                ? "bg-green-200 text-green-800"
                                 : "bg-error-100 text-error-800"
                             }`}
                           >
@@ -563,9 +574,10 @@ export default function WalletInterface() {
                   <input
                     type="text"
                     value={sendForm.to}
-                    onChange={(e) =>
+                    onChange={(e) =>{
+                      setSendError("")
                       setSendForm((prev) => ({ ...prev, to: e.target.value }))
-                    }
+                    }}
                     placeholder={t("wallet.send.recipientAddressPlaceholder")}
                     className="input-field"
                     required
@@ -577,16 +589,18 @@ export default function WalletInterface() {
                     {t("wallet.send.amount")} (KSC)
                   </label>
                   <input
-                    type="float"
+                    type="number"
                     value={sendForm.amount}
-                    onChange={(e) =>
+                    onChange={(e) =>{
+                      setSendError("")
                       setSendForm((prev) => ({
                         ...prev,
                         amount: e.target.value,
                       }))
-                    }
-                    placeholder="0.00"
+                    }}
+                    placeholder="0"
                     min="0"
+                    step="any"
                     className="input-field"
                     required
                   />
@@ -611,16 +625,16 @@ export default function WalletInterface() {
 
                 <button
                   type="submit"
-                  disabled={isLoading || !sendForm.to || !sendForm.amount}
+                  disabled={sendLoading || !sendForm.to || !sendForm.amount}
                   className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
                 >
-                  {isLoading ? t("wallet.send.sending") : t("wallet.send.send")}
+                  {sendLoading ? t("wallet.send.sending") : t("wallet.send.send")}
                 </button>
               </form>
 
-              {error && (
-                <div className="p-4 bg-error-100 border border-error-200 rounded-lg">
-                  <p className="text-error-600">{error}</p>
+              {sendError && (
+                <div className="p-4 bg-error-100 border border-error-200 rounded-lg flex justify-center">
+                  <p className="text-error-600">{sendError}</p>
                 </div>
               )}
             </div>
@@ -723,19 +737,15 @@ export default function WalletInterface() {
                       ))}
                     </tbody>
                   </table>
-                  
                 </div>
-                
               ) : (
                 <div className="text-center py-8">
                   <p className="text-ksc-gray">
                     {t("wallet.transactions.noTransactions")}
                   </p>
                 </div>
-              )
-              
-              }
-                        {/* 페이지네이션 컨트롤 */}
+              )}
+              {/* 페이지네이션 컨트롤 */}
               <div className="flex justify-between items-center mt-6">
                 <div className="flex items-center">
                   <CustomDropdown
@@ -769,9 +779,7 @@ export default function WalletInterface() {
                 </div>
               </div>
             </div>
-            
           )}
-
         </div>
       </div>
     </div>
