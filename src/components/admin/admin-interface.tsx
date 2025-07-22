@@ -62,7 +62,7 @@ export function AdminInterface() {
           <div className="grid md:grid-cols-3 gap-4">
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatWeiToKsc(supplyInfo.maxSupply)}
+                {formatWeiToKsc(supplyInfo.maxSupply || '-')}
               </div>
               <div className="text-sm text-ksc-gray">
                 {t("admin.supplyInfo.maxSupply")}
@@ -71,7 +71,7 @@ export function AdminInterface() {
 
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatWeiToKsc(supplyInfo.totalSupply)}
+                {formatWeiToKsc(supplyInfo.totalSupply || '-')}
               </div>
               <div className="text-sm text-ksc-gray">
                 {t("admin.supplyInfo.currentSupply")}
@@ -80,7 +80,7 @@ export function AdminInterface() {
 
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatWeiToKsc(supplyInfo.totalBurned)}
+                {formatWeiToKsc(supplyInfo.totalBurned ||'-')}
               </div>
               <div className="text-sm text-ksc-gray">
                 {t("admin.supplyInfo.totalBurned")}
