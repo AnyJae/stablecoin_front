@@ -8,6 +8,10 @@ export const formatAddress = (address: string) => {
 
 // ⚙️금액 소수점 2~6 자리 표현
 export const formatAmount = (balance: string) => {
+  if(balance == "-"){
+    return balance;
+  }
+
   return parseFloat(balance).toLocaleString("ko-KR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 6,
@@ -42,7 +46,7 @@ export const formatWeiToKsc = (
   }
 };
 
-// ⚙️날짜 및 시간 - 년.월.일 시간
+// ⚙️날짜 및 시간 - 년.월.일 시간 (YYYY-MM-DDTHH:mm)
 export const formatDate = (timestamp: string | null | undefined) => {
   const { language } = useLanguage();
   const locale = language === "en" ? "en-US" : "ko-KR";
