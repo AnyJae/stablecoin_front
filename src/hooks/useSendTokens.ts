@@ -153,9 +153,9 @@ export const useSendTokens = () => {
         }
 
         toast.promise(tx.wait(), {
-          loading: "트랜잭션을 처리 중입니다...",
-          success: "전송이 완료되었습니다!",
-          error: "전송에 실패했습니다.",
+          loading: t(`messages.txProcessing`),
+          success: t(`messages.txSuccess`),
+          error: t(`messages.txFail`),
         });
 
         const receipt = await tx.wait(); //트랜잭션 영수증
@@ -375,11 +375,10 @@ export const useSendTokens = () => {
 
         // 트랜잭션 확정 대기 및 토스트 메시지
         toast.promise(tx.wait(), {
-          loading: "트랜잭션을 처리 중입니다...",
-          success: "전송이 완료되었습니다!",
-          error: "전송에 실패했습니다.",
+          loading: t(`messages.txProcessing`),
+          success: t(`messages.txSuccess`),
+          error: t(`messages.txFail`),
         });
-
         const receipt = await tx.wait(); //트랜잭션 영수증
 
         // 가스비 계산
@@ -561,9 +560,9 @@ export const useSendTokens = () => {
         }
 
         toast.promise(tx.wait(), {
-          loading: "트랜잭션을 처리 중입니다...",
-          success: "전송이 완료되었습니다!",
-          error: "전송에 실패했습니다.",
+          loading: t(`messages.txProcessing`),
+          success: t(`messages.txSuccess`),
+          error: t(`messages.txFail`),
         });
 
         const receipt = await tx.wait(); //트랜잭션 영수증
