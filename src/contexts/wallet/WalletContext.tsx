@@ -247,9 +247,9 @@ export function WalletProvider({ children }: WalletProviderProps) {
             const chainId = network.chainId.toString();
             let currentChain: "xrpl" | "avalanche" | null = null;
 
-            if (chainId === AVALANCHE_CHAIN_CONFIG.chainId) {
+            if (Number(chainId) == Number(AVALANCHE_CHAIN_CONFIG.chainId)) {
               currentChain = "avalanche";
-            } else if (chainId === XRPL_EVM_CHAIN_CONFIG.chainId) {
+            } else if (Number(chainId) == Number(XRPL_EVM_CHAIN_CONFIG.chainId)) {
               currentChain = "xrpl";
             }
 
