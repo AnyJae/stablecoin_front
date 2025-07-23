@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   RefreshCw,
+  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/contexts/localization/LanguageContext";
@@ -22,6 +23,7 @@ import { formatDate, formatWeiToKsc } from "@/utils/formatters";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
 import { CustomDropdown } from "../common/CustomDropdown";
 import { FutureDateTimePicker } from "../common/input/FutureDateTimePicker";
+import { AddressDisplay } from "../common/AddressDisplay";
 
 interface PaymentForm {
   to: string;
@@ -68,9 +70,7 @@ export function PaymentInterface() {
     sendError,
     setSendError,
   } = useSendTokens();
-  const [activeTab, setActiveTab] = useState<
-    "instant" | "batch" | "scheduled" | "history"
-  >("instant");
+  const [activeTab, setActiveTab] = useState<string>(t("payment.instant"));
 
   const [sendLoading, setSendLoading] = useState(false);
 
@@ -143,7 +143,7 @@ export function PaymentInterface() {
         batchForm.description
       );
       if (result == "client-side-validation-fail") return;
-      // setBatchForm({ recipients: [""], amounts: [""], description: "" });
+      setBatchForm({ recipients: [""], amounts: [""], description: "" });
     } catch (err) {
       toast.error(t("payment.errors.processing"));
     } finally {
@@ -176,9 +176,8 @@ export function PaymentInterface() {
         scheduledForm.description
       );
 
+      if (result == "client-side-validation-fail") return;
 
-      if(result == "client-side-validation-fail") return;
-      
       setScheduledForm({
         to: "",
         amount: "",
@@ -256,7 +255,7 @@ export function PaymentInterface() {
 
   if (!isConnected) {
     return (
-      <div className="max-w-2xl mx-auto p-6">
+      <div className="md:max-w-2xl md:mx-auto md:p-6 max-w-7xl px-4">
         <div className="card">
           <h2 className="text-2xl font-bold text-ksc-white mb-6 text-center">
             {t("wallet.connect")}
@@ -360,16 +359,16 @@ export function PaymentInterface() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="md:max-w-5xl md:mx-auto py-6 md:px-6 lg:px-8">
       {/* 탭 네비게이션 */}
-      <div className="flex space-x-1 bg-ksc-gray-dark rounded-lg p-1">
+      <div className="hidden md:flex space-x-1 bg-ksc-gray-dark rounded-lg p-1">
         <button
           onClick={() => {
-            setActiveTab("instant");
+            setActiveTab(t("payment.instant"));
             setSendError("");
           }}
           className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors group ${
-            activeTab === "instant"
+            activeTab === t("payment.instant")
               ? "bg-ksc-blue text-white"
               : "text-ksc-gray-light hover:text-white"
           }`}
@@ -377,14 +376,14 @@ export function PaymentInterface() {
           <Send
             size={20}
             className={`transition-colors ${
-              activeTab === "instant"
+              activeTab === t("payment.instant")
                 ? "text-ksc-mint"
                 : "text-ksc-gray-light group-hover:text-ksc-mint"
             }`}
           />
           <span
             className={`transition-colors ${
-              activeTab === "instant"
+              activeTab === t("payment.instant")
                 ? "text-ksc-mint"
                 : "text-ksc-gray-light group-hover:text-ksc-mint"
             }`}
@@ -394,9 +393,9 @@ export function PaymentInterface() {
         </button>
 
         <button
-          onClick={() => setActiveTab("batch")}
+          onClick={() => setActiveTab(t("payment.batch"))}
           className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors group ${
-            activeTab === "batch"
+            activeTab === t("payment.batch")
               ? "bg-ksc-blue text-white"
               : "text-ksc-gray-light hover:text-white"
           }`}
@@ -404,14 +403,14 @@ export function PaymentInterface() {
           <Users
             size={20}
             className={`transition-colors ${
-              activeTab === "batch"
+              activeTab === t("payment.batch")
                 ? "text-ksc-mint"
                 : "text-ksc-gray-light group-hover:text-ksc-mint"
             }`}
           />
           <span
             className={`transition-colors ${
-              activeTab === "batch"
+              activeTab === t("payment.batch")
                 ? "text-ksc-mint"
                 : "text-ksc-gray-light group-hover:text-ksc-mint"
             }`}
@@ -421,9 +420,9 @@ export function PaymentInterface() {
         </button>
 
         <button
-          onClick={() => setActiveTab("scheduled")}
+          onClick={() => setActiveTab(t("payment.schedule"))}
           className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors group ${
-            activeTab === "scheduled"
+            activeTab === t("payment.schedule")
               ? "bg-ksc-blue text-white"
               : "text-ksc-gray-light hover:text-white"
           }`}
@@ -431,14 +430,14 @@ export function PaymentInterface() {
           <Clock
             size={20}
             className={`transition-colors ${
-              activeTab === "scheduled"
+              activeTab === t("payment.schedule")
                 ? "text-ksc-mint"
                 : "text-ksc-gray-light group-hover:text-ksc-mint"
             }`}
           />
           <span
             className={`transition-colors ${
-              activeTab === "scheduled"
+              activeTab === t("payment.schedule")
                 ? "text-ksc-mint"
                 : "text-ksc-gray-light group-hover:text-ksc-mint"
             }`}
@@ -478,8 +477,56 @@ export function PaymentInterface() {
         </button>
       </div>
 
+      {/* 탭 네비게이션 - 모바일 */}
+      <div className="md:hidden flex justify-between">
+        <CustomDropdown
+          _onChange={(selectedOption: any) => {
+            console.log("현재 선택된 탭", selectedOption.value);
+            setActiveTab(selectedOption.value);
+          }}
+          _options={[
+            t("payment.instant"),
+            t("payment.batch"),
+            t("payment.schedule"),
+          ]}
+          _defaultOption={0}
+          _width={120}
+          _fontSize={16}
+        />
+
+        <button
+          onClick={() => {
+            setActiveTab("history");
+            fetchTransactions();
+          }}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors group ${
+            activeTab === "history"
+              ? "bg-ksc-blue text-white"
+              : "text-ksc-gray-light hover:text-white"
+          }`}
+        >
+          <History
+            size={20}
+            className={`transition-colors ${
+              activeTab === "history"
+                ? "text-ksc-mint"
+                : "text-ksc-gray-light group-hover:text-ksc-mint"
+            }`}
+          />
+          <span
+            className={`transition-colors ${
+              activeTab === "history"
+                ? "text-ksc-mint"
+                : "text-ksc-gray-light group-hover:text-ksc-mint"
+            }`}
+          >
+            {t("payment.history")}
+          </span>
+        </button>
+      </div>
+
       {/* 즉시 결제 폼 */}
-      {activeTab === "instant" && (
+      {activeTab === t("payment.instant") && (
         <div className="bg-ksc-gray-dark rounded-lg p-6">
           <h2 className="text-2xl font-semibold mb-6 flex items-center">
             <Send className="mr-2" />
@@ -555,7 +602,9 @@ export function PaymentInterface() {
               onClick={handleInstantPayment}
               className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
             >
-              {sendLoading ? t("common.processing") : t("payment.sendForm.send")}
+              {sendLoading
+                ? t("common.processing")
+                : t("payment.sendForm.send")}
             </button>
           </form>
           {sendError && (
@@ -567,7 +616,7 @@ export function PaymentInterface() {
       )}
 
       {/* 배치 결제 폼 */}
-      {activeTab === "batch" && (
+      {activeTab === t("payment.batch") && (
         <div className="bg-ksc-gray-dark rounded-lg p-6">
           <h2 className="text-2xl font-semibold mb-6 flex items-center">
             <Users className="mr-2" />
@@ -614,13 +663,22 @@ export function PaymentInterface() {
                 </div>
 
                 {batchForm.recipients.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeRecipient(index)}
-                    className="mt-8 px-3 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg"
-                  >
-                    {t("common.delete")}
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => removeRecipient(index)}
+                      className="hidden md:block mt-8 px-3 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+                    >
+                      {t("common.delete")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeRecipient(index)}
+                      className="md:hidden text-white"
+                    >
+                      <X />
+                    </button>
+                  </>
                 )}
               </div>
             ))}
@@ -674,7 +732,7 @@ export function PaymentInterface() {
       )}
 
       {/* 예약 결제 폼 */}
-      {activeTab === "scheduled" && (
+      {activeTab === t("payment.schedule") && (
         <div className="bg-ksc-gray-dark rounded-lg p-6">
           <h2 className="text-2xl font-semibold mb-6 flex items-center">
             <Clock className="mr-2" />
@@ -837,7 +895,7 @@ export function PaymentInterface() {
             {txHistory.map((payment) => (
               <div key={payment.id} className="bg-ksc-box rounded-lg p-4">
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex-grow">
                     <div className="flex items-center space-x-2 mb-2">
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
@@ -873,14 +931,34 @@ export function PaymentInterface() {
                         {payment.memo}
                       </p>
                     </div>
-                    <p className="text-xs text-ksc-gray-light">
-                      {payment.fromAddress} → {payment.toAddress}
+
+                    <p className="hidden sm:block text-xs text-ksc-gray-light">
+                      <AddressDisplay
+                        address={payment.fromAddress}
+                        full={true}
+                      />
+                      <span className="px-2">→</span>
+                      <AddressDisplay address={payment.toAddress} full={true} />
+                    </p>
+                    <p className="sm:hidden text-xs text-ksc-gray-light">
+                      <AddressDisplay
+                        address={payment.fromAddress}
+                      />
+                      <span className="px-2">→</span>
+                      <AddressDisplay address={payment.toAddress} />
                     </p>
                     <p className="font-semibold mt-3">
                       {formatWeiToKsc(payment.amount)} KSC
                     </p>
+                    <div className="lg:hidden text-right">
+                      <p className="text-xs text-ksc-gray-light">
+                        {payment.txStatus === "PENDING"
+                          ? formatDate(payment.createdAt)
+                          : formatDate(payment.statusUpdatedAt || "")}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
+                  <div className="hidden lg:block text-right">
                     <p className="text-sm text-ksc-gray-light">
                       {payment.txStatus === "PENDING"
                         ? formatDate(payment.createdAt)

@@ -75,7 +75,7 @@ export function Features() {
           <h2 className="text-3xl md:text-4xl font-bold text-ksc-white mb-4">
             {t("home.features.title")}
           </h2>
-          <p className="text-xl text-ksc-gray max-w-3xl mx-auto">
+          <p className="text-m md:text-xl text-ksc-gray max-w-3xl mx-auto">
             {t("home.features.subtitle")}
           </p>
         </div>

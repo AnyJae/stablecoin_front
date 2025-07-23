@@ -19,10 +19,12 @@ import toast from "react-hot-toast";
 import { usePathname } from "next/navigation";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { formatAddress, formatAmount } from "@/utils/formatters";
+import { AddressDisplay } from "./common/AddressDisplay";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [walletDropdown, setWalletDropdown] = useState(false);
+  const [isMobileWalletMenuOpen, setIsMobileWalletMenuOpen] = useState(false);
   const { connectAvalancheWallet, connectXrplEvmWallet, disconnectWallet } =
     useWalletConnect();
   const { isConnected, address, isLoading, error } = useWalletContext();
@@ -63,7 +65,7 @@ export function Header() {
           </div>
 
           {/* Desktop Navigation (가운데) */}
-          <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center space-x-8">
+          <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden lg:flex items-center space-x-8">
             <Link
               href="/"
               className={`${
@@ -140,7 +142,7 @@ export function Header() {
             {isConnected ? (
               <div className="flex items-center space-x-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium hidden lg:block">
                     {formatAddress(address!)}
                   </p>
                   {/* <p className="text-xs text-ksc-gray-light">
@@ -151,7 +153,7 @@ export function Header() {
                 </div>
                 <button
                   onClick={handleDisconnectWallet}
-                  className="btn-secondary flex items-center space-x-2"
+                  className="btn-secondary flex items-center space-x-2 hidden lg:block"
                   title={t("wallet.disconnect")}
                 >
                   <LogOut
@@ -163,7 +165,7 @@ export function Header() {
               </div>
             ) : (
               <div
-                className="relative hidden md:block"
+                className="relative hidden lg:block"
                 onMouseEnter={() => setWalletDropdown(true)}
                 onMouseLeave={() => setWalletDropdown(false)}
               >
@@ -206,7 +208,7 @@ export function Header() {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2 rounded-md text-ksc-gray hover:text-ksc-mint hover:bg-ksc-box/50 ml-2"
+            className="lg:hidden p-2 rounded-md text-ksc-gray hover:text-ksc-mint hover:bg-ksc-box/50 ml-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? (
@@ -219,8 +221,8 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-ksc-box border-t border-ksc-box/50">
+          <div className="lg:hidden">
+            <div className="flex flex-col items-center px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-ksc-box border-t border-ksc-box/50">
               <Link
                 href="/"
                 className="block px-3 py-2 text-ksc-gray hover:text-ksc-mint hover:bg-ksc-box/50 rounded-md"
@@ -277,10 +279,10 @@ export function Header() {
               <div className="pt-4 border-t border-ksc-box/50">
                 {isConnected ? (
                   <div className="space-y-3">
-                    <div className="px-3 py-2 bg-ksc-gray rounded-md">
+                    <div className="px-3 py-2 border border-1 border-ksc-mint rounded-md">
                       <div className="flex items-center space-x-2 mb-1">
-                        <User className="w-4 h-4 text-ksc-mint" />
-                        <span className="text-sm font-medium">{address}</span>
+                        <User className="w-4 h-4" />
+                        <span className="text-sm"><AddressDisplay address={address||"-"} full={true}/></span>
                       </div>
                       {/* <p className="text-xs text-ksc-gray-light">
                         {balance
@@ -290,8 +292,7 @@ export function Header() {
                     </div>
                     <button
                       onClick={() => {
-                        disconnectWallet;
-                        setIsMenuOpen(false);
+                        disconnectWallet();
                       }}
                       className="w-full btn-secondary flex items-center justify-center space-x-2"
                     >
@@ -300,19 +301,42 @@ export function Header() {
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => {
-                      // handleConnect();
-                      setIsMenuOpen(false);
-                    }}
-                    disabled={isLoading}
-                    className="w-full btn-primary flex items-center justify-center space-x-2"
-                  >
-                    <Wallet className="w-4 h-4" />
-                    <span>
-                      {isLoading ? t("common.loading") : t("wallet.connect")}
-                    </span>
-                  </button>
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => setIsMobileWalletMenuOpen(true)}
+                      disabled={isLoading}
+                      className="w-full btn-primary flex items-center justify-center space-x-2"
+                    >
+                      <Wallet className="w-4 h-4" />
+                      <span>
+                        {isLoading ? t("common.loading") : t("wallet.connect")}
+                      </span>
+                    </button>
+                    {isMobileWalletMenuOpen && (
+                      <div className="bg-ksc-box border border-ksc-gray rounded-lg shadow-lg">
+                        <button
+                          className="w-full px-4 py-2 text-center hover:bg-ksc-mint/10 hover:text-ksc-mint transition-colors"
+                          onClick={() => {
+                            handleConnectWallet("xrpl");
+                            setIsMobileWalletMenuOpen(false);
+                          }}
+                          disabled={isLoading}
+                        >
+                          XRPL
+                        </button>
+                        <button
+                          className="w-full px-4 py-2 text-center hover:bg-ksc-mint/10 hover:text-ksc-mint transition-colors"
+                          onClick={() => {
+                            handleConnectWallet("avalanche");
+                            setIsMobileWalletMenuOpen(false);
+                          }}
+                          disabled={isLoading}
+                        >
+                          Avalanche
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

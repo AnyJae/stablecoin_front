@@ -12,32 +12,34 @@ export function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           {/* Main Heading */}
-          <h1 className="text-4xl md:text-6xl font-bold text-ksc-white mb-6">
-            {t("home.hero.title.ksc")}{" "}
-            <span className="text-gradient">
-              {t("home.hero.title.stablecoin")}
-            </span>
-          </h1>
+          <div className="flex flex-col gap-5">
+            <h1 className="text-4xl md:text-6xl font-bold text-ksc-white mb-6">
+              {t("home.hero.title.ksc")}{" "}
+              <span className="text-gradient">
+                {t("home.hero.title.stablecoin")}
+              </span>
+            </h1>
 
-          {/* Subtitle */}
-          <p className="text-lg md:text-lg text-ksc-gray mb-8 max-w-3xl mx-auto">
-            {t("home.hero.subtitle")}
-            <br />
-            {t("home.hero.description")}
-          </p>
+            {/* Subtitle */}
+            <p className="text-m md:text-lg text-ksc-gray mb-8 max-w-3xl mx-auto">
+              {t("home.hero.subtitle")}
+              <br />
+              {t("home.hero.description")}
+            </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Link
-              href="/wallet"
-              className="btn-primary text-lg px-8 py-3 flex items-center space-x-2"
-            >
-              <span>{t("home.hero.cta")}</span>
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link href="/docs" className="btn-secondary text-lg px-8 py-3">
-              {t("home.hero.learnMore")}
-            </Link>
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+              <Link
+                href="/wallet"
+                className="btn-primary text-lg px-8 py-3 flex items-center space-x-2"
+              >
+                <span>{t("home.hero.cta")}</span>
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link href="/docs" className="btn-secondary text-lg px-8 py-3">
+                {t("home.hero.learnMore")}
+              </Link>
+            </div>
           </div>
 
           {/* Features Grid */}

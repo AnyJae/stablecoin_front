@@ -133,7 +133,7 @@ export default function WalletInterface() {
 
   if (!isConnected && !isMock) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="md:max-w-4xl md:mx-auto md:p-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="card">
           <h2 className="text-2xl font-bold text-ksc-white mb-6 text-center">
             {t("wallet.connect")}
@@ -141,7 +141,7 @@ export default function WalletInterface() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* XRPL 지갑 연결 */}
-            <div className="flex flex-col justify-between bg-ksc-box rounded-lg p-6 border border-ksc-mint/20 hover:shadow-md hover:shadow-ksc-mint/10 transition-shadow">
+            <div className="flex flex-col gap-8 md:gap-0 justify-between bg-ksc-box rounded-lg p-6 border border-ksc-mint/20 hover:shadow-md hover:shadow-ksc-mint/10 transition-shadow">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-ksc-mint rounded-lg flex items-center justify-center mr-4">
                   <svg
@@ -184,7 +184,7 @@ export default function WalletInterface() {
             </div>
 
             {/* Avalanche 지갑 연결 */}
-            <div className="flex flex-col justify-between bg-ksc-box rounded-lg p-6 border border-ksc-mint/20 hover:shadow-md hover:shadow-ksc-mint/10 transition-shadow">
+            <div className="flex flex-col gap-8 md:gap-0 justify-between bg-ksc-box rounded-lg p-6 border border-ksc-mint/20 hover:shadow-md hover:shadow-ksc-mint/10 transition-shadow">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-ksc-mint rounded-lg flex items-center justify-center mr-4">
                   <svg
@@ -279,7 +279,7 @@ export default function WalletInterface() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="md:max-w-6xl md:mx-auto md:p-6">
       {/* Mock Wallet 연결 시 강조 배지 및 안내 */}
       {isMock && (
         <div className="mb-6 p-4 bg-ksc-mint/10 border border-ksc-mint rounded-lg flex items-center space-x-4">
@@ -351,7 +351,7 @@ export default function WalletInterface() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 hidden md:block">
             <button
               onClick={disconnectWallet}
               className="flex items-center space-x-2 text-white hover:text-ksc-mint/80 text-sm"
@@ -425,7 +425,7 @@ export default function WalletInterface() {
       {/* 탭 네비게이션 */}
       <div className="card mb-6">
         <div className="border-b border-ksc-box/50">
-          <nav className="flex space-x-8 px-6">
+          <nav className="flex space-x-8 md:px-6">
             {[
               { id: "overview", label: t("wallet.tabs.overview"), icon: "📊" },
               { id: "send", label: t("wallet.tabs.send"), icon: "💸" },
@@ -444,7 +444,7 @@ export default function WalletInterface() {
                     : "border-transparent text-ksc-gray hover:text-ksc-white hover:border-ksc-gray"
                 }`}
               >
-                <span className="mr-2">{tab.icon}</span>
+                <span className="mr-2 hidden md:inline">{tab.icon}</span>
                 {tab.label}
               </button>
             ))}
@@ -452,7 +452,7 @@ export default function WalletInterface() {
         </div>
 
         {/* 탭 컨텐츠 */}
-        <div className="p-6">
+        <div className="md:p-6 py-6">
           {activeTab === "overview" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-4">
@@ -477,31 +477,31 @@ export default function WalletInterface() {
                 </button>
               </div>
               <div className="grid md:grid-cols-3 gap-4">
-                <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
+                <div className="flex  gap-3 md:flex-col md:gap-0 bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {kscBalance || ""}
+                    {kscBalance || "-"}
                   </div>
-                  <div className="text-sm text-ksc-gray">
+                  <div className="text-sm text-ksc-gray flex items-center">
                     {t("wallet.overview.kscBalance")}
                   </div>
                 </div>
 
-                <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
+                <div className="flex  gap-3 md:flex-col md:gap-0 bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {balance || ""}
+                    {balance || "-"}
                   </div>
-                  <div className="text-sm text-ksc-gray">
+                  <div className="text-sm text-ksc-gray flex items-center">
                     {t("wallet.overview.balance", {
                       token: chainName === "xrpl" ? "XRP" : "AVAX",
                     })}
                   </div>
                 </div>
 
-                <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
+                <div className="flex  gap-3 md:flex-col md:gap-0 bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {txCount}
+                    {txCount || '-'}
                   </div>
-                  <div className="text-sm text-ksc-gray">
+                  <div className="text-sm text-ksc-gray flex items-center">
                     {t("wallet.overview.totalTransactions")}
                   </div>
                 </div>
