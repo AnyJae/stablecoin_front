@@ -4,13 +4,14 @@ import Dropdown from "react-dropdown";
 import "react-dropdown/style.css";
 import styled, { css } from "styled-components";
 
-interface  CustomDropdownProps {
+interface CustomDropdownProps {
   _onChange: (selectedOption: any) => void;
-  _options: (string|number)[];
+  _options: (string | number)[];
   _defaultOption: number;
-  _placeholder? : string;
-  _border?: string,
+  _placeholder?: string;
+  _border?: string;
   _width?: number;
+  _fontSize?: number;
 }
 
 export function CustomDropdown({
@@ -18,8 +19,9 @@ export function CustomDropdown({
   _options,
   _defaultOption = 0,
   _placeholder = "Select an option",
-  _border= 'none',
-  _width=60
+  _border = "none",
+  _width = 60,
+  _fontSize = 14,
 }: CustomDropdownProps) {
   return (
     <StyledDropdown
@@ -29,6 +31,7 @@ export function CustomDropdown({
       placeholder={_placeholder}
       border={_border}
       width={_width}
+      fontSize={_fontSize}
     />
   );
 }
@@ -63,20 +66,20 @@ const StyledDropdown = styled(Dropdown)`
       }
     }}
     width: ${(props) => props.width}px;
-    font-size: 14px;
+    font-size: ${(props) => props.fontSize}px;
   }
 
-    .Dropdown-placeholder {
+  .Dropdown-placeholder {
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
   }
 
-  .Dropdown-arrow-wrapper{
+  .Dropdown-arrow-wrapper {
     margin-left: 10px;
     display: flex;
-    align-items: center
+    align-items: center;
   }
 
   .Dropdown-menu {
@@ -90,18 +93,17 @@ const StyledDropdown = styled(Dropdown)`
     display: flex;
     justify-content: center;
     color: white;
-    font-size: 14px;
+    font-size:  ${(props) => props.fontSize}px;
     &:hover {
       background-color: transparent;
       color: #1bdebe;
     }
+
   }
 
   .Dropdown-option.is-selected {
     color: #1bdebe;
-    font-size: 14px;
+    font-size:  ${(props) => props.fontSize}px;
     background-color: transparent;
   }
-
-
 `;
