@@ -4,13 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getFetchErrorMessage } from "@/utils/translator";
 
 // 개별 트랜잭션 생성
-
-
 export async function POST(request: NextRequest) {
   const lang = request.headers.get("accept-language") || "en";
 
     let body: {
-    networkType: string;
+    fromNetworkType: string;
+    toNetworkType: string;
     paymentType: string;
     fromAddress: string;
     toAddress: string;

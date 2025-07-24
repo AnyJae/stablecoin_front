@@ -103,6 +103,7 @@ export function PaymentInterface() {
 
     try {
       const result = await sendInstant(
+        chainName,     //📍브릿지 기능 완료 후 수정 필요
         instantForm.to,
         instantForm.amount,
         chainName,
@@ -255,7 +256,7 @@ export function PaymentInterface() {
 
   if (!isConnected) {
     return (
-      <div className="md:max-w-2xl md:mx-auto md:p-6 max-w-7xl px-4">
+      <div className="md:max-w-2xl md:mx-auto md:p-6 max-w-7xl">
         <div className="card">
           <h2 className="text-2xl font-bold text-ksc-white mb-6 text-center">
             {t("wallet.connect")}

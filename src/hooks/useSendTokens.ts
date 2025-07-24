@@ -46,6 +46,7 @@ export const useSendTokens = () => {
   // 1. 즉시 전송 함수
   const sendInstant = useCallback(
     async (
+      toNetworkType: "xrpl" | "avalanche" | null,
       toAddress: string,
       amount: string,
       network: "xrpl" | "avalanche" | null,
@@ -126,7 +127,8 @@ export const useSendTokens = () => {
               "accept-language": language,
             },
             body: JSON.stringify({
-              networkType: network === "xrpl" ? "XRPL" : "AVAX",
+              fromNetworkType: network === "xrpl" ? "XRPL" : "AVAX", 
+              toNetworkType: network === "xrpl" ? "XRPL" : "AVAX",  //📍브릿지 기능 완료 후 수정 필요
               paymentType: "INSTANT",
               fromAddress: address,
               toAddress,
@@ -327,7 +329,8 @@ export const useSendTokens = () => {
                 "accept-language": language,
               },
               body: JSON.stringify({
-                networkType: network === "xrpl" ? "XRPL" : "AVAX",
+                toNetworkType:network === "xrpl" ? "XRPL" : "AVAX",
+                fromNetworkType: network === "xrpl" ? "XRPL" : "AVAX",
                 paymentType: "BATCH",
                 fromAddress: address,
                 toAddress: toAddr,
@@ -437,6 +440,7 @@ export const useSendTokens = () => {
   // 3. 예약 전송 함수
   const sendScheduled = useCallback(
     async (
+      toNetworkType: "xrpl" | "avalanche" | null,
       toAddress: string,
       amount: string,
       network: "xrpl" | "avalanche" | null,
@@ -525,7 +529,8 @@ export const useSendTokens = () => {
               "accept-language": language,
             },
             body: JSON.stringify({
-              networkType: network === "xrpl" ? "XRPL" : "AVAX",
+              toNetworkType: network === "xrpl" ? "XRPL" : "AVAX",    //📍브릿지 기능 완료 후 수정 필요
+              fromNetworkType: network === "xrpl" ? "XRPL" : "AVAX",
               paymentType: "INSTANT",
               fromAddress: address,
               toAddress,
