@@ -143,7 +143,7 @@ export function Header() {
               <div className="flex items-center space-x-3">
                 <div className="text-right">
                   <p className="text-sm font-medium hidden lg:block">
-                    {formatAddress(address!)}
+                    {<AddressDisplay address={address||""}/>}
                   </p>
                   {/* <p className="text-xs text-ksc-gray-light">
                     {balance
@@ -276,7 +276,7 @@ export function Header() {
               </Link>
 
               {/* Mobile Wallet Section */}
-              <div className="pt-4 border-t border-ksc-box/50">
+              <div className="w-full pt-4 border-t border-ksc-box/50">
                 {isConnected ? (
                   <div className="space-y-3">
                     <div className="px-3 py-2 border border-1 border-ksc-mint rounded-md">
@@ -301,7 +301,7 @@ export function Header() {
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-3 w-full">
                     <button
                       onClick={() => setIsMobileWalletMenuOpen(true)}
                       disabled={isLoading}

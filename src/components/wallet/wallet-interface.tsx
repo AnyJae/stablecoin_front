@@ -20,6 +20,7 @@ import { useWalletData } from "@/hooks/useWalletData";
 import { useSendTokens } from "@/hooks/useSendTokens";
 import { formatAddress, formatWeiToKsc, formatDate } from "@/utils/formatters";
 import { CustomDropdown } from "../common/CustomDropdown";
+import { AddressDisplay } from "../common/AddressDisplay";
 
 export default function WalletInterface() {
   const { t } = useLanguage();
@@ -52,10 +53,10 @@ export default function WalletInterface() {
     setItemsPerPage,
     totalTransactions,
     totalPages,
-    
   } = useWalletData();
 
-  const { sendInstant, sendInstantForTest, sendError, setSendError } = useSendTokens();
+  const { sendInstant, sendInstantForTest, sendError, setSendError } =
+    useSendTokens();
 
   const [sendForm, setSendForm] = useState({
     to: "",
@@ -87,7 +88,7 @@ export default function WalletInterface() {
       result = await sendInstant(sendForm.to, sendForm.amount, sendForm.chain);
     }
 
-    if(result == "client-side-validation-fail") {
+    if (result == "client-side-validation-fail") {
       setSendLoading(false);
       return;
     }
@@ -133,10 +134,10 @@ export default function WalletInterface() {
   }, []);
 
   useEffect(() => {
-  if (itemsPerPage > 0) { 
-    fetchTransactions(); 
-  }
-}, [itemsPerPage]);
+    if (itemsPerPage > 0) {
+      fetchTransactions();
+    }
+  }, [itemsPerPage]);
 
   if (!isConnected && !isMock) {
     return (
@@ -506,7 +507,7 @@ export default function WalletInterface() {
 
                 <div className="flex  gap-3 md:flex-col md:gap-0 bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {txCount || '-'}
+                    {txCount || "-"}
                   </div>
                   <div className="text-sm text-ksc-gray flex items-center">
                     {t("wallet.overview.totalTransactions")}
@@ -581,9 +582,9 @@ export default function WalletInterface() {
                   <input
                     type="text"
                     value={sendForm.to}
-                    onChange={(e) =>{
-                      setSendError("")
-                      setSendForm((prev) => ({ ...prev, to: e.target.value }))
+                    onChange={(e) => {
+                      setSendError("");
+                      setSendForm((prev) => ({ ...prev, to: e.target.value }));
                     }}
                     placeholder={t("wallet.send.recipientAddressPlaceholder")}
                     className="input-field"
@@ -598,12 +599,12 @@ export default function WalletInterface() {
                   <input
                     type="number"
                     value={sendForm.amount}
-                    onChange={(e) =>{
-                      setSendError("")
+                    onChange={(e) => {
+                      setSendError("");
                       setSendForm((prev) => ({
                         ...prev,
                         amount: e.target.value,
-                      }))
+                      }));
                     }}
                     placeholder="0"
                     min="0"
@@ -635,7 +636,9 @@ export default function WalletInterface() {
                   disabled={sendLoading || !sendForm.to || !sendForm.amount}
                   className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
                 >
-                  {sendLoading ? t("wallet.send.sending") : t("wallet.send.send")}
+                  {sendLoading
+                    ? t("wallet.send.sending")
+                    : t("wallet.send.send")}
                 </button>
               </form>
 
@@ -648,141 +651,293 @@ export default function WalletInterface() {
           )}
 
           {activeTab === "transactions" && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-ksc-white">
-                  {t("wallet.transactions.title")}
-                </h3>
-                <button
-                  onClick={() => fetchTransactions()}
-                  disabled={isLoading}
-                  className="flex items-center space-x-2 text-white hover:text-ksc-mint/80 text-sm"
-                >
-                  <RefreshCw
-                    className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
-                  />
-                  <span>{t("wallet.transactions.refresh")}</span>
-                </button>
+            <div className="flex flex-col gap-10">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-ksc-white">
+                    {t("wallet.transactions.title")}
+                  </h3>
+                  <button
+                    onClick={() => fetchTransactions()}
+                    disabled={isLoading}
+                    className="flex items-center space-x-2 text-white hover:text-ksc-mint/80 text-sm"
+                  >
+                    <RefreshCw
+                      className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+                    />
+                    <span>{t("wallet.transactions.refresh")}</span>
+                  </button>
+                </div>
+
+                {txHistory.length > 0 ? (
+                  <div>
+                    <table className="min-w-full divide-y divide-ksc-box/50">
+                      <thead className="bg-ksc-box/30">
+                        <tr>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.hash")}
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.from")}
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.to")}
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.amount")}
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.status.title")}
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.timestamp")}
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.explorer")}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-ksc-box/20 divide-y divide-ksc-box/30">
+                        {txHistory.map((tx) => (
+                          <tr key={tx.id} className="hover:bg-ksc-box/30">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-ksc-white text-center">
+                              {<AddressDisplay address={tx.txHash || ""} />}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white text-center">
+                              {
+                                <AddressDisplay
+                                  address={tx.fromAddress || ""}
+                                />
+                              }
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white text-center">
+                              {<AddressDisplay address={tx.toAddress || ""} />}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white text-right text-center">
+                              {formatWeiToKsc(tx.amount)}&nbsp; KSC
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <span
+                                className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                  tx.txStatus === "CONFIRMED"
+                                    ? "bg-secondary-400 text-secondary-100"
+                                    : tx.txStatus === "PENDING"
+                                    ? "bg-green-200 text-green-800"
+                                    : "bg-error-100 text-error-800"
+                                }`}
+                              >
+                                {t(
+                                  `wallet.transactions.status.${
+                                    tx.txStatus.toLowerCase() || "FAILED"
+                                  }`
+                                )}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-gray text-center">
+                              {tx.txStatus === "PENDING"
+                                ? formatDate(tx.createdAt)
+                                : formatDate(tx.statusUpdatedAt || "")}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <a
+                                href={getExplorerUrl(
+                                  tx.txHash || "",
+                                  chainName!
+                                )}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-ksc-white hover:text-ksc-mint/80 flex justify-center"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-ksc-gray">
+                      {t("wallet.transactions.noTransactions")}
+                    </p>
+                  </div>
+                )}
+                {/* 페이지네이션 컨트롤 */}
+                <div className="flex justify-between items-center mt-6">
+                  <div className="flex items-center">
+                    <CustomDropdown
+                      _onChange={handleItemsPerPageChange}
+                      _options={[5, 10, 20]}
+                      _defaultOption={0}
+                      _width={60}
+                    />
+                    <span className="ml-2 text-ksc-gray-light text-sm ml-0">
+                      {t("pagination.itemsPerPage")}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
+                    >
+                      <ChevronLeft />
+                    </button>
+                    <span className="text-ksc-white">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
+                    >
+                      <ChevronRight />
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              {txHistory.length > 0 ? (
-                <div>
-                  <table className="min-w-full divide-y divide-ksc-box/50">
-                    <thead className="bg-ksc-box/30">
-                      <tr>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          {t("wallet.transactions.hash")}
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          {t("wallet.transactions.from")}
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          {t("wallet.transactions.to")}
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          {t("wallet.transactions.amount")}
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          {t("wallet.transactions.status.title")}
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          {t("wallet.transactions.timestamp")}
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                          {t("wallet.transactions.explorer")}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-ksc-box/20 divide-y divide-ksc-box/30">
-                      {txHistory.map((tx) => (
-                        <tr key={tx.id} className="hover:bg-ksc-box/30">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-ksc-white text-center">
-                            {formatAddress(tx.txHash || "")}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white text-center">
-                            {formatAddress(tx.fromAddress)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white text-center">
-                            {formatAddress(tx.toAddress)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white text-right text-center">
-                            {formatWeiToKsc(tx.amount)}&nbsp; KSC
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <span
-                              className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                tx.txStatus === "CONFIRMED"
-                                  ? "bg-secondary-400 text-secondary-100"
-                                  : tx.txStatus === "PENDING"
-                                  ? "bg-green-200 text-green-800"
-                                  : "bg-error-100 text-error-800"
-                              }`}
-                            >
-                              {t(
-                                `wallet.transactions.status.${
-                                  tx.txStatus.toLowerCase() || "FAILED"
-                                }`
-                              )}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-gray text-center">
-                            {tx.txStatus === "PENDING"
-                              ? formatDate(tx.createdAt)
-                              : formatDate(tx.statusUpdatedAt || "")}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <a
-                              href={getExplorerUrl(tx.txHash || "", chainName!)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-ksc-white hover:text-ksc-mint/80 flex justify-center"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                            </a>
-                          </td>
+              {/*거래 예약 내역*/}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-ksc-white">
+                    {t("wallet.transactions.title2")}
+                  </h3>
+                  <button
+                    onClick={() => fetchTransactions()}
+                    disabled={isLoading}
+                    className="flex items-center space-x-2 text-white hover:text-ksc-mint/80 text-sm"
+                  >
+                    <RefreshCw
+                      className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+                    />
+                    <span>{t("wallet.transactions.refresh")}</span>
+                  </button>
+                </div>
+
+                {txHistory.length > 0 ? (
+                  <div>
+                    <table className="min-w-full divide-y divide-ksc-box/50">
+                      <thead className="bg-ksc-box/30">
+                        <tr>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.hash")}
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.from")}
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.to")}
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.amount")}
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.status.title")}
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.timestamp")}
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                            {t("wallet.transactions.explorer")}
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-ksc-gray">
-                    {t("wallet.transactions.noTransactions")}
-                  </p>
-                </div>
-              )}
-              {/* 페이지네이션 컨트롤 */}
-              <div className="flex justify-between items-center mt-6">
-                <div className="flex items-center">
-                  <CustomDropdown
-                    _onChange={handleItemsPerPageChange}
-                    _options={[5, 10, 20]}
-                    _defaultOption={0}
-                    _width={60}
-                  />
-                  <span className="ml-2 text-ksc-gray-light text-sm ml-0">
-                    {t("pagination.itemsPerPage")}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
-                  >
-                    <ChevronLeft />
-                  </button>
-                  <span className="text-ksc-white">
-                    {currentPage} / {totalPages}
-                  </span>
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
-                  >
-                    <ChevronRight />
-                  </button>
+                      </thead>
+                      <tbody className="bg-ksc-box/20 divide-y divide-ksc-box/30">
+                        {txHistory.map((tx) => (
+                          <tr key={tx.id} className="hover:bg-ksc-box/30">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-ksc-white text-center">
+                              {formatAddress(tx.txHash || "")}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white text-center">
+                              {formatAddress(tx.fromAddress)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white text-center">
+                              {formatAddress(tx.toAddress)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-white text-right text-center">
+                              {formatWeiToKsc(tx.amount)}&nbsp; KSC
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <span
+                                className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                  tx.txStatus === "CONFIRMED"
+                                    ? "bg-secondary-400 text-secondary-100"
+                                    : tx.txStatus === "PENDING"
+                                    ? "bg-green-200 text-green-800"
+                                    : "bg-error-100 text-error-800"
+                                }`}
+                              >
+                                {t(
+                                  `wallet.transactions.status.${
+                                    tx.txStatus.toLowerCase() || "FAILED"
+                                  }`
+                                )}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-gray text-center">
+                              {tx.txStatus === "PENDING"
+                                ? formatDate(tx.createdAt)
+                                : formatDate(tx.statusUpdatedAt || "")}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <a
+                                href={getExplorerUrl(
+                                  tx.txHash || "",
+                                  chainName!
+                                )}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-ksc-white hover:text-ksc-mint/80 flex justify-center"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-ksc-gray">
+                      {t("wallet.transactions.noTransactions")}
+                    </p>
+                  </div>
+                )}
+                {/* 페이지네이션 컨트롤 */}
+                <div className="flex justify-between items-center mt-6">
+                  <div className="flex items-center">
+                    <CustomDropdown
+                      _onChange={handleItemsPerPageChange}
+                      _options={[5, 10, 20]}
+                      _defaultOption={0}
+                      _width={60}
+                    />
+                    <span className="ml-2 text-ksc-gray-light text-sm ml-0">
+                      {t("pagination.itemsPerPage")}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
+                    >
+                      <ChevronLeft />
+                    </button>
+                    <span className="text-ksc-white">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
+                    >
+                      <ChevronRight />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
