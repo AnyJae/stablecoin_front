@@ -127,13 +127,20 @@ export default function WalletInterface() {
   };
 
   useEffect(() => {
-    setItemsPerPage(5);
-    fetchTransactions();
+    const initialItemsPerPage = 5;
+    setItemsPerPage(initialItemsPerPage);
+    fetchTransactions(initialItemsPerPage);
   }, []);
+
+  useEffect(() => {
+  if (itemsPerPage > 0) { 
+    fetchTransactions(); 
+  }
+}, [itemsPerPage]);
 
   if (!isConnected && !isMock) {
     return (
-      <div className="md:max-w-4xl md:mx-auto md:p-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="md:max-w-4xl md:mx-auto md:p-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div className="card">
           <h2 className="text-2xl font-bold text-ksc-white mb-6 text-center">
             {t("wallet.connect")}

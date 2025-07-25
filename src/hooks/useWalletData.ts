@@ -35,7 +35,7 @@ export const useWalletData = () => {
 
   //  페이지네이션 관련 상태 추가
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(0);
   const [totalTransactions, setTotalTransactions] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
 
@@ -132,7 +132,7 @@ export const useWalletData = () => {
   }, [address, chainName, isMock, setTxCount]);
 
   //주소별 트랜잭션 내역 조회
-  const fetchTransactions = useCallback(async () => {
+  const fetchTransactions = useCallback(async (pageSize = itemsPerPage) => {
     setIsLoading(true);
     setError(null);
 
@@ -148,7 +148,7 @@ export const useWalletData = () => {
     try {
       console.log("트랜잭션 조회 시도");
       const response = await fetch(
-        `/api/transaction/get-history/${addressId}?limit=${itemsPerPage}&page=${currentPage}`,
+        `/api/transaction/get-history/${addressId}?limit=${pageSize}&page=${currentPage}`,
         {
           method: "GET",
           headers: {
@@ -193,7 +193,6 @@ export const useWalletData = () => {
       fetchBalance();
       fetchKscBalance();
       fetchTxCount();
-      fetchTransactions();
     } else {
       setBalance("-");
       setKscBalance("-");
@@ -221,6 +220,13 @@ export const useWalletData = () => {
     setTotalPages,
     setCurrentPage,
   ]);
+
+  useEffect(()=>{
+    if (itemsPerPage > 0) { 
+    fetchTransactions(); 
+  }
+  }, [currentPage])
+
 
   return {
     txCount,

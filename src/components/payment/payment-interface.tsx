@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Send,
   Users,
@@ -103,7 +103,7 @@ export function PaymentInterface() {
 
     try {
       const result = await sendInstant(
-        chainName,     //📍브릿지 기능 완료 후 수정 필요
+        chainName, //📍브릿지 기능 완료 후 수정 필요
         instantForm.to,
         instantForm.amount,
         chainName,
@@ -253,6 +253,18 @@ export function PaymentInterface() {
     setItemsPerPage(Number(selectedOption.value));
     setCurrentPage(1); // 항목 수 변경 시 첫 페이지로 리셋
   };
+
+  useEffect(() => {
+    const initialItemsPerPage = 10;
+    setItemsPerPage(initialItemsPerPage);
+    fetchTransactions(initialItemsPerPage);
+  }, []);
+
+  useEffect(() => {
+    if (itemsPerPage > 0) {
+      fetchTransactions();
+    }
+  }, [itemsPerPage]);
 
   if (!isConnected) {
     return (
@@ -942,9 +954,7 @@ export function PaymentInterface() {
                       <AddressDisplay address={payment.toAddress} full={true} />
                     </p>
                     <p className="sm:hidden text-xs text-ksc-gray-light">
-                      <AddressDisplay
-                        address={payment.fromAddress}
-                      />
+                      <AddressDisplay address={payment.fromAddress} />
                       <span className="px-2">→</span>
                       <AddressDisplay address={payment.toAddress} />
                     </p>
