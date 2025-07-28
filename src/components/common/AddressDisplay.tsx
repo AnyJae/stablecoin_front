@@ -32,7 +32,7 @@ export function AddressDisplay({ address, full = false }: AddressDisplayProps){
       title={t(`messages.copy`)} 
       onClick={handleCopy} 
     >
-      <span>
+      <span className='break-all'>
         {isCopied ? 'Copied!' : (full ?  address : formatAddress(address))}
       </span>
     </div>
