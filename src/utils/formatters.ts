@@ -8,7 +8,7 @@ export const formatAddress = (address: string) => {
 
 // ⚙️금액 소수점 2~6 자리 표현
 export const formatAmount = (balance: string) => {
-  if(balance == "-"){
+  if (balance == "-") {
     return balance;
   }
 
@@ -22,8 +22,11 @@ export const formatAmount = (balance: string) => {
 export const formatWeiToKsc = (
   weiAmountStr: string,
   tokenDecimals: number = 18,
-  displayDecimals: number = 2 
+  displayDecimals: number = 2
 ): string => {
+  if (weiAmountStr == "-" || "") {
+    return weiAmountStr;
+  }
   try {
     const kscFullPrecision = ethers.formatUnits(weiAmountStr, tokenDecimals);
     const numValue = parseFloat(kscFullPrecision);
@@ -33,13 +36,14 @@ export const formatWeiToKsc = (
       return numValue.toFixed(displayDecimals);
     }
 
-    const finalFormattedValue = parseFloat(numValue.toFixed(displayDecimals)).toLocaleString("en-US", {
-        minimumFractionDigits: displayDecimals, 
-        maximumFractionDigits: displayDecimals, 
+    const finalFormattedValue = parseFloat(
+      numValue.toFixed(displayDecimals)
+    ).toLocaleString("en-US", {
+      minimumFractionDigits: displayDecimals,
+      maximumFractionDigits: displayDecimals,
     });
 
     return finalFormattedValue;
-
   } catch (error) {
     console.error("formatWeiToKsc conversion error:", error);
     return "Error";
