@@ -11,6 +11,7 @@ import {
   ChevronRight,
   RefreshCw,
   X,
+  ExternalLink,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/contexts/localization/LanguageContext";
@@ -242,6 +243,15 @@ export function PaymentInterface() {
     }));
   };
 
+  //탐색기 이동
+  const getExplorerUrl = (hash: string, chain: "xrpl" | "avalanche") => {
+    if (chain === "xrpl") {
+      return `https://devnet.xrpl.org/transactions/${hash}`;
+    } else {
+      return `https://testnet.snowtrace.io/tx/${hash}`;
+    }
+  };
+
   // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -372,7 +382,7 @@ export function PaymentInterface() {
   }
 
   return (
-    <div className="md:max-w-5xl md:mx-auto py-6 md:px-6 lg:px-8">
+    <div className="md:max-w-5xl md:mx-auto py-6 md:px-6 lg:px-8 max-w-7xl">
       {/* 탭 네비게이션 */}
       <div className="hidden md:flex space-x-1 bg-ksc-gray-dark rounded-lg p-1">
         <button
@@ -491,7 +501,7 @@ export function PaymentInterface() {
       </div>
 
       {/* 탭 네비게이션 - 모바일 */}
-      <div className="md:hidden flex justify-between">
+      <div className="md:hidden flex justify-between mb-2">
         <CustomDropdown
           _onChange={(selectedOption: any) => {
             console.log("현재 선택된 탭", selectedOption.value);
@@ -503,7 +513,7 @@ export function PaymentInterface() {
             t("payment.schedule"),
           ]}
           _defaultOption={0}
-          _width={120}
+          _width={110}
           _fontSize={16}
         />
 
@@ -540,7 +550,7 @@ export function PaymentInterface() {
 
       {/* 즉시 결제 폼 */}
       {activeTab === t("payment.instant") && (
-        <div className="bg-ksc-gray-dark rounded-lg p-6">
+        <div className="bg-ksc-gray-dark rounded-lg sm:p-6 p-2">
           <h2 className="text-2xl font-semibold mb-6 flex items-center">
             <Send className="mr-2" />
             {t("payment.instant")}
@@ -630,7 +640,7 @@ export function PaymentInterface() {
 
       {/* 배치 결제 폼 */}
       {activeTab === t("payment.batch") && (
-        <div className="bg-ksc-gray-dark rounded-lg p-6">
+        <div className="bg-ksc-gray-dark rounded-lg sm:p-6 p-2">
           <h2 className="text-2xl font-semibold mb-6 flex items-center">
             <Users className="mr-2" />
             {t("payment.batch")}
@@ -746,7 +756,7 @@ export function PaymentInterface() {
 
       {/* 예약 결제 폼 */}
       {activeTab === t("payment.schedule") && (
-        <div className="bg-ksc-gray-dark rounded-lg p-6">
+        <div className="bg-ksc-gray-dark rounded-lg sm:p-6 p-2">
           <h2 className="text-2xl font-semibold mb-6 flex items-center">
             <Clock className="mr-2" />
             {t("payment.schedule")}
@@ -851,7 +861,7 @@ export function PaymentInterface() {
 
       {/* 결제 내역 */}
       {activeTab === "history" && (
-        <div className="bg-ksc-gray-dark rounded-lg p-6">
+        <div className="bg-ksc-gray-dark rounded-lg sm:p-6 p-2">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold mb-6 flex items-center">
               <History className="mr-2" />
@@ -943,6 +953,27 @@ export function PaymentInterface() {
                       <p className="text-sm text-ksc-gray-light">
                         {payment.memo}
                       </p>
+
+                      <span className="flex-grow px-4 py-4 whitespace-nowrap text-sm">
+                        {payment.txStatus === "PENDING" &&
+                        payment.paymentType === "SCHEDULED" ? (
+                          <span className="text-ksc-white hover:text-ksc-mint/80 flex justify-end">
+                            취소하기
+                          </span>
+                        ) : (
+                          <a
+                            href={getExplorerUrl(
+                              payment.txHash || "",
+                              chainName!
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-ksc-white hover:text-ksc-mint/80 flex justify-end"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
+                      </span>
                     </div>
 
                     <p className="hidden sm:block text-xs text-ksc-gray-light">
@@ -961,7 +992,7 @@ export function PaymentInterface() {
                     <p className="font-semibold mt-3">
                       {formatWeiToKsc(payment.amount)} KSC
                     </p>
-                    <div className="lg:hidden text-right">
+                    <div className="text-right">
                       <p className="text-xs text-ksc-gray-light">
                         {payment.txStatus === "PENDING"
                           ? formatDate(payment.createdAt)
@@ -969,13 +1000,13 @@ export function PaymentInterface() {
                       </p>
                     </div>
                   </div>
-                  <div className="hidden lg:block text-right">
+                  {/* <div className="hidden lg:block text-right">
                     <p className="text-sm text-ksc-gray-light">
                       {payment.txStatus === "PENDING"
                         ? formatDate(payment.createdAt)
                         : formatDate(payment.statusUpdatedAt || "")}
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             ))}
