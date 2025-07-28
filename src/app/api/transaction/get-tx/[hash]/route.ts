@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// 개별 트랜잭션 상세 정보 조회
+// 개별 트랜잭션 상세 정보 조회  (📍수정 필요)
 
 export async function GET(request: NextRequest, { params }: { params: { hash: string } }) {
   const { hash } = params;

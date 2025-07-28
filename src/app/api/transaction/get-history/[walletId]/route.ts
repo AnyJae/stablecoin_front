@@ -11,7 +11,7 @@ export async function GET(
   //동적 파라미터
   const { walletId } = params;
   //쿼리 파라미터
-  const limit = Number(request.nextUrl.searchParams.get("limit")) || 10
+  const limit = Number(request.nextUrl.searchParams.get("limit"));
   const page = Number(request.nextUrl.searchParams.get("page")) || 1;
 
   const lang = request.headers.get("accept-language") || "en";

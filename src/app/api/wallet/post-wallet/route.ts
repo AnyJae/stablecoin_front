@@ -4,8 +4,7 @@ import { getFetchErrorMessage } from "@/utils/translator";
 import { NextRequest, NextResponse } from "next/server";
 import toast from "react-hot-toast";
 
-// 지갑 정보 저장
-
+// 지갑 정보 저장 및 id 조회
 export async function POST(request: NextRequest) {
   const lang = request.headers.get("accept-language") || "en";
 

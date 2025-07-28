@@ -7,7 +7,7 @@ import { getFetchErrorMessage } from "@/utils/translator";
 export async function POST(request: NextRequest) {
   const lang = request.headers.get("accept-language") || "en";
 
-    let body: {
+  let body: {
     fromNetworkType: string;
     toNetworkType: string;
     paymentType: string;
@@ -65,11 +65,11 @@ export async function POST(request: NextRequest) {
     if (!data.success) {
       let errMessage = getFetchErrorMessage(lang, "backendLogicFailed");
       if (data.statusCode === 400) {
-        errMessage = getFetchErrorMessage(lang, "badRequest")
-      } else if (data.statusCode === 422){
-        errMessage = getFetchErrorMessage(lang, "invalidData")
-      } else if (data.statusCode === 500){
-        errMessage = getFetchErrorMessage(lang, "serverReturnedError")
+        errMessage = getFetchErrorMessage(lang, "badRequest");
+      } else if (data.statusCode === 422) {
+        errMessage = getFetchErrorMessage(lang, "invalidData");
+      } else if (data.statusCode === 500) {
+        errMessage = getFetchErrorMessage(lang, "serverReturnedError");
       }
 
       return NextResponse.json(
@@ -97,7 +97,6 @@ export async function POST(request: NextRequest) {
       message = getFetchErrorMessage(lang, "networkConnectionProblem");
     }
     // 기타 예상치 못한 에러는 기본 500으로 처리
-    
 
     return NextResponse.json(
       {

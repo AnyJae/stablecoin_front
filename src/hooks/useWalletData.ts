@@ -136,6 +136,7 @@ export const useWalletData = () => {
     setIsLoading(true);
     setError(null);
 
+
     //유효성 검사
     if (!address || !addressId || isMock) {
       setIsLoading(false);
@@ -158,6 +159,8 @@ export const useWalletData = () => {
         }
       );
       const data = await response.json();
+
+          console.log("트랜잭션 내역:", data.data);
 
       if (data.success) {
         setTxHistory(data.data.items || []);
