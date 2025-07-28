@@ -22,6 +22,8 @@ const KSC_ABI = [
   "function transfer(address to, uint256 amount) returns (bool)",
   "function batchTransfer(address[] recipients, uint256[] amounts) returns (bool)",
   "function decimals() view returns (uint8)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function allowance(address owner, address spender) view returns (uint256)",
 ];
 
 export const useSendTokens = () => {
@@ -52,6 +54,7 @@ export const useSendTokens = () => {
       network: "xrpl" | "avalanche" | null,
       memo?: string
     ) => {
+
       // 유효 상태 체크
       if (!isConnected || !address || !signer || !provider || !network) {
         setSendError(t("payment.errors.disconnect"));
@@ -117,7 +120,6 @@ export const useSendTokens = () => {
         const tx = await kscContract.transfer(toAddress, amountWei);
         let txId = "";
 
-
         // 트랜잭션 내역 백엔드에 저장
         try {
           const response = await fetch(`/api/transaction/post-tx`, {
@@ -127,8 +129,8 @@ export const useSendTokens = () => {
               "accept-language": language,
             },
             body: JSON.stringify({
-              fromNetworkType: network === "xrpl" ? "XRPL" : "AVAX", 
-              toNetworkType: network === "xrpl" ? "XRPL" : "AVAX",  //📍브릿지 기능 완료 후 수정 필요
+              fromNetworkType: network === "xrpl" ? "XRPL" : "AVAX",
+              toNetworkType: network === "xrpl" ? "XRPL" : "AVAX", //📍브릿지 기능 완료 후 수정 필요
               paymentType: "INSTANT",
               fromAddress: address,
               toAddress,
@@ -320,7 +322,7 @@ export const useSendTokens = () => {
 
         // 트랜잭션 내역 백엔드에 저장
         const postTxPromises = toAddresses.map(async (toAddr, index) => {
-          console.log("트랜잭션 해시", tx.hash)
+          console.log("트랜잭션 해시", tx.hash);
           try {
             const response = await fetch(`/api/transaction/post-tx`, {
               method: "POST",
@@ -329,7 +331,7 @@ export const useSendTokens = () => {
                 "accept-language": language,
               },
               body: JSON.stringify({
-                toNetworkType:network === "xrpl" ? "XRPL" : "AVAX",
+                toNetworkType: network === "xrpl" ? "XRPL" : "AVAX",
                 fromNetworkType: network === "xrpl" ? "XRPL" : "AVAX",
                 paymentType: "BATCH",
                 fromAddress: address,
@@ -440,13 +442,13 @@ export const useSendTokens = () => {
   // 3. 예약 전송 함수
   const sendScheduled = useCallback(
     async (
-      toNetworkType: "xrpl" | "avalanche" | null,
       toAddress: string,
       amount: string,
       network: "xrpl" | "avalanche" | null,
       scheduledTimeStr: string,
       memo?: string
     ) => {
+
       // 유효 상태 체크
       if (!isConnected || !address || !signer || !provider || !network) {
         setSendError(t("payment.errors.disconnect"));
@@ -517,44 +519,9 @@ export const useSendTokens = () => {
         const amountWei = ethers.parseUnits(amount.toString(), decimals);
 
         //토큰 전송 트랜잭션 생성 및 전송
-        const tx = await kscContract.transfer(toAddress, amountWei);
+        const spenderAddress = process.env.NEXT_PUBLIC_BACKEND_WALLET_ADDRESS;
+        const tx = await kscContract.approve(spenderAddress, amountWei);
         let txId = "";
-
-        // 트랜잭션 내역 백엔드에 저장
-        try {
-          const response = await fetch(`/api/transaction/post-tx`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "accept-language": language,
-            },
-            body: JSON.stringify({
-              toNetworkType: network === "xrpl" ? "XRPL" : "AVAX",    //📍브릿지 기능 완료 후 수정 필요
-              fromNetworkType: network === "xrpl" ? "XRPL" : "AVAX",
-              paymentType: "INSTANT",
-              fromAddress: address,
-              toAddress,
-              txHash: tx.hash,
-              amount: amountWei.toString(),
-              memo,
-            }),
-          });
-          const data = await response.json();
-
-          if (!data.success) {
-            toast.error(t(`payment.errors.saveTxError`));
-            return;
-          } else {
-            txId = data.data.id; // 트랜잭션 아이디 추출
-            fetchTransactions();
-            fetchBalance();
-            fetchTxCount();
-            fetchKscBalance();
-          }
-        } catch (err) {
-          toast.error(t(`payment.errors.saveTxError`));
-          return;
-        }
 
         toast.promise(tx.wait(), {
           loading: t(`messages.txProcessing`),
@@ -569,67 +536,47 @@ export const useSendTokens = () => {
         const gasPrice = receipt.effectiveGasPrice;
         const gasFeeInWei = gasUsed * gasPrice;
 
-        //데이터 상태 업데이트
-        if (receipt && receipt.status === 1) {
-          // 트랜잭션 성공
-          // 백엔드에 트랜잭션 상태 업데이트
-          try {
-            const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
-              method: "PATCH",
+        // 트랜잭션 내역 백엔드에 저장
+        try {
+          //트랜잭션 성공
+          if (receipt && receipt.status === 1) {
+            const response = await fetch(`/api/transaction/post-tx`, {
+              method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 "accept-language": language,
               },
               body: JSON.stringify({
-                status: "CONFIRMED",
-                fee: gasFeeInWei.toString(),
-              }),
-            });
-
-            const data = await response.json();
-
-            console.log("백엔드로부터 받은 응답: ", data);
-
-            if (!data.success) {
-              throw new Error(
-                data.error.message || "트랜잭션 수정에 실패했습니다"
-              );
-            } else {
-              fetchTransactions();
-            }
-          } catch (err) {
-            console.error("트랜잭션 상태 업데이트 실패:", err);
-          }
-
-          // 상태(잔액 및 트랜잭션 내역) 업데이트
-          fetchBalance();
-          fetchKscBalance();
-          fetchTxCount();
-          fetchTransactions();
-        } else {
-          // 트랜잭션 실패
-          //백엔드에 트랜잭션 상태 업데이트
-          try {
-            const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                status: "FAILED",
+                toNetworkType: network === "xrpl" ? "XRPL" : "AVAX",
+                fromNetworkType: network === "xrpl" ? "XRPL" : "AVAX",
+                paymentType: "SCHEDULED",
+                fromAddress: address,
+                toAddress,
+                txHash: tx.hash,
+                amount: amountWei.toString(),
+                scheduledAt: scheduledTimeStr,
+                memo,
                 fee: gasFeeInWei.toString(),
               }),
             });
             const data = await response.json();
 
             if (!data.success) {
-              throw new Error(
-                data.error.message || "트랜잭션 수정에 실패했습니다"
-              );
+              toast.error(t(`payment.errors.saveTxError`));
+              return;
             } else {
+              txId = data.data.id; // 트랜잭션 아이디 추출
               fetchTransactions();
+              fetchBalance();
+              fetchTxCount();
+              fetchKscBalance();
             }
-          } catch (err) {
-            console.error("트랜잭션 상태 업데이트 실패", err);
+          } else {
+            toast.error(t(`errors.transactionFailed`));
           }
+        } catch (err) {
+          toast.error(t(`payment.errors.saveTxError`));
+          return;
         }
       } catch (err) {
         console.log("결제 처리 중 오류 발생: ", err);
@@ -1204,6 +1151,7 @@ export const useSendTokens = () => {
   return {
     sendInstant,
     sendBatch,
+    sendScheduled,
     sendInstantForTest,
     sendBatchForTest,
     sendScheduledForTest,
