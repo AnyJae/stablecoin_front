@@ -112,6 +112,7 @@
     },
     "transactions": {
       "title": "Transaction History",
+      "title2": "Scheduled Transactions",
       "refresh": "Refresh",
       "noTransactions": "No transaction history.",
       "hash": "Hash",
@@ -124,10 +125,10 @@
         "pending": "Pending",
         "failed": "Failed"
       },
-      "type":{
-        "instant" : "Instant",
-        "batch" : "Batch",
-        "scheduled" : "Scheduled"
+      "type": {
+        "instant": "Instant",
+        "batch": "Batch",
+        "scheduled": "Scheduled"
       },
       "timestamp": "Timestamp",
       "explorer": "Explorer"
@@ -177,8 +178,8 @@
       "mockDescription": "This screen is a test Mock Wallet environment.",
       "mockNote": "(Not connected to real blockchain)"
     },
-    "errors":{
-      "nativeTokenLoadError" : "Fail to load native token"
+    "errors": {
+      "nativeTokenLoadError": "Fail to load native token"
     }
   },
   "dashboard": {
@@ -224,10 +225,10 @@
       "disconnected": "Not Connected"
     },
     "tabs": {
-        "overview": "Overview",
-        "market": "Market Data",
-        "collateral": "Collateral Status",
-        "transactions": "Transaction History"
+      "overview": "Overview",
+      "market": "Market Data",
+      "collateral": "Collateral Status",
+      "transactions": "Transaction History"
     },
     "underDevelopment": "This feature is under development.",
     "trillion": "T",
@@ -273,11 +274,12 @@
       "batchProcessing": "Error occurred during batch payment processing",
       "scheduledProcessing": "Error occurred during scheduled payment registration",
       "disconnect": "Wallet not connected or invalid network",
-      "insufficient" : "Your KSC balance is insufficient",
+      "insufficient": "Your KSC balance is insufficient",
       "systemUnavailable": "The service is currently unavailable",
-      "saveTxError": "failed to save transaction data",
+      "saveTxError": "Failed to save transaction data",
       "invalidAddress": "Invalid recipient address format",
-      "invalidTime": "Please set the scheduled time that is after the current time"
+      "invalidTime": "Please set the scheduled time that is after the current time",
+      "changeScheduledTimeError" : "Failed to change scheduled time"
     }
   },
   "collateral": {
@@ -514,6 +516,7 @@
   },
   "errors": {
     "walletConnection": "Failed to connect wallet",
+    "unresolvedRequest" : "Please complete the previous request in MetaMask",
     "initWalletError": "Failed to initialize wallet",
     "accountChangeError": "Failed to change account",
     "networkChangeError": "Failed to change network",
@@ -547,9 +550,13 @@
     "walletConnected": "Wallet connected",
     "walletDisconnected": "Wallet disconnected",
     "accountChanged": "Account changed",
-    "networkChanged": "Network changed to {{chainName}}"
+    "networkChanged": "Network changed to {{chainName}}",
+    "txProcessing": "Transaction is being processed...",
+    "txSuccess": "Transfer completed successfully!",
+    "txFail": "Transfer failed",
+    "copy": "Copy"
   },
-    "pagination":{
+  "pagination": {
     "itemsPerPage": "rows per page",
     "previous": "Previous",
     "next": "Next"

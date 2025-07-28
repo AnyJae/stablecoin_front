@@ -112,6 +112,7 @@
     },
     "transactions": {
       "title": "거래 내역",
+      "title2": "예약된 거래 내역",
       "refresh": "새로고침",
       "noTransactions": "거래 내역이 없습니다.",
       "hash": "해시",
@@ -277,7 +278,8 @@
       "systemUnavailable": "현재 서비스 이용을 할 수 없습니다",
       "saveTxError": "거래 내역 저장에 실패했습니다",
       "invalidAddress": "수신자 주소 형식이 올바르지 않습니다",
-      "invalidTime": "현재 시간 이후의 예약 시간을 선택해 주세요"
+      "invalidTime": "현재 시간 이후의 예약 시간을 선택해 주세요",
+      "changeScheduledTimeError" : "예약 시간 변경에 실패했습니다"
     }
   },
   "collateral": {
@@ -514,10 +516,11 @@
   },
   "errors": {
     "walletConnection": "지갑 연결에 실패했습니다",
+    "unresolvedRequest": "메타마스크에서 이전 요청을 완료해 주세요",
     "initWalletError": "지갑 초기화에 실패했습니다",
     "accountChangeError": "계정 전환에 실패했습니다",
     "networkChangeError": "네트워크 전환에 실패했습니다",
-    "transactionFailed": "거래가 실패했습니다",
+    "transactionFailed": "트랜잭션이 실패했습니다",
     "insufficientBalance": "잔액이 부족합니다",
     "invalidAddress": "유효하지 않은 주소입니다",
     "networkError": "네트워크 오류가 발생했습니다",
@@ -547,7 +550,11 @@
     "walletConnected": "지갑이 연결되었습니다",
     "walletDisconnected": "지갑 연결이 해제되었습니다",
     "accountChanged": "계정이 변경되었습니다",
-    "networkChanged": "네트워크가 {{chainName}}로 변경되었습니다"
+    "networkChanged": "네트워크가 {{chainName}}로 변경되었습니다",
+    "txProcessing":"거래 처리 중입니다...",
+    "txSuccess": "전송이 완료되었습니다!",
+    "txFail": "전송에 실패했습니다",
+    "copy": "복사하기"
   },
   "pagination": {
     "itemsPerPage": "줄 보기",
