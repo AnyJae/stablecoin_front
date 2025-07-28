@@ -40,7 +40,8 @@ const StyledDropdown = styled(Dropdown)`
   .Dropdown-control {
     background-color: transparent;
     color: white;
-    padding-right: 10px;
+    padding-left: 0;
+    padding-right: 0;
     display: flex;
     justify-content: center;
     ${(props) => {
