@@ -132,6 +132,11 @@ export default function WalletInterface() {
     setCurrentPage(1); // 항목 수 변경 시 첫 페이지로 리셋
   };
 
+  // 필터링된 거래 내역 - 취소한 거래 내역 제거
+  const filteredTxHistory = txHistory.filter(
+    (tx) => tx.txStatus !== "CANCELED"
+  ); //"CANCELED" 상태 제외
+
   useEffect(() => {
     const initialItemsPerPage = 5;
     setItemsPerPage(initialItemsPerPage);
@@ -524,9 +529,9 @@ export default function WalletInterface() {
                 <h4 className="font-semibold text-ksc-mint mb-2">
                   {t("wallet.overview.recentTransactions")}
                 </h4>
-                {txHistory.slice(0, 3).length > 0 ? (
+                {filteredTxHistory.slice(0, 3).length > 0 ? (
                   <div className="space-y-2">
-                    {txHistory.slice(0, 3).map((tx) => (
+                    {filteredTxHistory.slice(0, 3).map((tx) => (
                       <div
                         key={tx.id}
                         className="flex items-center justify-between text-sm"
@@ -705,7 +710,7 @@ export default function WalletInterface() {
                         </tr>
                       </thead>
                       <tbody className="bg-ksc-box/20 divide-y divide-ksc-box/30">
-                        {txHistory.map((tx) => (
+                        {filteredTxHistory.map((tx) => (
                           <tr key={tx.id} className="hover:bg-ksc-box/30">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-ksc-white text-center">
                               {<AddressDisplay address={tx.txHash || ""} />}

@@ -981,7 +981,7 @@ export function PaymentInterface() {
 
           {/* 트랜잭션 데이터 */}
           <div className="space-y-4">
-            {txHistory.map((payment) => (
+            {txHistory.map((payment) => payment.txStatus !== "CANCELED" && (
               <div key={payment.id} className="bg-ksc-box rounded-lg p-4">
                 <div className="flex justify-between items-start">
                   <div className="flex-grow">
