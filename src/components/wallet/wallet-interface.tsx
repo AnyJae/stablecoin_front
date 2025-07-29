@@ -115,7 +115,7 @@ export default function WalletInterface() {
 
   const getExplorerUrl = (hash: string, chain: "xrpl" | "avalanche") => {
     if (chain === "xrpl") {
-      return `https://devnet.xrpl.org/transactions/${hash}`;
+      return `https://explorer.testnet.xrplevm.org/tx/${hash}`;
     } else {
       return `https://testnet.snowtrace.io/tx/${hash}`;
     }
