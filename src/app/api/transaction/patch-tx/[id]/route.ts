@@ -14,7 +14,8 @@ export async function PATCH(
       | "failed"
       | "PENDING"
       | "CONFIRMED"
-      | "FAILED";
+      | "FAILED"
+      | "CANCELED"
     fee: string | null;
   };
 
