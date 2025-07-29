@@ -279,7 +279,7 @@ export function Header() {
               <div className="w-full pt-4 border-t border-ksc-box/50">
                 {isConnected ? (
                   <div className="space-y-3">
-                    <div className="px-3 py-2 border border-1 border-ksc-mint rounded-md">
+                    <div className="px-3 py-2 border border-1 border-ksc-mint rounded-md flex justify-center">
                       <div className="flex items-center space-x-2 mb-1">
                         <User className="w-4 h-4" />
                         <span className="text-sm"><AddressDisplay address={address||"-"} full={true}/></span>
