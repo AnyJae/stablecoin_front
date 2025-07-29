@@ -18,6 +18,7 @@ export async function PATCH(
   try {
     body = await request.json();
 
+    console.log("예약 결제 시간 변경 API 호출 시작", body)
     //백엔드 API 호출
     const backendUrl =
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
