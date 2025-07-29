@@ -82,8 +82,8 @@ export const useWalletData = () => {
 
       const data = await response.json();
       if (data.success) {
-        setKscBalance("500.00");
-        // setKscBalance(formatWeiToKsc(data.data.kscBalance) || '-');
+        // setKscBalance("500.00");
+        setKscBalance(formatWeiToKsc(data.data.kscBalance) || '-');
       } else {
         throw new Error("잔액 조회에 실패했습니다");
       }
