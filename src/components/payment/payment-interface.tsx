@@ -46,7 +46,7 @@ interface ScheduledPaymentForm {
 }
 
 export function PaymentInterface() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const {
     fetchTransactions,
     txCount,
@@ -74,6 +74,16 @@ export function PaymentInterface() {
   const [activeTab, setActiveTab] = useState<string>(t("payment.instant"));
 
   const [sendLoading, setSendLoading] = useState(false);
+
+  //예약 결제 시간 변경 관련 상태
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [changedTime, setChangedTime] = useState<string | null>(null);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => {
+    setChangedTime(null);
+    setIsModalOpen(false);
+  };
 
   // 즉시 결제 폼
   const [instantForm, setInstantForm] = useState<PaymentForm>({
@@ -170,7 +180,7 @@ export function PaymentInterface() {
     setSendLoading(true);
 
     try {
-      const result = await sendScheduledForTest(
+      const result = await sendScheduled(
         scheduledForm.to,
         scheduledForm.amount,
         chainName,
@@ -191,23 +201,37 @@ export function PaymentInterface() {
     } finally {
       setSendLoading(false);
     }
-
-    //API 호출 시뮬레이션
-    // try {
-    //   await new Promise((resolve) => setTimeout(resolve, 1500));
-    //   toast.success(t("payment.messages.scheduledSuccess"));
-    //   setScheduledForm({
-    //     to: "",
-    //     amount: "",
-    //     scheduledTime: "",
-    //     description: "",
-    //   });
-    // } catch (error) {
-    //   toast.error(t("payment.errors.scheduledProcessing"));
-    // } finally {
-    //   setIsLoading(false);
-    // }
   };
+
+  // 예약 결제 변경하기 📍
+  const handleChangeScheduledTime = async (time: string) => {
+    try {
+      const response = await fetch(`/api/transaction/patch-schedule`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "accept-language": language,
+        },
+        body: JSON.stringify({
+          scheduledAt: time,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        toast.error(t(`payment.errors.changeScheduledTimeError`));
+        return;
+      } else {
+        fetchTransactions();
+      }
+    } catch (err) {
+      console.error("예약 결제 시간 변경 실패:", err);
+    }
+  };
+
+  // 예약 결제 취소하기 📍
+  const handleCancelScheduledPayment = async () => {};
 
   // 배치 결제 수신자 추가
   const addRecipient = () => {
@@ -259,7 +283,6 @@ export function PaymentInterface() {
 
   // 페이지당 항목 수 변경 핸들러
   const handleItemsPerPageChange = (selectedOption: any) => {
-    console.log("선택한 표시 페이지 수: ", selectedOption);
     setItemsPerPage(Number(selectedOption.value));
     setCurrentPage(1); // 항목 수 변경 시 첫 페이지로 리셋
   };
@@ -884,7 +907,7 @@ export function PaymentInterface() {
             <div className="flex items-center">
               <CustomDropdown
                 _onChange={handleItemsPerPageChange}
-                _options={[5, 10, 20]}
+                _options={["5", "10", "20"]}
                 _defaultOption={1}
                 _width={60}
               />
@@ -948,18 +971,26 @@ export function PaymentInterface() {
                           ? t("wallet.transactions.status.confirmed")
                           : payment.txStatus === "PENDING"
                           ? t("wallet.transactions.status.pending")
-                          : t("wallet.transactions.status.failed")}
+                          : payment.txStatus === "FAILED"
+                          ? t("wallet.transactions.status.failed")
+                          : ""}
                       </span>
                       <p className="text-sm text-ksc-gray-light">
                         {payment.memo}
                       </p>
 
                       <span className="flex-grow px-4 py-4 whitespace-nowrap text-sm">
-                        {payment.txStatus === "PENDING" &&
+                        {payment.txStatus === "APPROVE" &&
                         payment.paymentType === "SCHEDULED" ? (
-                          <span className="text-ksc-white hover:text-ksc-mint/80 flex justify-end">
-                            취소하기
-                          </span>
+                          <>
+                            <span className="text-ksc-white hover:text-ksc-mint/80 flex justify-end">
+                              변경하기
+                            </span>
+                            <span> | </span>
+                            <span className="text-ksc-white hover:text-ksc-mint/80 flex justify-end">
+                              취소하기
+                            </span>
+                          </>
                         ) : (
                           <a
                             href={getExplorerUrl(
