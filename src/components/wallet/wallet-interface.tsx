@@ -35,7 +35,7 @@ export default function WalletInterface() {
     error,
     isMock,
     connectMockWallet,
-    sendMockKsc
+    sendMockKsc,
   } = useWalletContext();
 
   const { connectAvalancheWallet, connectXrplEvmWallet, disconnectWallet } =
@@ -86,7 +86,12 @@ export default function WalletInterface() {
     if (isMock) {
       result = await sendMockKsc(sendForm.to, sendForm.amount);
     } else {
-      result = await sendInstant(sendForm.chain, sendForm.to, sendForm.amount, chainName);
+      result = await sendInstant(
+        sendForm.chain,
+        sendForm.to,
+        sendForm.amount,
+        chainName
+      );
     }
 
     if (result == "client-side-validation-fail") {
@@ -536,7 +541,9 @@ export default function WalletInterface() {
                                 ? "bg-secondary-400 text-secondary-100"
                                 : tx.txStatus === "PENDING"
                                 ? "bg-green-200 text-green-800"
-                                : "bg-error-100 text-error-800"
+                                : tx.txStatus === "FAILED"
+                                ? "bg-error-100 text-error-800"
+                                : "bg-yellow-200 text-yellow-800"
                             }`}
                           >
                             {t(
@@ -723,7 +730,9 @@ export default function WalletInterface() {
                                     ? "bg-secondary-400 text-secondary-100"
                                     : tx.txStatus === "PENDING"
                                     ? "bg-green-200 text-green-800"
-                                    : "bg-error-100 text-error-800"
+                                    : tx.txStatus === "FAILED"
+                                    ? "bg-error-100 text-error-800"
+                                    : "bg-yellow-200 text-yellow-800"
                                 }`}
                               >
                                 {t(
@@ -736,6 +745,8 @@ export default function WalletInterface() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-ksc-gray text-center">
                               {tx.txStatus === "PENDING"
                                 ? formatDate(tx.createdAt)
+                                : tx.txStatus === "APPROVE"
+                                ? formatDate(tx.scheduledAt)
                                 : formatDate(tx.statusUpdatedAt || "")}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
