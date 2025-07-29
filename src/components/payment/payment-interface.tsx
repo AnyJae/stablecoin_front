@@ -20,11 +20,12 @@ import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { useWalletData } from "@/hooks/useWalletData";
 import { send } from "process";
 import { useSendTokens } from "@/hooks/useSendTokens";
-import { formatDate, formatWeiToKsc } from "@/utils/formatters";
+import { convertToUTC, formatDate, formatWeiToKsc } from "@/utils/formatters";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
 import { CustomDropdown } from "../common/CustomDropdown";
 import { FutureDateTimePicker } from "../common/input/FutureDateTimePicker";
 import { AddressDisplay } from "../common/AddressDisplay";
+import { ModalShell } from "../common/modal/ModalShell";
 
 interface PaymentForm {
   to: string;
@@ -75,14 +76,17 @@ export function PaymentInterface() {
 
   const [sendLoading, setSendLoading] = useState(false);
 
-  //예약 결제 시간 변경 관련 상태
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [changedTime, setChangedTime] = useState<string | null>(null);
+  //예약 결제 시간 변경/취소 관련 상태
+  const [isChangeModalOpen, setIsChangeModalOpen] = useState<boolean>(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState<boolean>(false);
+  const [changedTime, setChangedTime] = useState<string>("");
 
-  const openModal = () => setIsModalOpen(true);
+  const openModal = () => {
+    setIsChangeModalOpen(true);
+  };
   const closeModal = () => {
-    setChangedTime(null);
-    setIsModalOpen(false);
+    setChangedTime("");
+    setIsChangeModalOpen(false);
   };
 
   // 즉시 결제 폼
@@ -204,16 +208,26 @@ export function PaymentInterface() {
   };
 
   // 예약 결제 변경하기 📍
-  const handleChangeScheduledTime = async (time: string) => {
+  const handleChangeScheduledTime = async (time: string, txId: string) => {
+    // 예약 시간 체크
+    const scheduledTime = new Date(time);
+    const currentTime = new Date();
+    if (scheduledTime.getTime() < currentTime.getTime()) {
+      toast.error(t("payment.errors.invalidTime"));
+      return "client-side-validation-fail";
+    }
+
+    const convertedTime = convertToUTC(time);
     try {
-      const response = await fetch(`/api/transaction/patch-schedule`, {
+      console.log("변경 시간", convertToUTC(time));
+      const response = await fetch(`/api/transaction/patch-schedule/${txId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           "accept-language": language,
         },
         body: JSON.stringify({
-          scheduledAt: time,
+          scheduledAt: convertedTime,
         }),
       });
 
@@ -221,17 +235,46 @@ export function PaymentInterface() {
 
       if (!data.success) {
         toast.error(t(`payment.errors.changeScheduledTimeError`));
+        console.log("예약 결제 변경 실패", data.data);
         return;
       } else {
         fetchTransactions();
+        setIsChangeModalOpen(false);
       }
     } catch (err) {
+      toast.error(t(`payment.errors.changeScheduledTimeError`));
       console.error("예약 결제 시간 변경 실패:", err);
     }
   };
 
   // 예약 결제 취소하기 📍
-  const handleCancelScheduledPayment = async () => {};
+  const handleCancelScheduledPayment = async (txId: string) => {
+    try {
+      const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "accept-language": language,
+        },
+        body: JSON.stringify({
+          status: "CANCELED",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        toast.error(t(`payment.errors.cancelError`));
+        console.log("예약 결제 취소 실패", data.data);
+        return;
+      } else {
+        fetchTransactions();
+        setIsCancelModalOpen(false);
+      }
+    } catch (err) {
+      console.error("예약 결제 취소 실패:", err);
+    }
+  };
 
   // 배치 결제 수신자 추가
   const addRecipient = () => {
@@ -964,7 +1007,9 @@ export function PaymentInterface() {
                             ? "bg-secondary-400"
                             : payment.txStatus === "PENDING"
                             ? "bg-green-600"
-                            : "bg-red-500"
+                            : payment.txStatus === "FAILED"
+                            ? "bg-red-500"
+                            : "bg-green-500"
                         }`}
                       >
                         {payment.txStatus === "CONFIRMED"
@@ -973,23 +1018,90 @@ export function PaymentInterface() {
                           ? t("wallet.transactions.status.pending")
                           : payment.txStatus === "FAILED"
                           ? t("wallet.transactions.status.failed")
-                          : ""}
+                          : t("wallet.transactions.status.approve")}
                       </span>
                       <p className="text-sm text-ksc-gray-light">
                         {payment.memo}
                       </p>
 
-                      <span className="flex-grow px-4 py-4 whitespace-nowrap text-sm">
+                      <span className="flex-grow px-4 py-4 whitespace-nowrap text-sm flex justify-end gap-2">
                         {payment.txStatus === "APPROVE" &&
                         payment.paymentType === "SCHEDULED" ? (
                           <>
-                            <span className="text-ksc-white hover:text-ksc-mint/80 flex justify-end">
+                            <span
+                              className="text-ksc-white hover:text-ksc-mint/80 flex justify-end"
+                              onClick={() => {
+                                setIsChangeModalOpen(true);
+                              }}
+                            >
                               변경하기
                             </span>
-                            <span> | </span>
-                            <span className="text-ksc-white hover:text-ksc-mint/80 flex justify-end">
+
+                            <span className="text-ksc-white flex justify-end">
+                              {" "}
+                              |{" "}
+                            </span>
+                            <span
+                              className="text-ksc-white hover:text-ksc-mint/80 flex justify-end"
+                              onClick={() => {
+                                setIsCancelModalOpen(true);
+                              }}
+                            >
                               취소하기
                             </span>
+
+                            {/*예약 결제 시간 변경 모달*/}
+                            <ModalShell
+                              isOpen={isChangeModalOpen}
+                              onClose={() => {
+                                setIsChangeModalOpen(false);
+                              }}
+                            >
+                              <div className="flex flex-col gap-7 p-2">
+                                <div>
+                                  <label className="block text-sm font-medium mb-2">
+                                    {t("payment.scheduledForm.time")}
+                                  </label>
+                                  <FutureDateTimePicker
+                                    _value={changedTime}
+                                    _onChange={(e: any) =>
+                                      setChangedTime(e.target.value)
+                                    }
+                                  />
+                                </div>
+                                <button
+                                  type="submit"
+                                  disabled={!changedTime}
+                                  onClick={() => {
+                                    handleChangeScheduledTime(
+                                      changedTime,
+                                      payment.id
+                                    );
+                                  }}
+                                  className="btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
+                                >
+                                  예약 시간 변경
+                                </button>
+                              </div>
+                            </ModalShell>
+                            {/*예약 결제 취소 모달*/}
+                            <ModalShell
+                              isOpen={isCancelModalOpen}
+                              onClose={()=>{setIsCancelModalOpen(false)}}
+                            >
+                              <div className="flex flex-col gap-7 px-5 py-2">
+                                <div className="text-lg">결제를 취소하시겠습니까?</div>
+                                <button
+                                  type="submit"
+                                  onClick={() => {
+                                    handleCancelScheduledPayment(payment.id);
+                                  }}
+                                  className="btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
+                                >
+                                  예약 결제 취소
+                                </button>
+                              </div>
+                            </ModalShell>
                           </>
                         ) : (
                           <a
@@ -1027,6 +1139,8 @@ export function PaymentInterface() {
                       <p className="text-xs text-ksc-gray-light">
                         {payment.txStatus === "PENDING"
                           ? formatDate(payment.createdAt)
+                          : payment.txStatus === "APPROVE"
+                          ? formatDate(payment.scheduledAt)
                           : formatDate(payment.statusUpdatedAt || "")}
                       </p>
                     </div>
