@@ -2,7 +2,13 @@ import{ useState, useEffect } from 'react';
 
  // 현재 시간 이후의 날짜/시간만 선택 가능한 datetime-local 입력 필드 컴포넌트
 
-export function FutureDateTimePicker({ _value, _onChange, className = '' }) {
+interface DateTimePickerProps {
+  _value: string;
+  _onChange: (selectedOption: any) => void;
+  className?: string;
+}
+
+export function FutureDateTimePicker({ _value, _onChange, className = '' }:DateTimePickerProps) {
   const [minDateTime, setMinDateTime] = useState('');
 
   useEffect(() => {
