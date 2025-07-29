@@ -123,7 +123,8 @@
         "title": "상태",
         "confirmed": "완료",
         "pending": "처리 중",
-        "failed": "실패"
+        "failed": "실패",
+        "approve": "대기"
       },
       "type": {
         "instant": "즉시",
@@ -279,7 +280,8 @@
       "saveTxError": "거래 내역 저장에 실패했습니다",
       "invalidAddress": "수신자 주소 형식이 올바르지 않습니다",
       "invalidTime": "현재 시간 이후의 예약 시간을 선택해 주세요",
-      "changeScheduledTimeError" : "예약 시간 변경에 실패했습니다"
+      "changeScheduledTimeError" : "예약 시간 변경에 실패했습니다",
+      "cancelError": "예약 결제 취소에 실패했습니다"
     }
   },
   "collateral": {

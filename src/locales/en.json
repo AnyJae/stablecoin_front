@@ -123,7 +123,8 @@
         "title": "Status",
         "confirmed": "Confirmed",
         "pending": "Pending",
-        "failed": "Failed"
+        "failed": "Failed",
+        "approve": "Reservation"
       },
       "type": {
         "instant": "Instant",
@@ -279,7 +280,8 @@
       "saveTxError": "Failed to save transaction data",
       "invalidAddress": "Invalid recipient address format",
       "invalidTime": "Please set the scheduled time that is after the current time",
-      "changeScheduledTimeError" : "Failed to change scheduled time"
+      "changeScheduledTimeError" : "Failed to change scheduled time",
+      "cancelError": "Failed to cancel scheduled transaction"
     }
   },
   "collateral": {
