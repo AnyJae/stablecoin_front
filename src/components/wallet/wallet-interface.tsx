@@ -123,7 +123,6 @@ export default function WalletInterface() {
 
   // 페이지당 항목 수 변경 핸들러
   const handleItemsPerPageChange = (selectedOption: any) => {
-    console.log("선택한 표시 페이지 수: ", selectedOption);
     setItemsPerPage(Number(selectedOption.value));
     setCurrentPage(1); // 항목 수 변경 시 첫 페이지로 리셋
   };
@@ -769,7 +768,7 @@ export default function WalletInterface() {
                   <div className="flex items-center">
                     <CustomDropdown
                       _onChange={handleItemsPerPageChange}
-                      _options={[5, 10, 20]}
+                      _options={["5", "10", "20"]}
                       _defaultOption={0}
                       _width={60}
                     />

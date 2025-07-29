@@ -6,7 +6,7 @@ import styled, { css } from "styled-components";
 
 interface CustomDropdownProps {
   _onChange: (selectedOption: any) => void;
-  _options: (string | number)[];
+  _options: (string)[];
   _defaultOption: number;
   _placeholder?: string;
   _border?: string;
@@ -29,14 +29,14 @@ export function CustomDropdown({
       onChange={_onChange}
       value={_options[_defaultOption].toString()}
       placeholder={_placeholder}
-      border={_border}
-      width={_width}
-      fontSize={_fontSize}
+      $border={_border}
+      $width={_width}
+      $fontSize={_fontSize}
     />
   );
 }
 
-const StyledDropdown = styled(Dropdown)`
+const StyledDropdown = styled(Dropdown)<{ $border: string; $width: number; $fontSize: number }>`
   .Dropdown-control {
     background-color: transparent;
     color: white;
@@ -45,9 +45,9 @@ const StyledDropdown = styled(Dropdown)`
     display: flex;
     justify-content: center;
     ${(props) => {
-      if (!props.border) return;
+      if (!props.$border) return;
 
-      switch (props.border) {
+      switch (props.$border) {
         case "solid":
           return css`
             border: 5px solid white;
@@ -62,12 +62,12 @@ const StyledDropdown = styled(Dropdown)`
           `;
         default: // 다른 값이 오면 해당 값을 색상으로 사용
           return css`
-            border: 1px solid ${props.border};
+            border: 1px solid ${props.$border};
           `;
       }
     }}
-    width: ${(props) => props.width}px;
-    font-size: ${(props) => props.fontSize}px;
+    width: ${(props) => props.$width}px;
+    font-size: ${(props) => props.$fontSize}px;
   }
 
   .Dropdown-placeholder {
@@ -87,14 +87,14 @@ const StyledDropdown = styled(Dropdown)`
     background-color: #201e21;
     border-radius: 5px;
     border-color: white;
-    width: ${(props) => props.width}px;
+    width: ${(props) => props.$width}px;
   }
 
   .Dropdown-option {
     display: flex;
     justify-content: center;
     color: white;
-    font-size:  ${(props) => props.fontSize}px;
+    font-size:  ${(props) => props.$fontSize}px;
     &:hover {
       background-color: transparent;
       color: #1bdebe;
@@ -104,7 +104,7 @@ const StyledDropdown = styled(Dropdown)`
 
   .Dropdown-option.is-selected {
     color: #1bdebe;
-    font-size:  ${(props) => props.fontSize}px;
+    font-size:  ${(props) => props.$fontSize}px;
     background-color: transparent;
   }
 `;
