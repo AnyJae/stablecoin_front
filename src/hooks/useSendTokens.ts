@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import { useWalletData } from "./useWalletData";
 import { delay } from "@/utils/helpers";
 import { ReceiptIcon } from "lucide-react";
+import { convertToUTC } from "@/utils/formatters";
 
 // 📍컨트랙트 주소 (실제 배포 후 변경 필요)📍
 const KSC_CONTRACT_ADDRESS = {
@@ -532,10 +533,11 @@ export const useSendTokens = () => {
         const receipt = await tx.wait(); //트랜잭션 영수증
 
         // 가스비 계산
-        const gasUsed = receipt.gasUsed;
-        const gasPrice = receipt.effectiveGasPrice;
+        const gasUsed = BigInt(receipt.gasUsed);
+        const gasPrice = BigInt(receipt.gasPrice);
         const gasFeeInWei = gasUsed * gasPrice;
 
+        const scheduledTime = convertToUTC(scheduledTimeStr);
         // 트랜잭션 내역 백엔드에 저장
         try {
           //트랜잭션 성공
@@ -554,7 +556,7 @@ export const useSendTokens = () => {
                 toAddress,
                 txHash: tx.hash,
                 amount: amountWei.toString(),
-                scheduledAt: scheduledTimeStr,
+                scheduledAt: scheduledTime,
                 memo,
                 fee: gasFeeInWei.toString(),
               }),
@@ -563,6 +565,7 @@ export const useSendTokens = () => {
 
             if (!data.success) {
               toast.error(t(`payment.errors.saveTxError`));
+              console.log("post-tx error:", data.data)
               return;
             } else {
               txId = data.data.id; // 트랜잭션 아이디 추출
@@ -576,6 +579,7 @@ export const useSendTokens = () => {
           }
         } catch (err) {
           toast.error(t(`payment.errors.saveTxError`));
+          console.log(err);
           return;
         }
       } catch (err) {
