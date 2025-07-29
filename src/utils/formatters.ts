@@ -1,3 +1,5 @@
+
+
 import { useLanguage } from "@/contexts/localization/LanguageContext";
 import { ethers, BigNumberish } from "ethers";
 
@@ -68,3 +70,20 @@ export const formatDate = (timestamp: string | null | undefined) => {
 
   return new Date(timestamp || "").toLocaleString(locale, options);
 };
+
+
+
+// ⚙️ UTC로 시간 변환
+export function convertToUTC(dateTimeString: string): string | null {
+  if (!dateTimeString) {
+    return null;
+  }
+  const date = new Date(dateTimeString);
+
+  if (isNaN(date.getTime())) {
+    console.error("Invalid date string provided for UTC conversion:", dateTimeString);
+    return null;
+  }
+
+  return date.toISOString();
+}
