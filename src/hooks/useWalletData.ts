@@ -106,7 +106,7 @@ export const useWalletData = () => {
       return;
     }
     try {
-      const response = await fetch(`/api/wallet/get-wallet/${addressId}`, {
+      const response = await fetch(`/api/transaction/get-txCount/${addressId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -116,7 +116,7 @@ export const useWalletData = () => {
 
       const data = await response.json();
       if (data.success) {
-        setTxCount(data.data.successfulTransactions);
+        setTxCount(data.data.totalConfirmedCount);
       } else {
         throw new Error("거래 수 조회에 실패했습니다");
       }
