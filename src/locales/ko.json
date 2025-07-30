@@ -124,7 +124,8 @@
         "confirmed": "완료",
         "pending": "처리 중",
         "failed": "실패",
-        "approve": "대기"
+        "approve": "대기",
+        "canceled": "취소"
       },
       "type": {
         "instant": "즉시",

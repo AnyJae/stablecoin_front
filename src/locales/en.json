@@ -124,7 +124,8 @@
         "confirmed": "Confirmed",
         "pending": "Pending",
         "failed": "Failed",
-        "approve": "Reservation"
+        "approve": "Reservation",
+        "canceled": "Canceled"
       },
       "type": {
         "instant": "Instant",
