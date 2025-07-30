@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { ethers } from "ethers";
 import { XRPL_EVM_CHAIN_CONFIG } from "@/constants/xrplEvm";
 import { AVALANCHE_CHAIN_CONFIG } from "@/constants/avalanche";
+import { useAppKit } from "@reown/appkit/react";
 
 //localStorage 키 (지갑 연결 수동 해제 상태)
 const DISCONNECT_FLAG_KEY = "wallet_disconnected_permanently";
@@ -37,8 +38,10 @@ export const useWalletConnect = () => {
 
         localStorage.removeItem(DISCONNECT_FLAG_KEY);
 
-
-        const config = targetChain == "xrpl-evm" ? XRPL_EVM_CHAIN_CONFIG : AVALANCHE_CHAIN_CONFIG;
+        const config =
+          targetChain == "xrpl-evm"
+            ? XRPL_EVM_CHAIN_CONFIG
+            : AVALANCHE_CHAIN_CONFIG;
 
         // 계정 요청 (MetaMask 팝업 띄움)
         const accounts: string[] = await window.ethereum.request({
@@ -78,6 +81,7 @@ export const useWalletConnect = () => {
         // ethers.js BrowserProvider,Signer생성
         const _provider = new ethers.BrowserProvider(window.ethereum);
         const _signer = await _provider.getSigner();
+        const networkType = targetChain === "avalanche" ? "AVAX" : "XRPL";
 
         // 지갑 정보 백엔드에 저장
         try {
@@ -89,7 +93,7 @@ export const useWalletConnect = () => {
             },
             body: JSON.stringify({
               address,
-              networkType: targetChain === "avalanche" ? "AVAX" : "XRPL",
+              networkType: networkType,
             }),
           });
 
@@ -115,24 +119,27 @@ export const useWalletConnect = () => {
           //성공 시 아이디 상태 저장
           const data = await res.json();
           setAddressId(data.data.id);
+          console.log("post-wallet response", data.data);
 
           console.log("Wallet save response:", res);
         } catch (err: any) {
           console.error("Failed to save wallet:", err);
-          throw new Error(err.message)
+          throw new Error(err.message);
         }
-                // WalletContext 상태 업데이트
+        // WalletContext 상태 업데이트
         setAddress(address);
         setIsConnected(true);
-        setChainId(config.chainId); 
+        setChainId(config.chainId);
         setChainName(targetChain === "avalanche" ? "avalanche" : "xrpl");
         setIsMock(false);
         setProvider(_provider);
         setSigner(_signer);
-    
-      } catch (e) {
-        const errorMessage =
-          e instanceof Error ? e.message : t("errors.walletConnection");
+      } catch (e: any) {
+        let errorMessage;
+        errorMessage = e.message || t("errors.walletConnection");
+        if (e.code === -32002) {
+          errorMessage = t(`errors.unresolvedRequest`); //이전 계정 연결 요청이 미처리 종료된 경우
+        }
         setError(errorMessage);
         console.error(`${targetChain} wallet connection error:`, e);
         throw new Error(errorMessage);
@@ -140,14 +147,7 @@ export const useWalletConnect = () => {
         setIsLoading(false);
       }
     },
-    [
-      t,
-      setAddress,
-      setIsConnected,
-      setChainId,
-      setChainName,
-      setIsMock
-    ]
+    [t, setAddress, setIsConnected, setChainId, setChainName, setIsMock]
   );
 
   // XRPL 지갑 연결 (EVM 사이드체인)
