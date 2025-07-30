@@ -10,7 +10,7 @@ interface CustomDropdownProps {
   _defaultOption: number;
   _placeholder?: string;
   _border?: string;
-  _width?: number;
+  _width?: number | string;
   _fontSize?: number;
 }
 
@@ -36,7 +36,7 @@ export function CustomDropdown({
   );
 }
 
-const StyledDropdown = styled(Dropdown)<{ $border: string; $width: number; $fontSize: number }>`
+const StyledDropdown = styled(Dropdown)<{ $border: string; $width: number|string; $fontSize: number }>`
   .Dropdown-control {
     background-color: transparent;
     color: white;
@@ -50,11 +50,11 @@ const StyledDropdown = styled(Dropdown)<{ $border: string; $width: number; $font
       switch (props.$border) {
         case "solid":
           return css`
-            border: 5px solid white;
+            border: 1px solid #B3B3B3;
           `;
         case "dashed":
           return css`
-            border: 5px dashed white;
+            border: 5px dashed #B3B3B3;
           `;
         case "none":
           return css`
@@ -66,7 +66,8 @@ const StyledDropdown = styled(Dropdown)<{ $border: string; $width: number; $font
           `;
       }
     }}
-    width: ${(props) => props.$width}px;
+   width: ${(props) =>
+  typeof props.$width === "number" ? `${props.$width}px` : props.$width};
     font-size: ${(props) => props.$fontSize}px;
   }
 
@@ -86,7 +87,7 @@ const StyledDropdown = styled(Dropdown)<{ $border: string; $width: number; $font
   .Dropdown-menu {
     background-color: #201e21;
     border-radius: 5px;
-    border-color: white;
+    border-color: #B3B3B3;
     width: ${(props) => props.$width}px;
   }
 
