@@ -42,7 +42,7 @@ const Container = styled.div`
   color:white;
   border-radius: 12px;
   padding: 25px 15px 25px 25px;
-  max-width: 90%;
+  max-width: 95%;
   max-height: 80%;
   overflow: hidden;
   display: flex;
