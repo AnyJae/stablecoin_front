@@ -15,7 +15,7 @@ export interface ContractInfo {
   explorerUrl: string;
 }
 
-export const useAdmin = () => {
+export const useAdmin = (network: string) => {
   const [contractInfo, setContractInfo] = useState<ContractInfo | null>(null);
   const [supplyInfo, setSupplyInfo] = useState({
     maxSupply: "",
@@ -33,7 +33,7 @@ export const useAdmin = () => {
   const fetchSupplyInfo = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/external/get-tokenSupply/${chainName == "xrpl" ? "XRPL" : "AVAX"}`,{
+        `/api/external/get-tokenSupply/${network == "XRPL" ? "XRPL" : "AVAX"}`,{
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -57,7 +57,7 @@ export const useAdmin = () => {
         networkType: "-",
       });
     }
-  }, []);
+  }, [network]);
 
   // KSC 발행
   const mintKSC = useCallback(

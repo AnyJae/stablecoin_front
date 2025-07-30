@@ -340,6 +340,7 @@
     "users": "사용자 관리",
     "settings": "설정",
     "logs": "로그",
+    "selectNetwork":"네트워크 선택",
     "supplyInfo": {
       "title": "토큰 정보",
       "maxSupply": "최대 발행량 (KSC)",

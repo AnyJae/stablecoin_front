@@ -4,9 +4,14 @@ import { useState, useEffect } from "react";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useLanguage } from "@/contexts/localization/LanguageContext";
 import { formatWeiToKsc } from "@/utils/formatters";
+import { useWalletContext } from "@/contexts/wallet/WalletContext";
+import { CustomDropdown } from "../common/CustomDropdown";
 
 export function AdminInterface() {
   const { t } = useLanguage();
+
+   const [network, setNetwork] = useState("XRPL");
+
   const {
     supplyInfo,
     mintKSC,
@@ -15,7 +20,8 @@ export function AdminInterface() {
     emergencyUnpause,
     isLoading,
     error,
-  } = useAdmin();
+  } = useAdmin(network);
+
 
   const [mintForm, setMintForm] = useState({
     to: "",
@@ -52,17 +58,28 @@ export function AdminInterface() {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
+      <div className="mb-6 flex w-full">
+         <div className="flex items-center text-ksc-gray text-sm">{t(`admin.selectNetwork`)}</div>
+        <CustomDropdown 
+        _onChange={(selectedOption)=>{setNetwork(selectedOption.value)}}
+        _options={["XRPL", "Avalanche"]}
+        _defaultOption={0}
+        _width={120}
+        _border="none"
+        />
+      
+      </div>
       {/* 컨트랙트 정보 */}
       <div className="card p-6 mb-6">
         <h2 className="text-xl font-bold text-ksc-white mb-4">
-          {t("admin.supplyInfo.title")}
+          {t("admin.supplyInfo.title")} ({network})
         </h2>
 
         {supplyInfo ? (
           <div className="grid md:grid-cols-3 gap-4">
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatWeiToKsc(supplyInfo.maxSupply || '-')}
+                {formatWeiToKsc(supplyInfo.maxSupply || "-")}
               </div>
               <div className="text-sm text-ksc-gray">
                 {t("admin.supplyInfo.maxSupply")}
@@ -71,7 +88,7 @@ export function AdminInterface() {
 
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatWeiToKsc(supplyInfo.totalSupply || '-')}
+                {formatWeiToKsc(supplyInfo.totalSupply || "-")}
               </div>
               <div className="text-sm text-ksc-gray">
                 {t("admin.supplyInfo.currentSupply")}
@@ -80,7 +97,7 @@ export function AdminInterface() {
 
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatWeiToKsc(supplyInfo.totalBurned ||'-')}
+                {formatWeiToKsc(supplyInfo.totalBurned || "-")}
               </div>
               <div className="text-sm text-ksc-gray">
                 {t("admin.supplyInfo.totalBurned")}
@@ -141,7 +158,9 @@ export function AdminInterface() {
                 disabled={isLoading || !mintForm.to || !mintForm.amount}
                 className="bg-ksc-mint hover:text-ksc-mint disabled:bg-ksc-box/50 text-ksc-white font-medium py-3 px-4 rounded-lg transition-colors"
               >
-                {isLoading ? t("admin.mint.processing") : t("admin.mint.button")}
+                {isLoading
+                  ? t("admin.mint.processing")
+                  : t("admin.mint.button")}
               </button>
             </div>
           </form>
@@ -194,7 +213,9 @@ export function AdminInterface() {
                 disabled={isLoading || !burnForm.from || !burnForm.amount}
                 className="bg-red-500 hover:text-ksc-mint disabled:bg-ksc-box/50 text-white font-medium py-3 px-4 rounded-lg transition-colors"
               >
-                {isLoading ? t("admin.burn.processing") : t("admin.burn.button")}
+                {isLoading
+                  ? t("admin.burn.processing")
+                  : t("admin.burn.button")}
               </button>
             </div>
           </form>

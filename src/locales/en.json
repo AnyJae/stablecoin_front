@@ -340,6 +340,7 @@
     "users": "User Management",
     "settings": "Settings",
     "logs": "Logs",
+    "selectNetwork":"Select network",
     "supplyInfo": {
       "title": "Token Information",
       "maxSupply": "Max Supply (KSC)",
