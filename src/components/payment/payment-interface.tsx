@@ -207,7 +207,7 @@ export function PaymentInterface() {
     }
   };
 
-  // 예약 결제 변경하기 📍
+  // 예약 결제 변경하기 
   const handleChangeScheduledTime = async (time: string, txId: string) => {
     // 예약 시간 체크
     const scheduledTime = new Date(time);
@@ -247,7 +247,7 @@ export function PaymentInterface() {
     }
   };
 
-  // 예약 결제 취소하기 📍
+  // 예약 결제 취소하기
   const handleCancelScheduledPayment = async (txId: string) => {
     try {
       const response = await fetch(`/api/transaction/patch-tx/${txId}`, {
@@ -981,11 +981,11 @@ export function PaymentInterface() {
 
           {/* 트랜잭션 데이터 */}
           <div className="space-y-4">
-            {txHistory.map((payment) => payment.txStatus !== "CANCELED" && (
-              <div key={payment.id} className="bg-ksc-box rounded-lg p-4">
+            {txHistory.map((payment) => (
+              <div key={payment.id} className={`rounded-lg p-4 ${payment.txStatus === "CANCELED"? "bg-ksc-box/40" : "bg-ksc-box"}`}>
                 <div className="flex justify-between items-start">
                   <div className="flex-grow">
-                    <div className="flex items-center space-x-2 mb-2">
+                    <div className={`flex items-center space-x-2 mb-2`}>
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
                           payment.paymentType === "INSTANT"
@@ -1002,13 +1002,15 @@ export function PaymentInterface() {
                           : t("wallet.transactions.type.scheduled")}
                       </span>
                       <span
-                        className={`py-1 rounded text-xs font-medium ${
+                        className={`px-2 py-1 rounded text-xs font-medium ${
                           payment.txStatus === "CONFIRMED"
                             ? "hidden"
                             : payment.txStatus === "PENDING"
                             ? "bg-green-600"
                             : payment.txStatus === "FAILED"
                             ? "bg-red-500"
+                            : payment.txStatus === "CANCELED"
+                            ? "bg-gray-600"
                             : "bg-green-500"
                         }`}
                       >
@@ -1018,9 +1020,11 @@ export function PaymentInterface() {
                           ? t("wallet.transactions.status.pending")
                           : payment.txStatus === "FAILED"
                           ? t("wallet.transactions.status.failed")
+                          :payment.txStatus === "CANCELED"
+                          ? t("wallet.transactions.status.canceled")
                           : t("wallet.transactions.status.approve")}
                       </span>
-                      <p className="px-1 text-sm text-ksc-gray-light">
+                      <p className={`px-1 text-sm text-ksc-gray-light ${payment.txStatus === "CANCELED"? "text-gray-500":""}`}>
                         {payment.memo}
                       </p>
 
@@ -1112,7 +1116,7 @@ export function PaymentInterface() {
                             )}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-ksc-white hover:text-ksc-mint/80 flex justify-end"
+                            className={`text-ksc-white hover:text-ksc-mint/80 flex justify-end ${payment.txStatus === "CANCELED"? "hidden":""}`}
                           >
                             <ExternalLink className="w-4 h-4" />
                           </a>
@@ -1120,7 +1124,7 @@ export function PaymentInterface() {
                       </span>
                     </div>
 
-                    <p className="hidden sm:block text-xs text-ksc-gray-light">
+                    <p className={`hidden sm:block text-xs text-ksc-gray-light ${payment.txStatus === "CANCELED"? "text-gray-500":""}`}>
                       <AddressDisplay
                         address={payment.fromAddress}
                         full={true}
@@ -1133,7 +1137,7 @@ export function PaymentInterface() {
                       <span className="px-2">→</span>
                       <AddressDisplay address={payment.toAddress} />
                     </p>
-                    <p className="font-semibold mt-3">
+                    <p className={`font-semibold mt-3 ${payment.txStatus === "CANCELED"? "text-gray-500":""}`}>
                       {formatWeiToKsc(payment.amount)} KSC
                     </p>
                     <div className="text-right">

@@ -529,9 +529,9 @@ export default function WalletInterface() {
                 <h4 className="font-semibold text-ksc-mint mb-2">
                   {t("wallet.overview.recentTransactions")}
                 </h4>
-                {filteredTxHistory.slice(0, 3).length > 0 ? (
+                {txHistory.slice(0, 3).length > 0 ? (
                   <div className="space-y-2">
-                    {filteredTxHistory.slice(0, 3).map((tx) => (
+                    {txHistory.slice(0, 3).map((tx) => (
                       <div
                         key={tx.id}
                         className="flex items-center justify-between text-sm"
@@ -548,6 +548,8 @@ export default function WalletInterface() {
                                 ? "bg-green-200 text-green-800"
                                 : tx.txStatus === "FAILED"
                                 ? "bg-error-100 text-error-800"
+                                : tx.txStatus === "CANCELED"
+                                ? "bg-gray-600 text-secondary-100"
                                 : "bg-yellow-200 text-yellow-800"
                             }`}
                           >
@@ -710,18 +712,18 @@ export default function WalletInterface() {
               </tr>
             </thead>
             <tbody className="bg-ksc-box/20 divide-y divide-ksc-box/30">
-              {filteredTxHistory.map((tx) => (
-                <tr key={tx.id} className="hover:bg-ksc-box/30">
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-ksc-white text-center">
-                    {<AddressDisplay address={tx.txHash || ""} />}
+              {txHistory.map((tx) => (
+                <tr key={tx.id} className={`hover:bg-ksc-box/30 ${tx.txStatus === "CANCELED"? "text-gray-500":""}`}>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-mono  text-center">
+                    {tx.txStatus === "CANCELED"? "":<AddressDisplay address={tx.txHash || ""} />}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-ksc-white text-center">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm  text-center">
                     {<AddressDisplay address={tx.fromAddress || ""} />}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-ksc-white text-center">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm  text-center">
                     {<AddressDisplay address={tx.toAddress || ""} />}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-ksc-white text-right text-center">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm  text-right text-center">
                     {formatWeiToKsc(tx.amount)}&nbsp; KSC
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-center">
@@ -733,6 +735,8 @@ export default function WalletInterface() {
                           ? "bg-green-200 text-green-800" 
                           : tx.txStatus === "FAILED"
                           ? "bg-error-100 text-error-800" 
+                          : tx.txStatus === "CANCELED"
+                          ? "bg-gray-600 text-secondary-100"
                           : "bg-yellow-200 text-yellow-800" 
                       }`}
                     >
@@ -755,7 +759,7 @@ export default function WalletInterface() {
                       href={getExplorerUrl(tx.txHash || "", chainName!)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-ksc-white hover:text-ksc-mint/80 flex justify-center"
+                      className={`text-ksc-white hover:text-ksc-mint/80 flex justify-center ${tx.txStatus === "CANCELED"? "hidden":""}`}
                     >
                       <ExternalLink className="w-4 h-4" />
                     </a>
@@ -776,8 +780,8 @@ export default function WalletInterface() {
       {/* 거래 내역 모바일 카드 뷰 */}
       <div className="sm:hidden space-y-4">
         {txHistory.length > 0 ? (
-          filteredTxHistory.map((tx) => (
-            <div key={tx.id} className="bg-ksc-box/20 p-2 rounded-lg shadow-sm">
+          txHistory.map((tx) => (
+            <div key={tx.id} className={`bg-ksc-box/20 p-2 rounded-lg shadow-sm ${tx.txStatus === "CANCELED" ? "text-gray-500" : ""}`}>
               <div className="flex justify-between items-center mb-2">
                 <span
                   className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -787,6 +791,8 @@ export default function WalletInterface() {
                       ? "bg-green-200 text-green-800" 
                       : tx.txStatus === "FAILED"
                       ? "bg-error-100 text-error-800" 
+                      : tx.txStatus === "CANCELED"
+                          ? "bg-gray-600 text-secondary-100"
                       : "bg-yellow-200 text-yellow-800" 
                   }`}
                 >
@@ -796,7 +802,7 @@ export default function WalletInterface() {
                     }`
                   )}
                 </span>
-                <span className="text-sm text-ksc-gray">
+                <span className="text-sm text-ksc-white">
                    {tx.txStatus === "PENDING"
                       ? formatDate(tx.createdAt)
                       : tx.txStatus === "APPROVE"
@@ -804,23 +810,24 @@ export default function WalletInterface() {
                       : formatDate(tx.statusUpdatedAt || "")}
                 </span>
               </div>
-              <p className="text-ksc-white text-base font-semibold mb-1">
+              <p className=" text-base font-semibold mb-1">
                 {formatWeiToKsc(tx.amount)} KSC
               </p>
-              <p className="text-sm text-ksc-gray">
+              <p className="text-sm">
                 {<AddressDisplay address={tx.fromAddress || ""} />} → {<AddressDisplay address={tx.toAddress || ""} />}
               </p>
               {tx.memo && (
-                <p className="text-xs text-ksc-gray mt-1">{tx.memo}</p>
+                <p className="text-xs mt-1">{tx.memo}</p>
               )}
               <div className="mt-2 text-right">
                 <a
                   href={getExplorerUrl(tx.txHash || "", chainName!)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ksc-mint hover:text-ksc-mint/80 inline-flex items-center text-xs"
+                  className="hover:text-ksc-mint/80 inline-flex items-center text-xs"
                 >
-                  <ExternalLink className="w-4 h-4" />
+                   {tx.txStatus === "CANCELED"? "": <ExternalLink className="w-4 h-4"/>}
+        
                 </a>
               </div>
             </div>
