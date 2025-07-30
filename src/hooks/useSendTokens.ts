@@ -134,7 +134,7 @@ export const useSendTokens = () => {
               toNetworkType: network === "xrpl" ? "XRPL" : "AVAX", //📍브릿지 기능 완료 후 수정 필요
               paymentType: "INSTANT",
               fromAddress: address,
-              toAddress,
+              toAddress: toAddress.toLowerCase(),
               txHash: tx.hash,
               amount: amountWei.toString(),
               memo,
@@ -336,7 +336,7 @@ export const useSendTokens = () => {
                 fromNetworkType: network === "xrpl" ? "XRPL" : "AVAX",
                 paymentType: "BATCH",
                 fromAddress: address,
-                toAddress: toAddr,
+                toAddress: toAddr.toLowerCase(),
                 txHash: tx.hash,
                 amount: amountsWei[index].toString(), // 각 개별 금액
                 memo: memo,
@@ -553,7 +553,7 @@ export const useSendTokens = () => {
                 fromNetworkType: network === "xrpl" ? "XRPL" : "AVAX",
                 paymentType: "SCHEDULED",
                 fromAddress: address,
-                toAddress,
+                toAddress: toAddress.toLowerCase(),
                 txHash: tx.hash,
                 amount: amountWei.toString(),
                 scheduledAt: scheduledTime,
