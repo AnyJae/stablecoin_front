@@ -928,8 +928,8 @@ export function PaymentInterface() {
       {/* 결제 내역 */}
       {activeTab === "history" && (
         <div className="bg-ksc-gray-dark rounded-lg sm:p-6 p-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold mb-6 flex items-center">
+          <div className="w-full flex items-center pb-2 sm:pb-0 justify-end sm:justify-between">
+            <h2 className="hidden sm:inline sm:flex sm:text-2xl sm:font-semibold sm:mb-6 sm:lex sm:items-center">
               <History className="mr-2" />
               {t("payment.history")}
             </h2>
@@ -1002,9 +1002,9 @@ export function PaymentInterface() {
                           : t("wallet.transactions.type.scheduled")}
                       </span>
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
+                        className={`py-1 rounded text-xs font-medium ${
                           payment.txStatus === "CONFIRMED"
-                            ? "bg-secondary-400"
+                            ? "hidden"
                             : payment.txStatus === "PENDING"
                             ? "bg-green-600"
                             : payment.txStatus === "FAILED"
@@ -1013,14 +1013,14 @@ export function PaymentInterface() {
                         }`}
                       >
                         {payment.txStatus === "CONFIRMED"
-                          ? t("wallet.transactions.status.confirmed")
+                          ? ""
                           : payment.txStatus === "PENDING"
                           ? t("wallet.transactions.status.pending")
                           : payment.txStatus === "FAILED"
                           ? t("wallet.transactions.status.failed")
                           : t("wallet.transactions.status.approve")}
                       </span>
-                      <p className="text-sm text-ksc-gray-light">
+                      <p className="px-1 text-sm text-ksc-gray-light">
                         {payment.memo}
                       </p>
 
@@ -1055,6 +1055,7 @@ export function PaymentInterface() {
                               isOpen={isChangeModalOpen}
                               onClose={() => {
                                 setIsChangeModalOpen(false);
+                                setChangedTime("");
                               }}
                             >
                               <div className="flex flex-col gap-7 p-2">
