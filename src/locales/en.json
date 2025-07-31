@@ -25,7 +25,7 @@
     "dashboard": "Dashboard",
     "payment": "Payment",
     "collateral": "Collateral",
-    "admin": "Admin",
+    "admin": "Asset",
     "scanner": "Scanner",
     "docs": "Docs",
     "language": "Language"
@@ -333,7 +333,7 @@
     }
   },
   "admin": {
-    "title": "Admin",
+    "title": "Asset Management",
     "description": "KSC token minting, burning and system monitoring",
     "mint": "Mint",
     "burn": "Burn",
@@ -346,7 +346,11 @@
       "maxSupply": "Max Supply (KSC)",
       "currentSupply": "Current Supply (KSC)",
       "totalBurned": "Total Burned (KSC)",
-      "loading": "Loading contract information..."
+      "loading": "Loading contract information...",
+            "assets" :"My Assets",
+      "kscBalance": "KSC Balance",
+      "krwBalance": "KRW Balance",
+      "maxAmount": "Max Claimable Amount"
     },
     "mint": {
       "title": "Mint KSC",
@@ -354,14 +358,15 @@
       "amount": "Mint Amount (KSC)",
       "button": "Mint KSC",
       "processing": "Minting...",
-      "success":"Payment processed successfully"
+      "success":"Minting completed successfully"
     },
     "burn": {
       "title": "Burn KSC",
       "address": "Burn Address",
       "amount": "Burn Amount (KSC)",
       "button": "Burn KSC",
-      "processing": "Burning..."
+      "processing": "Burning...",
+      "success": "Token burn completed successfully."
     },
     "emergency": {
       "title": "Emergency Control",
@@ -369,7 +374,8 @@
       "unpause": "Unpause"
     },
     "errors": {
-      "mint" : "Failed to mint KSC"
+      "mint" : "Failed to mint KSC",
+      "burn" : "Failed to burn KSC"
     }
   },
   "scanner": {

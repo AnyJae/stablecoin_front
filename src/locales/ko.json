@@ -25,7 +25,7 @@
     "dashboard": "대시보드",
     "payment": "결제",
     "collateral": "담보자산",
-    "admin": "관리자",
+    "admin": "자산관리",
     "scanner": "스캐너",
     "docs": "문서",
     "language": "언어"
@@ -333,7 +333,7 @@
     }
   },
   "admin": {
-    "title": "관리자",
+    "title": "자산관리",
     "description": "KSC 토큰 발행, 소각 및 시스템 모니터링",
     "mint": "발행",
     "burn": "소각",
@@ -346,7 +346,11 @@
       "maxSupply": "최대 발행량 (KSC)",
       "currentSupply": "현재 유통량 (KSC)",
       "totalBurned": "총 소각량 (KSC)",
-      "loading": "컨트랙트 정보를 불러오는 중..."
+      "loading": "컨트랙트 정보를 불러오는 중...",
+      "assets" :"보유 자산",
+      "kscBalance": "KSC 잔액",
+      "krwBalance": "KRW 잔액",
+      "maxAmount": "최대 발행 가능량"
     },
     "mint": {
       "title": "KSC 발행",
@@ -354,14 +358,15 @@
       "amount": "발행 금액 (KSC)",
       "button": "KSC 발행",
       "processing": "발행 중...",
-      "success": "KSC가 발행이 완료되었습니다"
+      "success": "KSC 발행이 완료되었습니다"
     },
     "burn": {
       "title": "KSC 소각",
       "address": "소각할 주소",
       "amount": "소각 금액 (KSC)",
       "button": "KSC 소각",
-      "processing": "소각 중..."
+      "processing": "소각 중...",
+      "success": "KSC 소각이 완료되었습니다"
     },
     "emergency": {
       "title": "긴급 제어",
@@ -369,7 +374,8 @@
       "unpause": "재개"
     },
         "errors": {
-      "mint" : "KSC 발행에 실패했습니다"
+      "mint" : "KSC 발행에 실패했습니다",
+      "burn" : "KSC 소각에 실패했습니다"
     }
   },
   "scanner": {
