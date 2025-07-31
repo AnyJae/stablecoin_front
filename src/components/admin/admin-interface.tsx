@@ -63,7 +63,7 @@ export function AdminInterface() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-7xl md:max-w-5xl mx-auto sm:p-6">
       <div className="mb-6 flex w-full">
         <div className="flex items-center text-ksc-gray text-sm">
           {t(`admin.selectNetwork`)}
