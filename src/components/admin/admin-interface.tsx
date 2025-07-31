@@ -164,10 +164,10 @@ export function AdminInterface() {
             <div className="flex justify-center">
               <button
                 type="submit"
-                disabled={isLoading || !mintForm.to || !mintForm.amount}
-                className="bg-ksc-mint hover:text-ksc-mint disabled:bg-ksc-box/50 text-ksc-white font-medium py-3 px-4 rounded-lg transition-colors"
+                disabled={isLoading==="mint" || !mintForm.to || !mintForm.amount}
+                className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
               >
-                {isLoading
+                {isLoading === "mint"
                   ? t("admin.mint.processing")
                   : t("admin.mint.button")}
               </button>
@@ -219,10 +219,10 @@ export function AdminInterface() {
             <div className="flex justify-center">
               <button
                 type="submit"
-                disabled={isLoading || !burnForm.from || !burnForm.amount}
-                className="bg-red-500 hover:text-ksc-mint disabled:bg-ksc-box/50 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                disabled={isLoading==="burn" || !burnForm.from || !burnForm.amount}
+                className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
               >
-                {isLoading
+                {isLoading === "burn"
                   ? t("admin.burn.processing")
                   : t("admin.burn.button")}
               </button>
@@ -240,18 +240,18 @@ export function AdminInterface() {
         <div className="flex space-x-4">
           <button
             onClick={emergencyPause}
-            disabled={isLoading}
+            disabled={isLoading === "pause"}
             className="bg-yellow-500 hover:bg-yellow-600 disabled:bg-ksc-box/50 text-white font-medium py-2 px-4 rounded-lg transition-colors"
           >
-            {isLoading ? t("common.processing") : t("admin.emergency.pause")}
+            {isLoading==="pause" ? t("common.processing") : t("admin.emergency.pause")}
           </button>
 
           <button
             onClick={emergencyUnpause}
-            disabled={isLoading}
+            disabled={isLoading === "unpause"}
             className="bg-green-500 hover:bg-green-600 disabled:bg-ksc-box/50 text-white font-medium py-2 px-4 rounded-lg transition-colors"
           >
-            {isLoading ? t("common.processing") : t("admin.emergency.unpause")}
+            {isLoading==="unpause" ? t("common.processing") : t("admin.emergency.unpause")}
           </button>
         </div>
       </div>
