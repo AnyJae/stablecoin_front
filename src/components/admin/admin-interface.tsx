@@ -23,13 +23,15 @@ export function AdminInterface() {
     error,
   } = useAdmin(network);
 
+  const{address} = useWalletContext();
+
   const [mintForm, setMintForm] = useState({
-    to: "",
+    to:address,
     amount: "",
   });
 
   const [burnForm, setBurnForm] = useState({
-    from: "",
+    from: address,
     amount: "",
   });
 
@@ -64,25 +66,22 @@ export function AdminInterface() {
 
   return (
     <div className="max-w-7xl md:max-w-5xl mx-auto sm:p-6">
-      <div className="mb-6 flex w-full">
-        <div className="flex items-center text-ksc-gray text-sm">
-          {t(`admin.selectNetwork`)}
-        </div>
-        <CustomDropdown
+      {/* 컨트랙트 정보 */}
+      <div className="card p-6 mb-6">
+        <div className="flex items-center mb-2">
+                  <h2 className="text-xl font-bold text-ksc-white">
+          {t("admin.supplyInfo.title")} 
+        </h2>
+          <CustomDropdown
           _onChange={(selectedOption) => {
             setNetwork(selectedOption.value);
           }}
-          _options={["XRPL", "Avalanche"]}
+          _options={["XRPL", "AVAX", "Mock XRPL", "Mock AVAX"]}
           _defaultOption={0}
           _width={120}
           _border="none"
         />
-      </div>
-      {/* 컨트랙트 정보 */}
-      <div className="card p-6 mb-6">
-        <h2 className="text-xl font-bold text-ksc-white mb-4">
-          {t("admin.supplyInfo.title")} ({network})
-        </h2>
+        </div>
 
         {supplyInfo ? (
           <div className="grid md:grid-cols-3 gap-4">
@@ -91,7 +90,7 @@ export function AdminInterface() {
                 {formatWeiToKsc(supplyInfo.maxSupply || "-")}
               </div>
               <div className="text-sm text-ksc-gray">
-                {t("admin.supplyInfo.maxSupply")}
+                {t("admin.supplyInfo.assets")}
               </div>
             </div>
 
@@ -100,7 +99,7 @@ export function AdminInterface() {
                 {formatWeiToKsc(supplyInfo.totalSupply || "-")}
               </div>
               <div className="text-sm text-ksc-gray">
-                {t("admin.supplyInfo.currentSupply")}
+                {t("admin.supplyInfo.kscBalance")}
               </div>
             </div>
 
@@ -109,7 +108,7 @@ export function AdminInterface() {
                 {formatWeiToKsc(supplyInfo.totalBurned || "-")}
               </div>
               <div className="text-sm text-ksc-gray">
-                {t("admin.supplyInfo.totalBurned")}
+                {t("admin.supplyInfo.krwBalance")}
               </div>
             </div>
           </div>
@@ -128,25 +127,14 @@ export function AdminInterface() {
 
           <form onSubmit={handleMint} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-ksc-gray mb-2">
-                {t("admin.mint.recipient")}
-              </label>
-              <input
-                type="text"
-                value={mintForm.to}
-                onChange={(e) =>
-                  setMintForm((prev) => ({ ...prev, to: e.target.value }))
-                }
-                placeholder="0x..."
-                className="w-full px-3 py-2 bg-ksc-box border border-ksc-border rounded-lg text-ksc-white placeholder-ksc-gray focus:ring-2 focus:ring-ksc-mint focus:border-transparent"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-ksc-gray mb-2">
+             <div className="flex justify-between">
+               <label className="block text-sm font-medium text-ksc-gray mb-2">
                 {t("admin.mint.amount")}
               </label>
+              <div className="text-sm">
+                <span className="text-ksc-mint">MAX</span>
+                </div>
+             </div>
               <input
                 type="number"
                 value={mintForm.amount}
@@ -182,26 +170,17 @@ export function AdminInterface() {
           </h3>
 
           <form onSubmit={handleBurn} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-ksc-gray mb-2">
-                {t("admin.burn.address")}
-              </label>
-              <input
-                type="text"
-                value={burnForm.from}
-                onChange={(e) =>
-                  setBurnForm((prev) => ({ ...prev, from: e.target.value }))
-                }
-                placeholder="0x..."
-                className="w-full px-3 py-2 bg-ksc-box border border-ksc-border rounded-lg text-ksc-white placeholder-ksc-gray focus:ring-2 focus:ring-ksc-mint focus:border-transparent"
-                required
-              />
-            </div>
+           
 
             <div>
-              <label className="block text-sm font-medium text-ksc-gray mb-2">
+              <div className="flex justify-between">
+                              <label className="block text-sm font-medium text-ksc-gray mb-2">
                 {t("admin.burn.amount")}
               </label>
+              <div className="text-sm">
+                <span className="text-ksc-mint">MAX</span>
+                </div>
+              </div>
               <input
                 type="number"
                 value={burnForm.amount}
