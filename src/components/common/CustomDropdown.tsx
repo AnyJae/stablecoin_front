@@ -20,7 +20,7 @@ export function CustomDropdown({
   _defaultOption = 0,
   _placeholder = "Select an option",
   _border = "none",
-  _width = 60,
+  _width = "auto",
   _fontSize = 14,
 }: CustomDropdownProps) {
   return (
@@ -52,6 +52,11 @@ const StyledDropdown = styled(Dropdown)<{ $border: string; $width: number|string
           return css`
             border: 1px solid #B3B3B3;
           `;
+        case "solid-round":
+          return css`
+            border: 1px solid #B3B3B3;
+            border-radius: 6px;
+          `
         case "dashed":
           return css`
             border: 5px dashed #B3B3B3;
