@@ -6,11 +6,12 @@ import { useLanguage } from "@/contexts/localization/LanguageContext";
 import { formatWeiToKsc } from "@/utils/formatters";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { CustomDropdown } from "../common/CustomDropdown";
+import toast from "react-hot-toast";
 
 export function AdminInterface() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
-   const [network, setNetwork] = useState("XRPL");
+  const [network, setNetwork] = useState("XRPL");
 
   const {
     supplyInfo,
@@ -21,7 +22,6 @@ export function AdminInterface() {
     isLoading,
     error,
   } = useAdmin(network);
-
 
   const [mintForm, setMintForm] = useState({
     to: "",
@@ -37,8 +37,14 @@ export function AdminInterface() {
     e.preventDefault();
     if (!mintForm.to || !mintForm.amount) return;
 
-    await mintKSC(mintForm.to, mintForm.amount);
-    setMintForm({ to: "", amount: "" });
+    try{
+      const result  = await mintKSC(mintForm.to, mintForm.amount, network);
+      if (result == "client-side-validation-fail") return;
+      setMintForm({to: "", amount: ""});
+    }catch(err){
+      toast.error(t("admin.errors.mint"))
+    }
+
   };
 
   const handleBurn = async (e: React.FormEvent) => {
@@ -59,15 +65,18 @@ export function AdminInterface() {
   return (
     <div className="max-w-5xl mx-auto p-6">
       <div className="mb-6 flex w-full">
-         <div className="flex items-center text-ksc-gray text-sm">{t(`admin.selectNetwork`)}</div>
-        <CustomDropdown 
-        _onChange={(selectedOption)=>{setNetwork(selectedOption.value)}}
-        _options={["XRPL", "Avalanche"]}
-        _defaultOption={0}
-        _width={120}
-        _border="none"
+        <div className="flex items-center text-ksc-gray text-sm">
+          {t(`admin.selectNetwork`)}
+        </div>
+        <CustomDropdown
+          _onChange={(selectedOption) => {
+            setNetwork(selectedOption.value);
+          }}
+          _options={["XRPL", "Avalanche"]}
+          _defaultOption={0}
+          _width={120}
+          _border="none"
         />
-      
       </div>
       {/* 컨트랙트 정보 */}
       <div className="card p-6 mb-6">

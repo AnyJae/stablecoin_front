@@ -25,20 +25,25 @@ export const useAdmin = (network: string) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const { chainName } = useWalletContext();
   const { t, language } = useLanguage();
+
+  const evmAddressRegex = /^0x[0-9a-fA-F]{40}$/; // EVM 주소 형식 정규 표현식
 
   // KSC 공급량 정보 조회
   const fetchSupplyInfo = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/external/get-tokenSupply/${network == "XRPL" ? "XRPL" : "AVAX"}`,{
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "accept-language": language,
-            },}
+        `/api/external/get-tokenSupply/${network == "XRPL" ? "XRPL" : "AVAX"}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "accept-language": language,
+          },
+        }
       );
       const data = await response.json();
 
@@ -61,42 +66,49 @@ export const useAdmin = (network: string) => {
 
   // KSC 발행
   const mintKSC = useCallback(
-    async (to: string, amount: string) => {
+    async (to: string, amount: string, network: string) => {
       setIsLoading(true);
       setError(null);
 
+      // 수신자 지갑 주소 형식 체크
+      if (!evmAddressRegex.test(to)) {
+        setFormError(t("payment.errors.invalidAddress"));
+        return "client-side-validation-fail";
+      }
+
       try {
-        const response = await fetch("/api/admin/mint", {
+        const response = await fetch(`/api/transaction/post-mint`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "accept-language": language,
           },
           body: JSON.stringify({
-            to,
-            amount,
+            toAddress: to,
+            amount: amount,
+            networkType: network === "XRPL" ? "XRPL" : "AVAX",
           }),
         });
 
         const data = await response.json();
 
         if (data.success) {
-          toast.success("KSC 발행이 완료되었습니다.");
-          // 컨트랙트 정보 새로고침
+          toast.success(t("admin.mint.success"));
           await fetchSupplyInfo();
         } else {
-          throw new Error(data.message || "발행에 실패했습니다.");
+          throw new Error(t("admin.errors.mint"));
         }
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : "발행에 실패했습니다.";
+          err instanceof Error ? err.message : t("admin.errors.mint");
         setError(errorMessage);
         toast.error(errorMessage);
-        console.error("Mint KSC error:", err);
-      } finally {
+        console.error("Mint KSC error", err);
+      } finally{
         setIsLoading(false);
       }
     },
-     [fetchSupplyInfo]
+    [fetchSupplyInfo]
   );
 
   // KSC 소각
@@ -136,7 +148,7 @@ export const useAdmin = (network: string) => {
         setIsLoading(false);
       }
     },
-     [fetchSupplyInfo]
+    [fetchSupplyInfo]
   );
 
   // 긴급 일시정지
@@ -167,7 +179,7 @@ export const useAdmin = (network: string) => {
     } finally {
       setIsLoading(false);
     }
-  },  [fetchSupplyInfo]);
+  }, [fetchSupplyInfo]);
 
   // 일시정지 해제
   const emergencyUnpause = useCallback(async () => {
@@ -197,12 +209,12 @@ export const useAdmin = (network: string) => {
     } finally {
       setIsLoading(false);
     }
-  },  [fetchSupplyInfo]);
+  }, [fetchSupplyInfo]);
 
   // 컴포넌트 마운트 시 공급량 정보 조회
   useEffect(() => {
-   fetchSupplyInfo();
-  },  [fetchSupplyInfo]);
+    fetchSupplyInfo();
+  }, [fetchSupplyInfo]);
 
   return {
     supplyInfo,

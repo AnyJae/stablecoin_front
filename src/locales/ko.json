@@ -353,7 +353,8 @@
       "recipient": "받는 주소",
       "amount": "발행 금액 (KSC)",
       "button": "KSC 발행",
-      "processing": "발행 중..."
+      "processing": "발행 중...",
+      "success": "KSC가 발행이 완료되었습니다"
     },
     "burn": {
       "title": "KSC 소각",
@@ -366,6 +367,9 @@
       "title": "긴급 제어",
       "pause": "일시정지",
       "unpause": "재개"
+    },
+        "errors": {
+      "mint" : "KSC 발행에 실패했습니다"
     }
   },
   "scanner": {

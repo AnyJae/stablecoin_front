@@ -353,7 +353,8 @@
       "recipient": "Recipient Address",
       "amount": "Mint Amount (KSC)",
       "button": "Mint KSC",
-      "processing": "Minting..."
+      "processing": "Minting...",
+      "success":"Payment processed successfully"
     },
     "burn": {
       "title": "Burn KSC",
@@ -366,6 +367,9 @@
       "title": "Emergency Control",
       "pause": "Pause",
       "unpause": "Unpause"
+    },
+    "errors": {
+      "mint" : "Failed to mint KSC"
     }
   },
   "scanner": {
