@@ -1,5 +1,6 @@
 import { useLanguage } from "@/contexts/localization/LanguageContext";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
+import { ethers } from "ethers";
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 
@@ -23,7 +24,7 @@ export const useAdmin = (network: string) => {
     totalBurned: "",
     networkType: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<string|null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -67,7 +68,7 @@ export const useAdmin = (network: string) => {
   // KSC 발행
   const mintKSC = useCallback(
     async (to: string, amount: string, network: string) => {
-      setIsLoading(true);
+      setIsLoading("mint");
       setError(null);
 
       // 수신자 지갑 주소 형식 체크
@@ -76,6 +77,7 @@ export const useAdmin = (network: string) => {
         return "client-side-validation-fail";
       }
 
+      const amountWei = ethers.parseUnits(amount, 18);
       try {
         const response = await fetch(`/api/transaction/post-mint`, {
           method: "POST",
@@ -84,8 +86,8 @@ export const useAdmin = (network: string) => {
             "accept-language": language,
           },
           body: JSON.stringify({
-            toAddress: to,
-            amount: amount,
+            toAddress: to.toLowerCase(),
+            amount: amountWei.toString(),
             networkType: network === "XRPL" ? "XRPL" : "AVAX",
           }),
         });
@@ -105,7 +107,7 @@ export const useAdmin = (network: string) => {
         toast.error(errorMessage);
         console.error("Mint KSC error", err);
       } finally{
-        setIsLoading(false);
+        setIsLoading(null);
       }
     },
     [fetchSupplyInfo]
@@ -114,7 +116,7 @@ export const useAdmin = (network: string) => {
   // KSC 소각
   const burnKSC = useCallback(
     async (from: string, amount: string) => {
-      setIsLoading(true);
+      setIsLoading("burn");
       setError(null);
 
       try {
@@ -145,7 +147,7 @@ export const useAdmin = (network: string) => {
         toast.error(errorMessage);
         console.error("Burn KSC error:", err);
       } finally {
-        setIsLoading(false);
+        setIsLoading(null);
       }
     },
     [fetchSupplyInfo]
@@ -153,7 +155,7 @@ export const useAdmin = (network: string) => {
 
   // 긴급 일시정지
   const emergencyPause = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoading("pause");
     setError(null);
 
     try {
@@ -177,13 +179,13 @@ export const useAdmin = (network: string) => {
       toast.error(errorMessage);
       console.error("Emergency pause error:", err);
     } finally {
-      setIsLoading(false);
+      setIsLoading(null);
     }
   }, [fetchSupplyInfo]);
 
   // 일시정지 해제
   const emergencyUnpause = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoading("unpause");
     setError(null);
 
     try {
@@ -207,7 +209,7 @@ export const useAdmin = (network: string) => {
       toast.error(errorMessage);
       console.error("Emergency unpause error:", err);
     } finally {
-      setIsLoading(false);
+      setIsLoading(null);
     }
   }, [fetchSupplyInfo]);
 
