@@ -358,7 +358,7 @@
       "amount": "Mint Amount (KSC)",
       "button": "Mint KSC",
       "processing": "Minting...",
-      "success":"Minting completed successfully"
+      "success":"Burn request successfully sent"
     },
     "burn": {
       "title": "Burn KSC",
@@ -366,7 +366,8 @@
       "amount": "Burn Amount (KSC)",
       "button": "Burn KSC",
       "processing": "Burning...",
-      "success": "Token burn completed successfully."
+      "success": "Token burn completed successfully.",
+       "requestAccept" : "소각 요청이 전송되었습니다"
     },
     "emergency": {
       "title": "Emergency Control",
@@ -375,7 +376,8 @@
     },
     "errors": {
       "mint" : "Failed to mint KSC",
-      "burn" : "Failed to burn KSC"
+      "burn" : "Failed to burn KSC",
+      "moreThanZero": "Please enter a valid amount greater than zero."
     }
   },
   "scanner": {

@@ -366,16 +366,19 @@
       "amount": "소각 금액 (KSC)",
       "button": "KSC 소각",
       "processing": "소각 중...",
-      "success": "KSC 소각이 완료되었습니다"
+      "success": "KSC 소각이 완료되었습니다",
+      "requestAccept" : "소각 요청이 전송되었습니다"
     },
     "emergency": {
       "title": "긴급 제어",
       "pause": "일시정지",
       "unpause": "재개"
     },
-        "errors": {
+    "errors": {
       "mint" : "KSC 발행에 실패했습니다",
-      "burn" : "KSC 소각에 실패했습니다"
+      "burn" : "KSC 소각에 실패했습니다",
+      "moreThanZero": "0보다 큰 값을 입력해 주세요",
+      "insufficient": "요청 가능량을 초과했습니다"
     }
   },
   "scanner": {
