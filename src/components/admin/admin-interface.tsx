@@ -32,11 +32,14 @@ export function AdminInterface() {
     requestKSC,
     redeemKSC,
     isLoading,
+    setIsLoading,
+    adminError,
+    setAdminError,
   } = useAssets();
 
   const { address, kscBalance, chainName } = useWalletContext();
 
-  const {fetchKscBalance} = useWalletData();
+  const { fetchKscBalance } = useWalletData();
 
   const [mintForm, setMintForm] = useState({
     to: address,
@@ -54,17 +57,22 @@ export function AdminInterface() {
 
     try {
       const result = await requestKSC(mintForm.amount);
+      if (result == "client-side-validation-fail") return;
       setMintForm({ to: "", amount: "" });
     } catch (err) {
       toast.error(t("admin.errors.mint"));
+    } finally {
+      setIsLoading(null);
     }
   };
 
   const handleBurn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!burnForm.from || !burnForm.amount) return;
+    if (!burnForm.amount) return;
 
-    await burnKSC(burnForm.from, burnForm.amount);
+    const result = await redeemKSC(burnForm.amount);
+        setIsLoading(null);
+    if (result == "client-side-validation-fail") return;
     setBurnForm({ from: "", amount: "" });
   };
 
@@ -75,14 +83,14 @@ export function AdminInterface() {
     });
   };
 
-
   return (
     <div className="max-w-7xl md:max-w-5xl mx-auto sm:p-6">
       {/* 컨트랙트 정보 */}
       <div className="card p-6 mb-6">
         <div className="flex items-center mb-2">
           <h2 className="text-xl font-bold text-ksc-white">
-            {t("admin.supplyInfo.title")}  ({chainName === "xrpl" ? "XRPL" : "Avalanche"})
+            {t("admin.supplyInfo.title")} (
+            {chainName === "xrpl" ? "XRPL" : "Avalanche"})
           </h2>
 
           {/* <CustomDropdown
@@ -145,16 +153,19 @@ export function AdminInterface() {
                   {t("admin.mint.amount")}
                 </label>
                 <div className="text-sm flex gap-2">
-                  <span className="text-ksc-gray">{formatWeiToKsc(maxRequestAmount)} (KSC)</span>
+                  <span className="text-ksc-gray">
+                    {formatWeiToKsc(maxRequestAmount)} (KSC)
+                  </span>
                   <span className="text-ksc-mint">MAX</span>
                 </div>
               </div>
               <input
                 type="number"
                 value={mintForm.amount}
-                onChange={(e) =>
-                  setMintForm((prev) => ({ ...prev, amount: e.target.value }))
-                }
+                onChange={(e) => {
+                  setMintForm((prev) => ({ ...prev, amount: e.target.value }));
+                  setAdminError(null);
+                }}
                 placeholder="0.00"
                 step="0.01"
                 min="0"
@@ -166,7 +177,9 @@ export function AdminInterface() {
             <div className="flex justify-center">
               <button
                 type="submit"
-                disabled={isLoading === "mint" || !mintForm.amount}
+                disabled={
+                  isLoading === "mint" || !mintForm.amount || !!adminError
+                }
                 className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
               >
                 {isLoading === "mint"
@@ -197,9 +210,10 @@ export function AdminInterface() {
               <input
                 type="number"
                 value={burnForm.amount}
-                onChange={(e) =>
-                  setBurnForm((prev) => ({ ...prev, amount: e.target.value }))
-                }
+                onChange={(e) => {
+                  setBurnForm((prev) => ({ ...prev, amount: e.target.value }));
+                  setAdminError(null);
+                }}
                 placeholder="0.00"
                 step="0.01"
                 min="0"
@@ -212,7 +226,7 @@ export function AdminInterface() {
               <button
                 type="submit"
                 disabled={
-                  isLoading === "burn" || !burnForm.from || !burnForm.amount
+                  isLoading === "redeem" || !burnForm.amount || !!adminError
                 }
                 className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
               >
@@ -224,6 +238,12 @@ export function AdminInterface() {
           </form>
         </div>
       </div>
+
+      {adminError && (
+        <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <p className="text-red-400 text-center">{adminError}</p>
+        </div>
+      )}
 
       {/* 긴급 제어 */}
       <div className="card p-6 mt-6">
