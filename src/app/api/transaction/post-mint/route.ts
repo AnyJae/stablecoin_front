@@ -3,7 +3,7 @@ import { toast } from "react-hot-toast";
 import { NextRequest, NextResponse } from "next/server";
 import { getFetchErrorMessage } from "@/utils/translator";
 
-// 개별 트랜잭션 생성
+// KSC 발행 요청
 export async function POST(request: NextRequest) {
   const lang = request.headers.get("accept-language") || "en";
 
@@ -16,6 +16,8 @@ export async function POST(request: NextRequest) {
 
   try {
     body = await request.json();
+
+    console.log("⚙️⚙️ KSC 발행 요청", body)
 
     const backendUrl =
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";

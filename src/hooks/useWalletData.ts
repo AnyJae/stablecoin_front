@@ -28,7 +28,7 @@ export const useWalletData = () => {
   const { t, language } = useLanguage();
 
   //거래 내역 수
-  const [txCount, setTxCount] = useState<string>("");
+  const [txCount, setTxCount] = useState<string>("-");
 
   //거래 내역
   const [txHistory, setTxHistory] = useState<WalletTransaction[]>([]);
@@ -52,6 +52,7 @@ export const useWalletData = () => {
       }
     } catch (err) {
       toast.error(t(`wallet.errors.nativeTokenLoadError`));
+      console.log("네이티브 잔액 조회 실패", err)
       setBalance("-");
     } finally {
       await delay(500);
@@ -84,6 +85,7 @@ export const useWalletData = () => {
       if (data.success) {
         // setKscBalance("500.00");
         setKscBalance(formatWeiToKsc(data.data.kscBalance) || '-');
+        return formatWeiToKsc(data.data.kscBalance);
       } else {
         throw new Error("잔액 조회에 실패했습니다");
       }
@@ -135,6 +137,8 @@ export const useWalletData = () => {
   const fetchTransactions = useCallback(async (pageSize = itemsPerPage) => {
     setIsLoading(true);
     setError(null);
+
+    console.log("페이지당 데이터 수", pageSize)
 
 
     //유효성 검사

@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
 
   try {
     body = await request.json();
+    console.log("예약결제 테스트", body)
 
     const backendUrl =
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";

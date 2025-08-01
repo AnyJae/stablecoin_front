@@ -482,7 +482,7 @@ export const useSendTokens = () => {
         return "client-side-validation-fail";
       }
 
-      // KSC 잔액 부족 체크 (프론트에서 1차적으로 체크)
+      // KSC 잔액 부족 체크 
       if (Number(kscBalance) < Number(amount)) {
         setSendError(t("payment.errors.insufficient"));
         return "client-side-validation-fail";

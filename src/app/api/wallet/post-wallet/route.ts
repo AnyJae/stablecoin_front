@@ -9,13 +9,13 @@ export async function POST(request: NextRequest) {
   const lang = request.headers.get("accept-language") || "en";
 
   let body: {
-    address: string;
-    networkType: string;
+    "address": string;
+    "networkType": string;
   };
 
   try {
     body = await request.json();
-
+    console.log("😘", body);
     const backendUrl =
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
     const response = await fetch(`${backendUrl}/api/wallet`, {
@@ -59,11 +59,11 @@ export async function POST(request: NextRequest) {
     if (!data.success) {
       let errMessage = getFetchErrorMessage(lang, "backendLogicFailed");
       if (data.statusCode === 400) {
-        errMessage = getFetchErrorMessage(lang, "badRequest")
-      } else if (data.statusCode === 422){
-        errMessage = getFetchErrorMessage(lang, "invalidData")
-      } else if (data.statusCode === 500){
-        errMessage = getFetchErrorMessage(lang, "serverReturnedError")
+        errMessage = getFetchErrorMessage(lang, "badRequest");
+      } else if (data.statusCode === 422) {
+        errMessage = getFetchErrorMessage(lang, "invalidData");
+      } else if (data.statusCode === 500) {
+        errMessage = getFetchErrorMessage(lang, "serverReturnedError");
       }
 
       return NextResponse.json(
@@ -91,7 +91,6 @@ export async function POST(request: NextRequest) {
       message = getFetchErrorMessage(lang, "networkConnectionProblem");
     }
     // 기타 예상치 못한 에러는 기본 500으로 처리
-    
 
     return NextResponse.json(
       {
