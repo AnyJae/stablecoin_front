@@ -22,12 +22,12 @@ export const formatAmount = (balance: string) => {
 
 // ⚙️ Wei to ERC-20 토큰 단위로 변환
 export const formatWeiToKsc = (
-  weiAmountStr: string,
+  weiAmountStr: string|bigint,
   tokenDecimals: number = 18,
   displayDecimals: number = 2
 ): string => {
   if (weiAmountStr == "-" || "") {
-    return weiAmountStr;
+    return weiAmountStr.toString();
   }
   try {
     const kscFullPrecision = ethers.formatUnits(weiAmountStr, tokenDecimals);
