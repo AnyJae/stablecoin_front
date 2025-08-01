@@ -24,7 +24,7 @@ export const useAdmin = (network: string) => {
     totalBurned: "",
     networkType: "",
   });
-  const [isLoading, setIsLoading] = useState<string|null>(null);
+  const [isLoading, setIsLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -35,6 +35,18 @@ export const useAdmin = (network: string) => {
 
   // KSC 공급량 정보 조회
   const fetchSupplyInfo = useCallback(async () => {
+    if (network === "Mock XRPL" || network == "Mock AVAX") {
+      setSupplyInfo({
+        maxSupply: "100000000000000000000",
+        totalSupply: "1000000000000000000000000",
+        totalBurned: "5000000000000000000000",
+        networkType: "Mock",
+      });
+
+      console.log("Mock 데이터")
+      return;
+    }
+
     try {
       const response = await fetch(
         `/api/external/get-tokenSupply/${network == "XRPL" ? "XRPL" : "AVAX"}`,
@@ -95,7 +107,7 @@ export const useAdmin = (network: string) => {
         const data = await response.json();
 
         if (data.success) {
-          toast.success(t("admin.mint.success"));
+          // toast.success(t("admin.mint.success"));
           await fetchSupplyInfo();
         } else {
           throw new Error(t("admin.errors.mint"));
@@ -106,7 +118,7 @@ export const useAdmin = (network: string) => {
         setError(errorMessage);
         toast.error(errorMessage);
         console.error("Mint KSC error", err);
-      } finally{
+      } finally {
         setIsLoading(null);
       }
     },

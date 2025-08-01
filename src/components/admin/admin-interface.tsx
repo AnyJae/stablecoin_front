@@ -7,6 +7,8 @@ import { formatWeiToKsc } from "@/utils/formatters";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { CustomDropdown } from "../common/CustomDropdown";
 import toast from "react-hot-toast";
+import { useAssets } from "@/hooks/useAssets";
+import { useWalletData } from "@/hooks/useWalletData";
 
 export function AdminInterface() {
   const { t, language } = useLanguage();
@@ -19,14 +21,25 @@ export function AdminInterface() {
     burnKSC,
     emergencyPause,
     emergencyUnpause,
-    isLoading,
     error,
   } = useAdmin(network);
 
-  const{address} = useWalletContext();
+  const {
+    totalAssets,
+    kscBalanceTemp,
+    krwBalance,
+    maxRequestAmount,
+    requestKSC,
+    redeemKSC,
+    isLoading,
+  } = useAssets();
+
+  const { address, kscBalance, chainName } = useWalletContext();
+
+  const {fetchKscBalance} = useWalletData();
 
   const [mintForm, setMintForm] = useState({
-    to:address,
+    to: address,
     amount: "",
   });
 
@@ -37,16 +50,14 @@ export function AdminInterface() {
 
   const handleMint = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mintForm.to || !mintForm.amount) return;
+    if (!mintForm.amount) return;
 
-    try{
-      const result  = await mintKSC(mintForm.to, mintForm.amount, network);
-      if (result == "client-side-validation-fail") return;
-      setMintForm({to: "", amount: ""});
-    }catch(err){
-      toast.error(t("admin.errors.mint"))
+    try {
+      const result = await requestKSC(mintForm.amount);
+      setMintForm({ to: "", amount: "" });
+    } catch (err) {
+      toast.error(t("admin.errors.mint"));
     }
-
   };
 
   const handleBurn = async (e: React.FormEvent) => {
@@ -64,30 +75,32 @@ export function AdminInterface() {
     });
   };
 
+
   return (
     <div className="max-w-7xl md:max-w-5xl mx-auto sm:p-6">
       {/* 컨트랙트 정보 */}
       <div className="card p-6 mb-6">
         <div className="flex items-center mb-2">
-                  <h2 className="text-xl font-bold text-ksc-white">
-          {t("admin.supplyInfo.title")} 
-        </h2>
-          <CustomDropdown
-          _onChange={(selectedOption) => {
-            setNetwork(selectedOption.value);
-          }}
-          _options={["XRPL", "AVAX", "Mock XRPL", "Mock AVAX"]}
-          _defaultOption={0}
-          _width={120}
-          _border="none"
-        />
+          <h2 className="text-xl font-bold text-ksc-white">
+            {t("admin.supplyInfo.title")}  ({chainName === "xrpl" ? "XRPL" : "Avalanche"})
+          </h2>
+
+          {/* <CustomDropdown
+            _onChange={(selectedOption) => {
+              setNetwork(selectedOption.value);
+            }}
+            _options={["XRPL", "AVAX", "Mock XRPL", "Mock AVAX"]}
+            _defaultOption={0}
+            _width={120}
+            _border="none"
+          /> */}
         </div>
 
         {supplyInfo ? (
           <div className="grid md:grid-cols-3 gap-4">
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatWeiToKsc(supplyInfo.maxSupply || "-")}
+                {formatWeiToKsc(totalAssets || "-")}
               </div>
               <div className="text-sm text-ksc-gray">
                 {t("admin.supplyInfo.assets")}
@@ -96,7 +109,7 @@ export function AdminInterface() {
 
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatWeiToKsc(supplyInfo.totalSupply || "-")}
+                {kscBalanceTemp || "-"}
               </div>
               <div className="text-sm text-ksc-gray">
                 {t("admin.supplyInfo.kscBalance")}
@@ -105,7 +118,7 @@ export function AdminInterface() {
 
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatWeiToKsc(supplyInfo.totalBurned || "-")}
+                {formatWeiToKsc(krwBalance || "-")}
               </div>
               <div className="text-sm text-ksc-gray">
                 {t("admin.supplyInfo.krwBalance")}
@@ -127,14 +140,15 @@ export function AdminInterface() {
 
           <form onSubmit={handleMint} className="space-y-4">
             <div>
-             <div className="flex justify-between">
-               <label className="block text-sm font-medium text-ksc-gray mb-2">
-                {t("admin.mint.amount")}
-              </label>
-              <div className="text-sm">
-                <span className="text-ksc-mint">MAX</span>
+              <div className="flex justify-between">
+                <label className="block text-sm font-medium text-ksc-gray mb-2">
+                  {t("admin.mint.amount")}
+                </label>
+                <div className="text-sm flex gap-2">
+                  <span className="text-ksc-gray">{formatWeiToKsc(maxRequestAmount)} (KSC)</span>
+                  <span className="text-ksc-mint">MAX</span>
                 </div>
-             </div>
+              </div>
               <input
                 type="number"
                 value={mintForm.amount}
@@ -152,7 +166,7 @@ export function AdminInterface() {
             <div className="flex justify-center">
               <button
                 type="submit"
-                disabled={isLoading==="mint" || !mintForm.to || !mintForm.amount}
+                disabled={isLoading === "mint" || !mintForm.amount}
                 className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
               >
                 {isLoading === "mint"
@@ -170,15 +184,14 @@ export function AdminInterface() {
           </h3>
 
           <form onSubmit={handleBurn} className="space-y-4">
-           
-
             <div>
               <div className="flex justify-between">
-                              <label className="block text-sm font-medium text-ksc-gray mb-2">
-                {t("admin.burn.amount")}
-              </label>
-              <div className="text-sm">
-                <span className="text-ksc-mint">MAX</span>
+                <label className="block text-sm font-medium text-ksc-gray mb-2">
+                  {t("admin.burn.amount")}
+                </label>
+                <div className="text-sm flex gap-2">
+                  <span className="text-ksc-gray">{kscBalanceTemp} (KSC)</span>
+                  <span className="text-ksc-mint">MAX</span>
                 </div>
               </div>
               <input
@@ -198,7 +211,9 @@ export function AdminInterface() {
             <div className="flex justify-center">
               <button
                 type="submit"
-                disabled={isLoading==="burn" || !burnForm.from || !burnForm.amount}
+                disabled={
+                  isLoading === "burn" || !burnForm.from || !burnForm.amount
+                }
                 className="w-full btn-primary disabled:bg-ksc-gray disabled:cursor-not-allowed"
               >
                 {isLoading === "burn"
@@ -222,7 +237,9 @@ export function AdminInterface() {
             disabled={isLoading === "pause"}
             className="bg-yellow-500 hover:bg-yellow-600 disabled:bg-ksc-box/50 text-white font-medium py-2 px-4 rounded-lg transition-colors"
           >
-            {isLoading==="pause" ? t("common.processing") : t("admin.emergency.pause")}
+            {isLoading === "pause"
+              ? t("common.processing")
+              : t("admin.emergency.pause")}
           </button>
 
           <button
@@ -230,7 +247,9 @@ export function AdminInterface() {
             disabled={isLoading === "unpause"}
             className="bg-green-500 hover:bg-green-600 disabled:bg-ksc-box/50 text-white font-medium py-2 px-4 rounded-lg transition-colors"
           >
-            {isLoading==="unpause" ? t("common.processing") : t("admin.emergency.unpause")}
+            {isLoading === "unpause"
+              ? t("common.processing")
+              : t("admin.emergency.unpause")}
           </button>
         </div>
       </div>
