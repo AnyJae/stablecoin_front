@@ -163,6 +163,9 @@ export const useWalletConnect = () => {
   //지갑 연결 해제
   const disconnectWallet = useCallback(() => {
     setAddress(null);
+    setAddressId("");
+    setSigner(null);
+    setProvider(null);
     setIsConnected(false);
     setChainId(null);
     setChainName(null);
@@ -171,6 +174,7 @@ export const useWalletConnect = () => {
 
     localStorage.setItem(DISCONNECT_FLAG_KEY, "true");
   }, []);
+
 
   return {
     connectAvalancheWallet,
