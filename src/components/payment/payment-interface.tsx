@@ -1004,7 +1004,7 @@ export function PaymentInterface() {
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
                           payment.txStatus === "CONFIRMED"
-                            ? "hidden"
+                            ? "bg-gray-400"
                             : payment.txStatus === "PENDING"
                             ? "bg-green-600"
                             : payment.txStatus === "FAILED"
@@ -1015,7 +1015,7 @@ export function PaymentInterface() {
                         }`}
                       >
                         {payment.txStatus === "CONFIRMED"
-                          ? ""
+                          ? t("wallet.transactions.status.confirmed")
                           : payment.txStatus === "PENDING"
                           ? t("wallet.transactions.status.pending")
                           : payment.txStatus === "FAILED"
