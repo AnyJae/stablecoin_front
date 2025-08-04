@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useWalletData } from "./useWalletData";
 import toast from "react-hot-toast";
 import { delay } from "@/utils/helpers";
+import { WalletTransaction } from "@/types/global";
 
 const KSC_CONTRACT_ADDRESS = {
   avalanche:
@@ -26,11 +27,19 @@ const KSC_ABI = [
 
 export function useAssets() {
   const { t, language } = useLanguage();
-  const { address, kscBalance, chainName, isConnected, signer, provider } =
-    useWalletContext();
+  const {
+    address,
+    addressId,
+    kscBalance,
+    chainName,
+    isConnected,
+    signer,
+    provider,
+    isMock,
+  } = useWalletContext();
   const { fetchKscBalance } = useWalletData();
 
-  const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [adminLoading, setAdminLoading] = useState<string | null>(null);
   const [adminError, setAdminError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -41,7 +50,7 @@ export function useAssets() {
     const saved = sessionStorage.getItem("krwBalance");
     return saved ? BigInt(saved) : 100000000000000000000000n;
   });
-    // 보유 자산
+  // 보유 자산
   const [totalAssets, setTotalAssets] = useState<bigint>(0n);
   // 최대 발행 가능량
   const [maxRequestAmount, setMaxRequestAmount] = useState<bigint>(() => {
@@ -49,10 +58,19 @@ export function useAssets() {
     return saved ? BigInt(saved) : 80000000000000000000000n;
   });
 
-  // KSC 요청(발행)
+  // KSC 발행 및 소각 내역
+  const [adminHistory, setAdminHistory] = useState<WalletTransaction[]>([]);
+
+  //  페이지네이션 관련 상태 추가
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(0);
+  const [totalTransactions, setTotalTransactions] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(0);
+
+  // 1. KSC 요청(발행)
   const requestKSC = useCallback(
     async (amount: string) => {
-      setIsLoading("mint");
+      setAdminLoading("mint");
       setAdminError(null);
 
       const amountWei = ethers.parseUnits(amount, 18);
@@ -84,7 +102,7 @@ export function useAssets() {
       }
 
       // 요청 발행량 유효 체크
-      if (Number(amount) <= 0) {
+      if (amountWei <= 0) {
         setAdminError(t("admin.errors.moreThanZero"));
         return "client-side-validation-fail";
       } else if (amountWei > maxRequestAmount) {
@@ -112,7 +130,7 @@ export function useAssets() {
         if (data.success) {
           toast.success(t("admin.mint.success"));
 
-          const newKscBalance = Number(kscBalance) + Number(amount);
+          const newKscBalance = BigInt(kscBalance) + BigInt(amountWei);
           setKscBalanceTemp(newKscBalance.toString());
 
           const calculatedValue = (amountWei * 125n) / 100n;
@@ -130,16 +148,16 @@ export function useAssets() {
         toast.error(errorMessage);
         console.error("Mint KSC error", err);
       } finally {
-        setIsLoading(null);
+        setAdminLoading(null);
       }
     },
     [address, language]
   );
 
-  // KSC 소각
+  //2. KSC 소각
   const redeemKSC = useCallback(
     async (amount: string) => {
-      setIsLoading("redeem");
+      setAdminLoading("redeem");
       setAdminError(null);
 
       const amountWei = ethers.parseUnits(amount, 18);
@@ -170,14 +188,12 @@ export function useAssets() {
         return "client-side-validation-fail";
       }
 
-      console.log("KSC 잔액 왜 이래", kscBalance, " / ", kscBalanceTemp);
-
-      // 요청 발행량 유효 체크
-      if (Number(amount) <= 0) {
+      // 요청 소각량 유효 체크
+      if (amountWei <= 0) {
         setAdminError(t("admin.errors.moreThanZero"));
         return "client-side-validation-fail";
       }
-      if (Number(amount) > Number(kscBalanceTemp)) {
+      if (amountWei > BigInt(kscBalance)) {
         setAdminError(t("admin.errors.insufficient"));
         return "client-side-validation-fail";
       }
@@ -205,16 +221,12 @@ export function useAssets() {
         const decimals = await kscContract.decimals();
         const amountWei = ethers.parseUnits(amount.toString(), decimals);
 
-        console.log("허용량", amountWei);
-
-        //토큰 전송 트랜잭션 생성 및 전송
         const spenderAddress = process.env.NEXT_PUBLIC_BACKEND_WALLET_ADDRESS;
         const tx = await kscContract.approve(spenderAddress, amountWei);
         let txId = "";
 
         toast.promise(tx.wait(), {
           loading: t(`messages.txProcessing`),
-          success: t(`messages.txSuccess`),
           error: t(`messages.txFail`),
         });
 
@@ -246,7 +258,9 @@ export function useAssets() {
 
             if (data.success) {
               toast.success(t("admin.burn.requestAccept"));
-              const newKscBalance = Number(kscBalance) - Number(amount);
+
+              await delay(5000); // temp
+              const newKscBalance = BigInt(kscBalance) - amountWei;
               setKscBalanceTemp(newKscBalance.toString());
 
               const calculatedValue = (amountWei * 125n) / 100n;
@@ -255,6 +269,8 @@ export function useAssets() {
               const newKrwBalance = krwBalance + calculatedValue;
               const maxRequest = (newKrwBalance * 80n) / 100n;
               setMaxRequestAmount(maxRequest);
+
+              toast.success(t("admin.burn.success")); // temp
             } else {
               throw new Error(data.message || "admin.errors.burn");
             }
@@ -267,14 +283,65 @@ export function useAssets() {
           throw new Error(errorMessage);
         }
       } catch (err: any) {
-        toast.error(err.message);
+        if (err.info.error.code === 4001) {
+          //사용자가 요청 취소
+          toast.error(t("errors.userRejected"));
+        } else if (err instanceof Error) {
+          toast.error(err.message);
+        }
         console.error("소각 실패:", err);
       } finally {
-        setIsLoading(null);
+        setAdminLoading(null);
       }
     },
     [address, language]
   );
+
+  // 3. KSC 발행 및 소각 내역 조회
+  const fetchAdminHistory = useCallback(async (pageSize = itemsPerPage) => {
+    console.log("유효성 검사", address, addressId, isMock);
+    //유효성 검사
+    if (!address || !addressId || isMock) {
+      setAdminHistory([]);
+      setTotalTransactions(0);
+      setTotalPages(0);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/transaction/get-history/${addressId}?limit=${pageSize}&page=${currentPage}&operationType=${"mint-burn"}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "accept-language": language,
+          },
+        }
+      );
+      const data = await response.json();
+
+      console.log("발행 및 소각 트랜잭션 내역:", data.data);
+
+      if (data.success) {
+        setAdminHistory(data.data.items || []);
+        setTotalTransactions(data.data.pagination.totalCount);
+        setTotalPages(data.data.pagination.totalPage);
+      } else {
+        throw new Error(
+          data.message || "발행 및 소각 내역 조회에 실패했습니다"
+        );
+      }
+    } catch (err: any) {
+      console.error("Transaction fetch error:", err);
+      toast.error("트랜잭션 내역 조회에 실패했습니다.");
+      setAdminHistory([]);
+      setTotalTransactions(0);
+      setTotalPages(0);
+    } finally {
+      await delay(500);
+    }
+  }, [address, addressId, isMock, currentPage, itemsPerPage, t]);
 
   useEffect(() => {
     sessionStorage.setItem("krwBalance", krwBalance.toString());
@@ -285,21 +352,35 @@ export function useAssets() {
   }, [maxRequestAmount]);
 
   useEffect(() => {
-    if (kscBalance && !isNaN(Number(kscBalance))) {
-      setKscBalanceTemp(kscBalance);
-      setTotalAssets(BigInt(krwBalance) + BigInt(kscBalance));
-    }
-  }, [kscBalance]);
+    const loadData = async () => {
+      fetchKscBalance();
+      fetchAdminHistory(5);
+      if (kscBalance && !isNaN(Number(kscBalance))) {
+        setKscBalanceTemp(kscBalance);
+        setTotalAssets(BigInt(krwBalance) + BigInt(kscBalance));
+      }
+    };
+
+    loadData();
+  }, [kscBalance, kscBalanceTemp]);
   return {
-    isLoading,
+    adminLoading,
     totalAssets,
     kscBalanceTemp,
     krwBalance,
     maxRequestAmount,
     adminError,
+    adminHistory,
+    fetchAdminHistory,
     requestKSC,
     redeemKSC,
-    setIsLoading,
+    setAdminLoading,
     setAdminError,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalTransactions,
+    totalPages
   };
 }
