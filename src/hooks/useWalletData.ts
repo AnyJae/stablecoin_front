@@ -39,7 +39,7 @@ export const useWalletData = () => {
   const [totalTransactions, setTotalTransactions] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
 
-  //Avalanche or XRPL 네이티브 토큰 잔액 조회
+  // 1. Avalanche or XRPL 네이티브 토큰 잔액 조회
   const fetchBalance = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -52,7 +52,7 @@ export const useWalletData = () => {
       }
     } catch (err) {
       toast.error(t(`wallet.errors.nativeTokenLoadError`));
-      console.log("네이티브 잔액 조회 실패", err)
+      console.log("네이티브 잔액 조회 실패", err);
       setBalance("-");
     } finally {
       await delay(500);
@@ -60,7 +60,7 @@ export const useWalletData = () => {
     }
   }, [address, provider, setBalance]);
 
-  //KSC 잔액 조회
+  // 2. KSC 잔액 조회
   const fetchKscBalance = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -72,7 +72,6 @@ export const useWalletData = () => {
     }
 
     try {
-      console.log("잔액 조회 시도");
       const response = await fetch(`/api/wallet/get-wallet/${addressId}`, {
         method: "GET",
         headers: {
@@ -84,7 +83,7 @@ export const useWalletData = () => {
       const data = await response.json();
       if (data.success) {
         // setKscBalance("500.00");
-        setKscBalance(data.data.kscBalance || '-');
+        setKscBalance(data.data.kscBalance || "-");
         return formatWeiToKsc(data.data.kscBalance);
       } else {
         throw new Error("잔액 조회에 실패했습니다");
@@ -100,7 +99,7 @@ export const useWalletData = () => {
     }
   }, [address, isMock, chainName, setKscBalance]);
 
-  //거래 내역 수 조회
+  // 3. 거래 내역 수 조회
   const fetchTxCount = useCallback(async () => {
     //유효성 검사
     if (!address || !chainName || isMock) {
@@ -108,13 +107,16 @@ export const useWalletData = () => {
       return;
     }
     try {
-      const response = await fetch(`/api/transaction/get-txCount/${addressId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "accept-language": language,
-        },
-      });
+      const response = await fetch(
+        `/api/transaction/get-txCount/${addressId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "accept-language": language,
+          },
+        }
+      );
 
       const data = await response.json();
       if (data.success) {
@@ -133,67 +135,66 @@ export const useWalletData = () => {
     }
   }, [address, chainName, isMock, setTxCount]);
 
-  //주소별 트랜잭션 내역 조회
-  const fetchTransactions = useCallback(async (pageSize = itemsPerPage) => {
-    setIsLoading(true);
-    setError(null);
+  // 4. 주소별 트랜잭션 내역 조회
+  const fetchTransactions = useCallback(
+    async (pageSize = itemsPerPage) => {
+      setIsLoading(true);
+      setError(null);
 
-    console.log("페이지당 데이터 수", pageSize)
-
-
-    //유효성 검사
-    if (!address || !addressId || isMock) {
-      setIsLoading(false);
-      setTxHistory([]);
-      setTotalTransactions(0);
-      setTotalPages(0);
-      return;
-    }
-
-    try {
-      console.log("트랜잭션 조회 시도");
-      const response = await fetch(
-        `/api/transaction/get-history/${addressId}?limit=${pageSize}&page=${currentPage}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "accept-language": language,
-          },
-        }
-      );
-      const data = await response.json();
-
-          console.log("트랜잭션 내역:", data.data);
-
-      if (data.success) {
-        setTxHistory(data.data.items || []);
-        setTotalTransactions(data.data.pagination.totalCount);
-        setTotalPages(data.data.pagination.totalPage);
-      } else {
-        throw new Error(data.message || "거래 내역 조회에 실패했습니다");
+      //유효성 검사
+      if (!address || !addressId || isMock) {
+        setIsLoading(false);
+        setTxHistory([]);
+        setTotalTransactions(0);
+        setTotalPages(0);
+        return;
       }
-    } catch (err: any) {
-      console.error("Transaction fetch error:", err);
-      toast.error("거래 내역 조회에 실패했습니다.");
-      setTxHistory([]);
-      setTotalTransactions(0);
-      setTotalPages(0);
-    } finally {
-      await delay(500);
-      setIsLoading(false);
-    }
-  }, [
-    address,
-    addressId,
-    isMock,
-    setTxHistory,
-    setIsLoading,
-    setError,
-    currentPage,
-    itemsPerPage,
-    t,
-  ]);
+
+      try {
+        const response = await fetch(
+          `/api/transaction/get-history/${addressId}?limit=${pageSize}&page=${currentPage}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "accept-language": language,
+            },
+          }
+        );
+        const data = await response.json();
+
+        console.log("트랜잭션 내역:", data.data);
+
+        if (data.success) {
+          setTxHistory(data.data.items || []);
+          setTotalTransactions(data.data.pagination.totalCount);
+          setTotalPages(data.data.pagination.totalPage);
+        } else {
+          throw new Error(data.message || "거래 내역 조회에 실패했습니다");
+        }
+      } catch (err: any) {
+        console.error("Transaction fetch error:", err);
+        toast.error("거래 내역 조회에 실패했습니다.");
+        setTxHistory([]);
+        setTotalTransactions(0);
+        setTotalPages(0);
+      } finally {
+        await delay(500);
+        setIsLoading(false);
+      }
+    },
+    [
+      address,
+      addressId,
+      isMock,
+      setTxHistory,
+      setIsLoading,
+      setError,
+      currentPage,
+      itemsPerPage,
+      t,
+    ]
+  );
 
   useEffect(() => {
     if ((isConnected || isMock) && address && chainName) {
@@ -218,8 +219,8 @@ export const useWalletData = () => {
     fetchBalance,
     fetchKscBalance,
     fetchTransactions,
-    currentPage, 
-    itemsPerPage, 
+    currentPage,
+    itemsPerPage,
     setBalance,
     setKscBalance,
     setTxHistory,
@@ -228,12 +229,11 @@ export const useWalletData = () => {
     setCurrentPage,
   ]);
 
-  useEffect(()=>{
-    if (itemsPerPage > 0) { 
-    fetchTransactions(); 
-  }
-  }, [currentPage])
-
+  useEffect(() => {
+    if (itemsPerPage > 0) {
+      fetchTransactions();
+    }
+  }, [currentPage]);
 
   return {
     txCount,
@@ -241,13 +241,13 @@ export const useWalletData = () => {
     fetchKscBalance,
     fetchTxCount,
     fetchTransactions,
-    
+
     txHistory,
-    currentPage, 
+    currentPage,
     setCurrentPage,
-    itemsPerPage, 
+    itemsPerPage,
     setItemsPerPage,
-    totalTransactions, 
-    totalPages
-  }
+    totalTransactions,
+    totalPages,
+  };
 };
