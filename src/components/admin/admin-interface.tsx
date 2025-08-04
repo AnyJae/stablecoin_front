@@ -119,11 +119,11 @@ export function AdminInterface() {
     setItemsPerPage(initialItemsPerPage);
   }, []);
 
-    useEffect(() => {
-      if (itemsPerPage > 0) {
-        fetchAdminHistory();
-      }
-    }, [currentPage, itemsPerPage]);
+  useEffect(() => {
+    if (itemsPerPage > 0) {
+      fetchAdminHistory();
+    }
+  }, [currentPage, itemsPerPage]);
 
   if (!isConnected) {
     return (
@@ -397,44 +397,43 @@ export function AdminInterface() {
       <div className="space-y-4 mt-10">
         <div className="flex">
           <h2 className="text-xl font-semibold text-ksc-white px-2">
-          {t("admin.history.title")}
-        </h2>
+            {t("admin.history.title")}
+          </h2>
 
-        {/* 페이지네이션 컨트롤 */}
-        <div className="flex justify-between items-center flex-grow">
-          <div className="flex items-center">
-            <CustomDropdown
-              _onChange={handleItemsPerPageChange}
-              _options={["5", "10", "20"]}
-              _defaultOption={0}
-              _width={60}
-            />
-            <span className="ml-2 text-ksc-gray-light text-sm ml-0">
-              {t("pagination.itemsPerPage")}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
-            >
-              <ChevronLeft />
-            </button>
-            <span className="text-ksc-white">
-              {currentPage} / {totalPages}
-            </span>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
-            >
-              <ChevronRight />
-            </button>
+          {/* 페이지네이션 컨트롤 */}
+          <div className="flex justify-between items-center flex-grow">
+            <div className="flex items-center">
+              <CustomDropdown
+                _onChange={handleItemsPerPageChange}
+                _options={["5", "10", "20"]}
+                _defaultOption={0}
+                _width={60}
+              />
+              <span className="ml-2 text-ksc-gray-light text-sm ml-0">
+                {t("pagination.itemsPerPage")}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
+              >
+                <ChevronLeft />
+              </button>
+              <span className="text-ksc-white">
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 hover:text-ksc-mint disabled:invisible rounded-md"
+              >
+                <ChevronRight />
+              </button>
+            </div>
           </div>
         </div>
-        </div>
-
 
         {adminHistory.map((tx) => (
           <div
@@ -445,12 +444,10 @@ export function AdminInterface() {
           >
             <div className="flex justify-between items-start">
               <div className="flex-grow">
-                <div className={`flex items-center space-x-2 mb-2`}>
+                <div className={`flex items-center space-x-2 mb-1`}>
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium ${
-                      tx.paymentType === "MINT"
-                        ? "bg-blue-600"
-                        : "bg-[#6B3B30]"
+                      tx.paymentType === "MINT" ? "bg-blue-600" : "bg-[#6B3B30]"
                     }`}
                   >
                     {tx.paymentType === "MINT"
@@ -502,27 +499,45 @@ export function AdminInterface() {
                   </span>
                 </div>
 
-                <p
-                  className={`hidden sm:block text-xs text-ksc-gray-light ${
-                    tx.txStatus === "CANCELED" ? "text-gray-500" : ""
-                  }`}
-                >
-                  <AddressDisplay address={tx.fromAddress} full={true} />
-                  <span className="px-2">→</span>
-                  <AddressDisplay address={tx.toAddress} full={true} />
-                </p>
-                <p className="sm:hidden text-xs text-ksc-gray-light">
-                  <AddressDisplay address={tx.fromAddress} />
-                  <span className="px-2">→</span>
-                  <AddressDisplay address={tx.toAddress} />
-                </p>
-                <p
-                  className={`font-semibold mt-3 ${
-                    tx.txStatus === "CANCELED" ? "text-gray-500" : ""
-                  }`}
-                >
-                  {formatWeiToKsc(tx.amount)} KSC
-                </p>
+                <div className="space-y-1">
+                  {/* 트랜잭션 ID */}
+                  <p
+                    className={`flex items-start text-sm text-ksc-gray-light ${
+                      tx.txStatus === "CANCELED" ? "text-gray-500" : ""
+                    }`}
+                  >
+                    <span className="min-w-[100px] sm:min-w-[110px] mr-2">
+                      {" "}
+                      {t("admin.history.txHash")}
+                    </span>
+                    <span className="break-all">
+                      {" "}
+                      <AddressDisplay address={tx.txHash || ""} full={true} />
+                    </span>
+                  </p>
+                  {/* 모바일용 */}
+                  <p className="flex items-start sm:hidden text-sm text-ksc-gray-light">
+                    <span className="min-w-[100px] mr-2">
+                      {t("admin.history.txHash")}:
+                    </span>
+                    <span className="break-all">
+                      <AddressDisplay address={tx.txHash || ""} />
+                    </span>
+                  </p>
+
+                  {/* 발행량 (소각량) */}
+                  <p className="flex items-start text-sm text-ksc-gray-light">
+                    <span className="min-w-[100px] sm:min-w-[110px] mr-2">
+                      {" "}
+        
+                      {tx.paymentType === "MINT"
+                        ? t("admin.history.mintedAmount")
+                        : t("admin.history.burnedAmount")}
+                      
+                    </span>
+                    <span>{formatWeiToKsc(tx.amount)} KSC</span> 
+                  </p>
+                </div>
                 <div className="text-right">
                   <p className="text-xs text-ksc-gray-light">
                     {tx.txStatus === "PENDING"
