@@ -281,7 +281,7 @@
       "saveTxError": "Failed to save transaction data",
       "invalidAddress": "Invalid recipient address format",
       "invalidTime": "Please set the scheduled time that is after the current time",
-      "changeScheduledTimeError" : "Failed to change scheduled time",
+      "changeScheduledTimeError": "Failed to change scheduled time",
       "cancelError": "Failed to cancel scheduled transaction"
     }
   },
@@ -340,14 +340,14 @@
     "users": "User Management",
     "settings": "Settings",
     "logs": "Logs",
-    "selectNetwork":"Select network",
+    "selectNetwork": "Select network",
     "supplyInfo": {
-      "title": "Token Information",
+      "title": "Assets Information",
       "maxSupply": "Max Supply (KSC)",
       "currentSupply": "Current Supply (KSC)",
       "totalBurned": "Total Burned (KSC)",
       "loading": "Loading contract information...",
-            "assets" :"My Assets",
+      "assets": "My Assets",
       "kscBalance": "KSC Balance",
       "krwBalance": "KRW Balance",
       "maxAmount": "Max Claimable Amount"
@@ -358,7 +358,7 @@
       "amount": "Mint Amount (KSC)",
       "button": "Mint KSC",
       "processing": "Minting...",
-      "success":"Burn request successfully sent"
+      "success": "Token minting completed successfully"
     },
     "burn": {
       "title": "Burn KSC",
@@ -367,7 +367,14 @@
       "button": "Burn KSC",
       "processing": "Burning...",
       "success": "Token burn completed successfully.",
-       "requestAccept" : "소각 요청이 전송되었습니다"
+      "requestAccept": "Burn request approved"
+    },
+    "history": {
+      "title": "Mint/Burn History",
+      "type": {
+        "mint": "Mint",
+        "burn": "Burn"
+      }
     },
     "emergency": {
       "title": "Emergency Control",
@@ -375,8 +382,8 @@
       "unpause": "Unpause"
     },
     "errors": {
-      "mint" : "Failed to mint KSC",
-      "burn" : "Failed to burn KSC",
+      "mint": "Failed to mint KSC",
+      "burn": "Failed to burn KSC",
       "moreThanZero": "Please enter a valid amount greater than zero."
     }
   },
@@ -532,7 +539,7 @@
   },
   "errors": {
     "walletConnection": "Failed to connect wallet",
-    "unresolvedRequest" : "Please complete the previous request in MetaMask",
+    "unresolvedRequest": "Please complete the previous request in MetaMask",
     "initWalletError": "Failed to initialize wallet",
     "accountChangeError": "Failed to change account",
     "networkChangeError": "Failed to change network",
@@ -546,7 +553,8 @@
     "serverReturnedError": "Server returned error",
     "abortError": "Request timed out.",
     "unexpectedError": "An unexpected error occurred.",
-    "loadDataError": "Failed to load information"
+    "loadDataError": "Failed to load information",
+    "userRejected": "User canceled the request"
   },
   "common": {
     "processing": "Processing...",

@@ -342,7 +342,7 @@
     "logs": "로그",
     "selectNetwork":"네트워크 선택",
     "supplyInfo": {
-      "title": "토큰 정보",
+      "title": "자산 정보",
       "maxSupply": "최대 발행량 (KSC)",
       "currentSupply": "현재 유통량 (KSC)",
       "totalBurned": "총 소각량 (KSC)",
@@ -367,7 +367,14 @@
       "button": "KSC 소각",
       "processing": "소각 중...",
       "success": "KSC 소각이 완료되었습니다",
-      "requestAccept" : "소각 요청이 전송되었습니다"
+      "requestAccept" : "소각 요청이 승인되었습니다"
+    },
+    "history":{
+      "title": "발행/소각 내역",
+      "type": {
+        "mint": "발행",
+        "burn": "소각"
+      }
     },
     "emergency": {
       "title": "긴급 제어",
@@ -547,7 +554,8 @@
     "serverReturnedError": "서버에서 에러 반환",
     "abortError": "요청 시간이 초과되었습니다",
     "unexpectedError": "예상치 못한 오류가 발생했습니다",
-    "loadDataError": "정보를 불러오는 네 실패했습니다"
+    "loadDataError": "정보를 불러오는 데 실패했습니다",
+    "userRejected": "사용자가 요청을 취소했습니다"
   },
   "common": {
     "processing": "처리 중...",
