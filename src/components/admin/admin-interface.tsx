@@ -108,7 +108,7 @@ export function AdminInterface() {
           <div className="grid md:grid-cols-3 gap-4">
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {formatWeiToKsc(totalAssets || "-")}
+                {formatWeiToKsc(totalAssets || "-")} ₩
               </div>
               <div className="text-sm text-ksc-gray">
                 {t("admin.supplyInfo.assets")}
@@ -117,7 +117,7 @@ export function AdminInterface() {
 
             <div className="bg-ksc-mint/20 rounded-lg p-4 border border-ksc-mint/30">
               <div className="text-2xl font-bold text-ksc-mint">
-                {kscBalanceTemp || "-"}
+                {formatWeiToKsc(kscBalanceTemp || "-")}
               </div>
               <div className="text-sm text-ksc-gray">
                 {t("admin.supplyInfo.kscBalance")}
@@ -203,7 +203,7 @@ export function AdminInterface() {
                   {t("admin.burn.amount")}
                 </label>
                 <div className="text-sm flex gap-2">
-                  <span className="text-ksc-gray">{kscBalanceTemp} (KSC)</span>
+                  <span className="text-ksc-gray">{formatWeiToKsc(kscBalanceTemp)} (KSC)</span>
                   <span className="text-ksc-mint">MAX</span>
                 </div>
               </div>

@@ -46,7 +46,7 @@ export const useWalletData = () => {
       if (address && provider) {
         const balanceWei = await provider.getBalance(address);
         console.log("네이티브 토큰 잔액", balanceWei);
-        setBalance(formatWeiToKsc(balanceWei.toString()));
+        setBalance(balanceWei.toString());
       } else {
         setBalance("-");
       }
@@ -84,7 +84,7 @@ export const useWalletData = () => {
       const data = await response.json();
       if (data.success) {
         // setKscBalance("500.00");
-        setKscBalance(formatWeiToKsc(data.data.kscBalance) || '-');
+        setKscBalance(data.data.kscBalance || '-');
         return formatWeiToKsc(data.data.kscBalance);
       } else {
         throw new Error("잔액 조회에 실패했습니다");

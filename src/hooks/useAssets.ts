@@ -35,19 +35,18 @@ export function useAssets() {
   const [formError, setFormError] = useState<string | null>(null);
 
   //KSC 잔액
-  const [kscBalanceTemp, setKscBalanceTemp] = useState<string | undefined>("");
-
-  // 보유 자산
-  const [totalAssets, setTotalAssets] = useState<bigint>(0n);
+  const [kscBalanceTemp, setKscBalanceTemp] = useState<string>("");
   // KRW 잔액
   const [krwBalance, setKrwBalance] = useState<bigint>(() => {
     const saved = sessionStorage.getItem("krwBalance");
-    return saved ? BigInt(saved) : 1000000000000000000000n;
+    return saved ? BigInt(saved) : 100000000000000000000000n;
   });
+    // 보유 자산
+  const [totalAssets, setTotalAssets] = useState<bigint>(0n);
   // 최대 발행 가능량
   const [maxRequestAmount, setMaxRequestAmount] = useState<bigint>(() => {
     const saved = sessionStorage.getItem("maxRequestAmount");
-    return saved ? BigInt(saved) : 800000000000000000000n;
+    return saved ? BigInt(saved) : 80000000000000000000000n;
   });
 
   // KSC 요청(발행)
@@ -288,6 +287,7 @@ export function useAssets() {
   useEffect(() => {
     if (kscBalance && !isNaN(Number(kscBalance))) {
       setKscBalanceTemp(kscBalance);
+      setTotalAssets(BigInt(krwBalance) + BigInt(kscBalance));
     }
   }, [kscBalance]);
   return {

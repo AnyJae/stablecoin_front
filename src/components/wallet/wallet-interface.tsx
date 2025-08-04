@@ -497,7 +497,7 @@ export default function WalletInterface() {
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="flex  gap-3 md:flex-col md:gap-0 bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {kscBalance || "-"}
+                    {formatWeiToKsc(kscBalance || "-")}
                   </div>
                   <div className="text-sm text-ksc-gray flex items-center">
                     {t("wallet.overview.kscBalance")}
@@ -506,7 +506,7 @@ export default function WalletInterface() {
 
                 <div className="flex  gap-3 md:flex-col md:gap-0 bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {balance || "-"}
+                    {formatWeiToKsc(balance || "-")}
                   </div>
                   <div className="text-sm text-ksc-gray flex items-center">
                     {t("wallet.overview.balance", {
