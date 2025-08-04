@@ -395,7 +395,7 @@ export function AdminInterface() {
       )}
 
       <div className="space-y-4 mt-10">
-        <div className="flex">
+        <div className="sm:flex">
           <h2 className="text-xl font-semibold text-ksc-white px-2">
             {t("admin.history.title")}
           </h2>
@@ -502,11 +502,11 @@ export function AdminInterface() {
                 <div className="space-y-1">
                   {/* 트랜잭션 ID */}
                   <p
-                    className={`flex items-start text-sm text-ksc-gray-light ${
+                    className={`hidden sm:inline sm:flex sm:items-start sm:text-sm text-ksc-gray-light ${
                       tx.txStatus === "CANCELED" ? "text-gray-500" : ""
                     }`}
                   >
-                    <span className="min-w-[100px] sm:min-w-[110px] mr-2">
+                    <span className="min-w-[110px] sm:min-w-[110px] mr-2">
                       {" "}
                       {t("admin.history.txHash")}
                     </span>
@@ -517,8 +517,8 @@ export function AdminInterface() {
                   </p>
                   {/* 모바일용 */}
                   <p className="flex items-start sm:hidden text-sm text-ksc-gray-light">
-                    <span className="min-w-[100px] mr-2">
-                      {t("admin.history.txHash")}:
+                    <span className="min-w-[110px] mr-2">
+                      {t("admin.history.txHash")}
                     </span>
                     <span className="break-all">
                       <AddressDisplay address={tx.txHash || ""} />
@@ -527,7 +527,7 @@ export function AdminInterface() {
 
                   {/* 발행량 (소각량) */}
                   <p className="flex items-start text-sm text-ksc-gray-light">
-                    <span className="min-w-[100px] sm:min-w-[110px] mr-2">
+                    <span className="min-w-[110px] sm:min-w-[110px] mr-2">
                       {" "}
         
                       {tx.paymentType === "MINT"
@@ -538,7 +538,7 @@ export function AdminInterface() {
                     <span>{formatWeiToKsc(tx.amount)} KSC</span> 
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="text-right mt-2 sm:mt-0">
                   <p className="text-xs text-ksc-gray-light">
                     {tx.txStatus === "PENDING"
                       ? formatDate(tx.createdAt)
