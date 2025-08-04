@@ -45,8 +45,6 @@ export default function WalletInterface() {
     fetchBalance,
     fetchKscBalance,
     fetchTransactions,
-    fetchTxCount,
-    txCount,
     txHistory,
     currentPage,
     setCurrentPage,
@@ -482,7 +480,6 @@ export default function WalletInterface() {
                   onClick={() => {
                     fetchBalance();
                     fetchKscBalance();
-                    fetchTxCount();
                     fetchTransactions();
                   }}
                   disabled={isLoading}
@@ -494,10 +491,10 @@ export default function WalletInterface() {
                   <span>{t("wallet.overview.refresh")}</span>
                 </button>
               </div>
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div className="flex  gap-3 md:flex-col md:gap-0 bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {formatWeiToKsc(kscBalance || "-")}
+                    {formatWeiToKsc(kscBalance || "-")} KSC
                   </div>
                   <div className="text-sm text-ksc-gray flex items-center">
                     {t("wallet.overview.kscBalance")}
@@ -506,7 +503,7 @@ export default function WalletInterface() {
 
                 <div className="flex  gap-3 md:flex-col md:gap-0 bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {formatWeiToKsc(balance || "-")}
+                    {formatWeiToKsc(balance || "-")} {chainName === "xrpl" ? "XRP" : "AVAX"}
                   </div>
                   <div className="text-sm text-ksc-gray flex items-center">
                     {t("wallet.overview.balance", {
@@ -515,14 +512,14 @@ export default function WalletInterface() {
                   </div>
                 </div>
 
-                <div className="flex  gap-3 md:flex-col md:gap-0 bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
+                {/* <div className="flex  gap-3 md:flex-col md:gap-0 bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
                     {txCount || "-"}
                   </div>
                   <div className="text-sm text-ksc-gray flex items-center">
                     {t("wallet.overview.totalTransactions")}
                   </div>
-                </div>
+                </div> */}
               </div>
 
               <div className="bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">

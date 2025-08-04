@@ -27,9 +27,6 @@ export const useWalletData = () => {
 
   const { t, language } = useLanguage();
 
-  //거래 내역 수
-  const [txCount, setTxCount] = useState<string>("-");
-
   //거래 내역
   const [txHistory, setTxHistory] = useState<WalletTransaction[]>([]);
 
@@ -99,43 +96,8 @@ export const useWalletData = () => {
     }
   }, [address, isMock, chainName, setKscBalance]);
 
-  // 3. 거래 내역 수 조회
-  const fetchTxCount = useCallback(async () => {
-    //유효성 검사
-    if (!address || !chainName || isMock) {
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const response = await fetch(
-        `/api/transaction/get-txCount/${addressId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "accept-language": language,
-          },
-        }
-      );
 
-      const data = await response.json();
-      if (data.success) {
-        setTxCount(data.data.totalConfirmedCount);
-      } else {
-        throw new Error("거래 수 조회에 실패했습니다");
-      }
-    } catch (err: any) {
-      console.log("KSC Balance fetch error: ", err);
-      toast.error("거래 내역 수 조회에 실패했습니다");
-      setError(err.message);
-      setTxCount("-");
-    } finally {
-      await delay(500);
-      setIsLoading(false);
-    }
-  }, [address, chainName, isMock, setTxCount]);
-
-  // 4. 주소별 트랜잭션 내역 조회
+  // 3. 주소별 트랜잭션 내역 조회
   const fetchTransactions = useCallback(
     async (pageSize = itemsPerPage) => {
       setIsLoading(true);
@@ -200,11 +162,9 @@ export const useWalletData = () => {
     if ((isConnected || isMock) && address && chainName) {
       fetchBalance();
       fetchKscBalance();
-      fetchTxCount();
     } else {
       setBalance("-");
       setKscBalance("-");
-      setTxCount("-");
       setTxHistory([]);
       setTotalTransactions(0);
       setTotalPages(0);
@@ -236,10 +196,8 @@ export const useWalletData = () => {
   }, [currentPage]);
 
   return {
-    txCount,
     fetchBalance,
     fetchKscBalance,
-    fetchTxCount,
     fetchTransactions,
 
     txHistory,
