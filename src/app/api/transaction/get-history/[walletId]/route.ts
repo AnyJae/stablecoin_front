@@ -13,6 +13,7 @@ export async function GET(
   //쿼리 파라미터
   const limit = Number(request.nextUrl.searchParams.get("limit"));
   const page = Number(request.nextUrl.searchParams.get("page")) || 1;
+  const operationType = request.nextUrl.searchParams.get("operationType") || "transfer";
 
   const lang = request.headers.get("accept-language") || "en";
 
@@ -80,7 +81,7 @@ export async function GET(
     const backendUrl =
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
     const response = await fetch(
-      `${backendUrl}/api/transaction/history/${walletId}?limit=${limit}&currentPage=${page}`,
+      `${backendUrl}/api/transaction/history/${walletId}?limit=${limit}&currentPage=${page}&operationType=${operationType}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
