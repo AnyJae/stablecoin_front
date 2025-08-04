@@ -374,7 +374,10 @@
       "type": {
         "mint": "발행",
         "burn": "소각"
-      }
+      },
+      "txHash": "트랜잭션 ID",
+      "mintedAmount": "발행량",
+      "burnedAmount": "소각량"
     },
     "emergency": {
       "title": "긴급 제어",
