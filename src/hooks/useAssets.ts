@@ -47,15 +47,23 @@ export function useAssets() {
   const [kscBalanceTemp, setKscBalanceTemp] = useState<string>("");
   // KRW 잔액
   const [krwBalance, setKrwBalance] = useState<bigint>(() => {
-    const saved = sessionStorage.getItem("krwBalance");
-    return saved ? BigInt(saved) : 100000000000000000000000n;
+    if (typeof window !== "undefined") {
+      const saved = sessionStorage.getItem("krwBalance");
+      return saved ? BigInt(saved) : 100000000000000000000000n;
+    }
+    return 100000000000000000000000n;
   });
+
   // 보유 자산
   const [totalAssets, setTotalAssets] = useState<bigint>(0n);
+
   // 최대 발행 가능량
   const [maxRequestAmount, setMaxRequestAmount] = useState<bigint>(() => {
-    const saved = sessionStorage.getItem("maxRequestAmount");
-    return saved ? BigInt(saved) : 80000000000000000000000n;
+    if (typeof window !== "undefined") {
+      const saved = sessionStorage.getItem("maxRequestAmount");
+      return saved ? BigInt(saved) : 80000000000000000000000n;
+    }
+    return 80000000000000000000000n;
   });
 
   // KSC 발행 및 소각 내역
@@ -298,50 +306,53 @@ export function useAssets() {
   );
 
   // 3. KSC 발행 및 소각 내역 조회
-  const fetchAdminHistory = useCallback(async (pageSize = itemsPerPage) => {
-    console.log("유효성 검사", address, addressId, isMock);
-    //유효성 검사
-    if (!address || !addressId || isMock) {
-      setAdminHistory([]);
-      setTotalTransactions(0);
-      setTotalPages(0);
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `/api/transaction/get-history/${addressId}?limit=${pageSize}&page=${currentPage}&operationType=${"mint-burn"}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "accept-language": language,
-          },
-        }
-      );
-      const data = await response.json();
-
-      console.log("발행 및 소각 트랜잭션 내역:", data.data);
-
-      if (data.success) {
-        setAdminHistory(data.data.items || []);
-        setTotalTransactions(data.data.pagination.totalCount);
-        setTotalPages(data.data.pagination.totalPage);
-      } else {
-        throw new Error(
-          data.message || "발행 및 소각 내역 조회에 실패했습니다"
-        );
+  const fetchAdminHistory = useCallback(
+    async (pageSize = itemsPerPage) => {
+      console.log("유효성 검사", address, addressId, isMock);
+      //유효성 검사
+      if (!address || !addressId || isMock) {
+        setAdminHistory([]);
+        setTotalTransactions(0);
+        setTotalPages(0);
+        return;
       }
-    } catch (err: any) {
-      console.error("Transaction fetch error:", err);
-      toast.error("트랜잭션 내역 조회에 실패했습니다.");
-      setAdminHistory([]);
-      setTotalTransactions(0);
-      setTotalPages(0);
-    } finally {
-      await delay(500);
-    }
-  }, [address, addressId, isMock, currentPage, itemsPerPage, t]);
+
+      try {
+        const response = await fetch(
+          `/api/transaction/get-history/${addressId}?limit=${pageSize}&page=${currentPage}&operationType=${"mint-burn"}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "accept-language": language,
+            },
+          }
+        );
+        const data = await response.json();
+
+        console.log("발행 및 소각 트랜잭션 내역:", data.data);
+
+        if (data.success) {
+          setAdminHistory(data.data.items || []);
+          setTotalTransactions(data.data.pagination.totalCount);
+          setTotalPages(data.data.pagination.totalPage);
+        } else {
+          throw new Error(
+            data.message || "발행 및 소각 내역 조회에 실패했습니다"
+          );
+        }
+      } catch (err: any) {
+        console.error("Transaction fetch error:", err);
+        toast.error("트랜잭션 내역 조회에 실패했습니다.");
+        setAdminHistory([]);
+        setTotalTransactions(0);
+        setTotalPages(0);
+      } finally {
+        await delay(500);
+      }
+    },
+    [address, addressId, isMock, currentPage, itemsPerPage, t]
+  );
 
   useEffect(() => {
     sessionStorage.setItem("krwBalance", krwBalance.toString());
@@ -381,6 +392,6 @@ export function useAssets() {
     itemsPerPage,
     setItemsPerPage,
     totalTransactions,
-    totalPages
+    totalPages,
   };
 }
