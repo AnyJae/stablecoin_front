@@ -50,7 +50,6 @@ export function PaymentInterface() {
   const { t, language } = useLanguage();
   const {
     fetchTransactions,
-    txCount,
     txHistory,
     currentPage,
     setCurrentPage,
