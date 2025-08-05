@@ -39,7 +39,7 @@ export const useSendTokens = () => {
     setIsLoading,
     setError,
   } = useWalletContext();
-  const { fetchBalance, fetchKscBalance, fetchTransactions, fetchTxCount } =
+  const { fetchBalance, fetchKscBalance, fetchTransactions } =
     useWalletData();
 
   const [sendError, setSendError] = useState("");
@@ -149,7 +149,6 @@ export const useSendTokens = () => {
             txId = data.data.id; // 트랜잭션 아이디 추출
             fetchTransactions();
             fetchBalance();
-            fetchTxCount();
             fetchKscBalance();
           }
         } catch (err) {
@@ -205,7 +204,6 @@ export const useSendTokens = () => {
           // 상태(잔액 및 트랜잭션 내역) 업데이트
           fetchBalance();
           fetchKscBalance();
-          fetchTxCount();
           fetchTransactions();
         } else {
           // 트랜잭션 실패
@@ -431,7 +429,6 @@ export const useSendTokens = () => {
         // 상태(잔액 및 트랜잭션 내역) 업데이트
         fetchBalance();
         fetchKscBalance();
-        fetchTxCount();
         fetchTransactions();
       } catch (err) {
         console.error("결제 처리 중 오류 발생", err);
@@ -571,7 +568,6 @@ export const useSendTokens = () => {
               txId = data.data.id; // 트랜잭션 아이디 추출
               fetchTransactions();
               fetchBalance();
-              fetchTxCount();
               fetchKscBalance();
             }
           } else {
@@ -678,7 +674,6 @@ export const useSendTokens = () => {
           txId = data.data.id; // 트랜잭션 아이디 추출
           fetchTransactions();
           fetchBalance();
-          fetchTxCount();
           fetchKscBalance();
         }
       } catch (err) {
@@ -737,7 +732,6 @@ export const useSendTokens = () => {
         // 상태(잔액 및 트랜잭션 내역) 업데이트
         fetchBalance();
         fetchKscBalance();
-        fetchTxCount();
         fetchTransactions();
       } else {
         // 트랜잭션 실패
@@ -942,7 +936,6 @@ export const useSendTokens = () => {
         // 상태(잔액 및 트랜잭션 내역) 업데이트
         fetchBalance();
         fetchKscBalance();
-        fetchTxCount();
         fetchTransactions();
       } catch (err) {
         console.error("결제 처리 중 오류 발생", err);
@@ -1060,7 +1053,6 @@ export const useSendTokens = () => {
             txId = data.data.id; // 트랜잭션 아이디 추출
             fetchTransactions();
             fetchBalance();
-            fetchTxCount();
             fetchKscBalance();
           }
         } catch (err) {
@@ -1117,7 +1109,6 @@ export const useSendTokens = () => {
           // 상태(잔액 및 트랜잭션 내역) 업데이트
           fetchBalance();
           fetchKscBalance();
-          fetchTxCount();
           fetchTransactions();
         } else {
           // 트랜잭션 실패
