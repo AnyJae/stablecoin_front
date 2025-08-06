@@ -4,16 +4,19 @@ import { WalletTransaction } from "@/types/global.d";
 export const MOCK_WALLET_DATA = {
   xrpl: {
     address: "rMockXRPLWalletAddress123456789",
-    balance: "1000.00",
-    kscBalance: "5000.00",
+    balance: "0",
+    kscBalance: "100000000000000000000000",
+    krwBalance: "100000000000000000000000",
   },
   avalanche: {
     address: "0xMockAvalancheWalletAddress123456789",
-    balance: "10.00",
-    kscBalance: "2500.00",
+    balance: "0",
+    kscBalance: "100000000000000000000000",
+    krwBalance: "100000000000000000000000",
   },
 };
 
 // Mock 트랜잭션 데이터 생성
-export const generateMockTransactions = (address: string): WalletTransaction[] => [];
-
+export const generateMockTransactions = (
+  address: string
+): WalletTransaction[] => [];

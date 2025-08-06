@@ -47,7 +47,7 @@ export function AdminInterface() {
     totalPages,
   } = useAssets();
 
-  const { address, kscBalance, chainName, isConnected, isLoading } =
+  const { address, kscBalance, chainName, isConnected, isLoading, isMock } =
     useWalletContext();
 
   const { connectAvalancheWallet, connectXrplEvmWallet } = useWalletConnect();
@@ -125,7 +125,7 @@ export function AdminInterface() {
     }
   }, [currentPage, itemsPerPage]);
 
-  if (!isConnected) {
+  if (!isConnected&& !isMock) {
     return (
       <div className="md:max-w-2xl md:mx-auto md:p-6 max-w-7xl">
         <div className="card">

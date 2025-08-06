@@ -169,7 +169,9 @@
         "subtitle": "개발/테스트용",
         "description": "실제 지갑 없이도 기능을 테스트할 수 있습니다.",
         "xrplMock": "XRPL Mock",
-        "avalancheMock": "Avalanche Mock"
+        "avalancheMock": "Avalanche Mock",
+        "connect": "Mock 지갑이 연결되었습니다",
+        "error": "Mock 지갑 연결에 실패했습니다"
       }
     },
     "status": {

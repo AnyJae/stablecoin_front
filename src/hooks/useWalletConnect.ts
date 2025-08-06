@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import { XRPL_EVM_CHAIN_CONFIG } from "@/constants/xrplEvm";
 import { AVALANCHE_CHAIN_CONFIG } from "@/constants/avalanche";
 import { useAppKit } from "@reown/appkit/react";
+import { MOCK_WALLET_DATA } from "@/utils/mockWallet";
 
 //localStorage 키 (지갑 연결 수동 해제 상태)
 const DISCONNECT_FLAG_KEY = "wallet_disconnected_permanently";
@@ -160,6 +161,29 @@ export const useWalletConnect = () => {
     await connectEvmWallet("avalanche");
   }, [connectEvmWallet]);
 
+   // Mock 지갑 연결
+  const connectMockWallet = useCallback(async (chain: "xrpl" | "avalanche") => {
+    setIsLoading(true);
+    setError(null);
+    setIsMock(true);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500)); // 0.5초 지연
+      const mockData = MOCK_WALLET_DATA[chain];
+      // const mockTransactions = generateMockTransactions(mockData.address);
+
+      setAddress(mockData.address);
+      setChainName(chain);
+
+      toast.success(`${chain.toUpperCase()} ${t("wallet.connection.mock.connect")}`);
+    } catch (err) {
+      toast.error(t("wallet.connection.mock.error"));
+      console.error("Mock wallet connection error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   //지갑 연결 해제
   const disconnectWallet = useCallback(() => {
     setAddress(null);
@@ -171,6 +195,7 @@ export const useWalletConnect = () => {
     setChainName(null);
     setIsMock(false);
     setError(null);
+    setIsLoading(false);
 
     localStorage.setItem(DISCONNECT_FLAG_KEY, "true");
   }, []);
@@ -179,6 +204,7 @@ export const useWalletConnect = () => {
   return {
     connectAvalancheWallet,
     connectXrplEvmWallet,
+    connectMockWallet,
     disconnectWallet,
   };
 };

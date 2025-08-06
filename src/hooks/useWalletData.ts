@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import { delay } from "@/utils/helpers";
 import { WalletTransaction } from "@/types/global";
 import { formatWeiToKsc } from "@/utils/formatters";
+import { MOCK_WALLET_DATA } from "@/utils/mockWallet";
 
 export const useWalletData = () => {
   const {
@@ -18,28 +19,43 @@ export const useWalletData = () => {
     balance,
     kscBalance,
     isLoading,
+    transactions,
 
     setBalance,
     setKscBalance,
     setIsLoading,
     setError,
+    setTransactions,
   } = useWalletContext();
 
   const { t, language } = useLanguage();
 
-  //거래 내역
-  const [txHistory, setTxHistory] = useState<WalletTransaction[]>([]);
-
   //  페이지네이션 관련 상태 추가
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(0);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(5);
   const [totalTransactions, setTotalTransactions] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
+  const [paginatedTransactions, setPaginatedTransactions] = useState<
+    WalletTransaction[]
+  >([]);
 
   // 1. Avalanche or XRPL 네이티브 토큰 잔액 조회
   const fetchBalance = useCallback(async () => {
     setIsLoading(true);
+
+    //유효성 검사
+    if (!address) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      if (isMock) {
+        const mockData = MOCK_WALLET_DATA[chainName || "xrpl"];
+        setBalance(mockData.balance);
+        return;
+      }
+
       if (address && provider) {
         const balanceWei = await provider.getBalance(address);
         console.log("네이티브 토큰 잔액", balanceWei);
@@ -63,12 +79,20 @@ export const useWalletData = () => {
     setError(null);
 
     //유효성 검사
-    if (!address || isMock) {
+    if (!address) {
       setIsLoading(false);
       return;
     }
 
     try {
+      if (isMock) {
+        if(kscBalance !== "-") return;
+        const mockData = MOCK_WALLET_DATA[chainName || "xrpl"];
+        console.log("Mock KSC Balance:", mockData.kscBalance);
+        setKscBalance(mockData.kscBalance);
+        console.log("Mock KSC Balance set:", mockData.kscBalance);
+        return;
+      }
       const response = await fetch(`/api/wallet/get-wallet/${addressId}`, {
         method: "GET",
         headers: {
@@ -79,8 +103,7 @@ export const useWalletData = () => {
 
       const data = await response.json();
       if (data.success) {
-        // setKscBalance("500.00");
-        setKscBalance(data.data.kscBalance || "-");
+        setKscBalance(data.data.kscBalance);
         return formatWeiToKsc(data.data.kscBalance);
       } else {
         throw new Error("잔액 조회에 실패했습니다");
@@ -96,17 +119,19 @@ export const useWalletData = () => {
     }
   }, [address, isMock, chainName, setKscBalance]);
 
-
   // 3. 주소별 트랜잭션 내역 조회
   const fetchTransactions = useCallback(
     async (pageSize = itemsPerPage) => {
+      
+      if (isMock) return;
+
       setIsLoading(true);
       setError(null);
 
       //유효성 검사
-      if (!address || !addressId || isMock) {
+      if (!address || !addressId) {
         setIsLoading(false);
-        setTxHistory([]);
+        setTransactions([]);
         setTotalTransactions(0);
         setTotalPages(0);
         return;
@@ -128,7 +153,7 @@ export const useWalletData = () => {
         console.log("트랜잭션 내역:", data.data);
 
         if (data.success) {
-          setTxHistory(data.data.items || []);
+          setTransactions(data.data.items || []);
           setTotalTransactions(data.data.pagination.totalCount);
           setTotalPages(data.data.pagination.totalPage);
         } else {
@@ -137,7 +162,7 @@ export const useWalletData = () => {
       } catch (err: any) {
         console.error("Transaction fetch error:", err);
         toast.error("거래 내역 조회에 실패했습니다.");
-        setTxHistory([]);
+        setTransactions([]);
         setTotalTransactions(0);
         setTotalPages(0);
       } finally {
@@ -149,7 +174,7 @@ export const useWalletData = () => {
       address,
       addressId,
       isMock,
-      setTxHistory,
+      setTransactions,
       setIsLoading,
       setError,
       currentPage,
@@ -165,7 +190,7 @@ export const useWalletData = () => {
     } else {
       setBalance("-");
       setKscBalance("-");
-      setTxHistory([]);
+      setTransactions([]);
       setTotalTransactions(0);
       setTotalPages(0);
       setCurrentPage(1);
@@ -178,29 +203,41 @@ export const useWalletData = () => {
     chainName,
     fetchBalance,
     fetchKscBalance,
-    fetchTransactions,
-    currentPage,
-    itemsPerPage,
     setBalance,
     setKscBalance,
-    setTxHistory,
-    setTotalTransactions,
-    setTotalPages,
-    setCurrentPage,
+    setTransactions,
   ]);
 
-  useEffect(() => {
-    if (itemsPerPage > 0) {
-      fetchTransactions();
-    }
-  }, [currentPage]);
+  if (isMock) {
+    useEffect(() => {
+      const reversedTransactions = [...transactions].reverse(); // 복사 후 리버스
+
+      const total = reversedTransactions.length;
+      const pages = Math.ceil(total / itemsPerPage);
+      setTotalTransactions(total);
+      setTotalPages(pages);
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      setPaginatedTransactions(
+        reversedTransactions.slice(startIndex, endIndex)
+      );
+    }, [currentPage, itemsPerPage, transactions]);
+  } else {
+    useEffect(() => {
+      if (itemsPerPage > 0) {
+        fetchTransactions();
+      }
+    }, [currentPage, itemsPerPage]);
+  }
 
   return {
     fetchBalance,
     fetchKscBalance,
     fetchTransactions,
 
-    txHistory,
+    transactions,
+    paginatedTransactions,
     currentPage,
     setCurrentPage,
     itemsPerPage,

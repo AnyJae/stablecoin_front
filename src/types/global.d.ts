@@ -12,7 +12,7 @@ export interface WalletTransaction {
   txHash: string | null;
   fromAddress: string;
   toAddress: string;
-  txStatus: "pending" | "confirmed" | "failed" | "approve" | "canceled" | "paused" |"PENDING" | "CONFIRMED" | "FAILED" | "APPROVE" | "CANCELED" | "PAUSED";
+  txStatus: "pending" | "confirmed" | "failed" | "approve" | "canceled" | "paused" |"PENDING" | "CONFIRMED" | "FAILED" | "APPROVE" | "CANCELED" | "PAUSED" | string;
   paymentType: "instant" | "batch" | "scheduled" | "INSTANT" | "BATCH" | "SCHEDULED" | "MINT" | "BURN";
   fee: string | null;
   amount: string;

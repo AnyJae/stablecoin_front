@@ -169,7 +169,9 @@
         "subtitle": "Development/Test",
         "description": "Test functionality without a real wallet.",
         "xrplMock": "XRPL Mock",
-        "avalancheMock": "Avalanche Mock"
+        "avalancheMock": "Avalanche Mock",
+        "connect": "Mock Wallet is Connected",
+        "error": "Failed to connect Mock Wallet"
       }
     },
     "status": {

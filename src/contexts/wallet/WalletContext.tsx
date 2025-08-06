@@ -7,6 +7,8 @@ import {
   useState,
   ReactNode,
   useCallback,
+  Dispatch,
+  SetStateAction,
 } from "react";
 import { ethers, id } from "ethers";
 import { MOCK_WALLET_DATA, generateMockTransactions } from "@/utils/mockWallet";
@@ -41,13 +43,11 @@ interface WalletContextType {
   setChainId: (chainId: string | null) => void;
   setChainName: (chainName: "xrpl" | "avalanche" | null) => void;
   setIsMock: (connected: boolean) => void;
-  setTransactions: (transactions: WalletTransaction[]) => void;
+  setTransactions: Dispatch<SetStateAction<WalletTransaction[]>>; 
   setError: (error: string | null) => void;
   setIsLoading: (connected: boolean) => void;
   setProvider: (provider: ethers.BrowserProvider | null) => void;
   setSigner: (signer: ethers.Signer | null) => void;
-  connectMockWallet: (chain: "xrpl" | "avalanche") => void;
-  sendMockKsc: (to: string, amount: string) => Promise<void>;
 }
 
 //localStorage 키 (지갑 연결 수동 해제 상태)
@@ -78,98 +78,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
   const { t, language } = useLanguage();
 
-  // Mock 지갑 연결
-  const connectMockWallet = useCallback(async (chain: "xrpl" | "avalanche") => {
-    setIsLoading(true);
-    setError(null);
-    setIsMock(true);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500)); // 0.5초 지연
-      const mockData = MOCK_WALLET_DATA[chain];
-      // const mockTransactions = generateMockTransactions(mockData.address);
-
-      setAddress(mockData.address);
-      setBalance(mockData.balance);
-      setKscBalance(mockData.kscBalance);
-      setChainName(chain);
-      setTransactions([]);
-
-      toast.success(`${chain.toUpperCase()} Mock 지갑이 연결되었습니다.`);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Mock 지갑 연결에 실패했습니다.";
-      setError(errorMessage);
-      toast.error(errorMessage);
-      console.error("Mock wallet connection error:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  //Mock KSC 전송
-  const sendMockKsc = useCallback(
-    async (to: string, amount: string) => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // 1초 지연
-
-        if (!address || !kscBalance) {
-          throw new Error(
-            "지갑이 연결되지 않았거나 KSC 잔액을 알 수 없습니다."
-          );
-        }
-
-        if (kscBalance < amount) {
-          throw new Error("잔액이 부족합니다.");
-        }
-
-        const newKscBalance = (
-          parseFloat(kscBalance) - parseFloat(amount)
-        ).toFixed(2);
-        setKscBalance(newKscBalance);
-
-        const mockTransaction: WalletTransaction = {
-          id: "txid_" + Math.random().toString(36).substring(2, 9),
-          txHash: "0x" + Math.random().toString(36).substring(2, 15),
-          fromAddress: address,
-          toAddress: to,
-          txStatus: "pending",
-          paymentType: "instant",
-          fee: "0.003",
-          amount: amount,
-          tokenType: chainName === "avalanche" ? "A_KSC" : "X_KSC",
-          createdAt: new Date().toISOString(),
-          statusUpdatedAt: new Date().toISOString(),
-          memo: "Mock KSC 전송",
-        };
-        setTransactions((prev) => [mockTransaction, ...prev]);
-
-        toast.success("Mock KSC 전송이 성공적으로 완료되었습니다!");
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Mock KSC 전송 중 오류가 발생했습니다.";
-        setError(errorMessage);
-        toast.error(errorMessage);
-        console.error("Mock KSC send error:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [
-      address,
-      kscBalance,
-      setKscBalance,
-      setTransactions,
-      setIsLoading,
-      setError,
-    ]
-  );
-
+  
   const contextValue: WalletContextType = {
     address,
     addressId,
@@ -197,9 +106,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     setError,
     setIsLoading,
     setProvider,
-    setSigner,
-    connectMockWallet,
-    sendMockKsc,
+    setSigner
   };
 
   //provider와 signer 설정 및 이벤트 리스너 등록

@@ -33,25 +33,28 @@ export default function WalletInterface() {
     isConnected,
     isLoading,
     error,
+    transactions,
     isMock,
-    connectMockWallet,
-    sendMockKsc,
   } = useWalletContext();
 
-  const { connectAvalancheWallet, connectXrplEvmWallet, disconnectWallet } =
-    useWalletConnect();
+  const {
+    connectAvalancheWallet,
+    connectXrplEvmWallet,
+    disconnectWallet,
+    connectMockWallet,
+  } = useWalletConnect();
 
   const {
     fetchBalance,
     fetchKscBalance,
     fetchTransactions,
-    txHistory,
     currentPage,
     setCurrentPage,
     itemsPerPage,
     setItemsPerPage,
     totalTransactions,
     totalPages,
+    paginatedTransactions
   } = useWalletData();
 
   const { sendInstant, sendInstantForTest, sendError, setSendError } =
@@ -79,25 +82,24 @@ export default function WalletInterface() {
     if (!sendForm.to || !sendForm.amount) return;
     setSendLoading(true);
 
-    let result;
-
-    if (isMock) {
-      result = await sendMockKsc(sendForm.to, sendForm.amount);
-    } else {
+    try {
+      let result;
       result = await sendInstant(
         sendForm.chain,
         sendForm.to,
         sendForm.amount,
         chainName
       );
-    }
-
-    if (result == "client-side-validation-fail") {
+      if (result == "client-side-validation-fail") {
+        setSendLoading(false);
+        return;
+      }
+      setSendForm({ to: "", amount: "", memo: "", chain: "xrpl" });
+    } catch (err) {
+      console.error("Send error:", err);
+    } finally{
       setSendLoading(false);
-      return;
     }
-    setSendForm({ to: "", amount: "", memo: "", chain: "xrpl" });
-    setSendLoading(false);
   };
 
   const copyAddress = async () => {
@@ -131,7 +133,7 @@ export default function WalletInterface() {
   };
 
   // 필터링된 거래 내역 - 취소한 거래 내역 제거
-  const filteredTxHistory = txHistory.filter(
+  const filteredTxHistory = transactions.filter(
     (tx) => tx.txStatus !== "CANCELED"
   ); //"CANCELED" 상태 제외
 
@@ -482,7 +484,7 @@ export default function WalletInterface() {
                     fetchKscBalance();
                     fetchTransactions();
                   }}
-                  disabled={isLoading}
+                  disabled={isLoading || isMock}
                   className="flex items-center space-x-2 text-white hover:text-ksc-mint/80 text-sm"
                 >
                   <RefreshCw
@@ -503,7 +505,8 @@ export default function WalletInterface() {
 
                 <div className="flex  gap-3 md:flex-col md:gap-0 bg-ksc-box/50 rounded-lg p-4 border border-ksc-mint/20">
                   <div className="text-2xl font-bold text-ksc-mint">
-                    {formatWeiToKsc(balance || "-")} {chainName === "xrpl" ? "XRP" : "AVAX"}
+                    {formatWeiToKsc(balance || "-")}{" "}
+                    {chainName === "xrpl" ? "XRP" : "AVAX"}
                   </div>
                   <div className="text-sm text-ksc-gray flex items-center">
                     {t("wallet.overview.balance", {
@@ -526,9 +529,10 @@ export default function WalletInterface() {
                 <h4 className="font-semibold text-ksc-mint mb-2">
                   {t("wallet.overview.recentTransactions")}
                 </h4>
-                {txHistory.slice(0, 3).length > 0 ? (
+                
+                {(isMock ? [...transactions].reverse() :transactions).slice(0, 3).length > 0 ? (
                   <div className="space-y-2">
-                    {txHistory.slice(0, 3).map((tx) => (
+                    {transactions.slice(0, 3).map((tx) => (
                       <div
                         key={tx.id}
                         className="flex items-center justify-between text-sm"
@@ -661,217 +665,237 @@ export default function WalletInterface() {
             </div>
           )}
 
-{activeTab === "transactions" && ( 
-  <div className="flex flex-col gap-6 bg-ksc-gray-dark rounded-lg sm:p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-ksc-white">
-          {t("wallet.transactions.title")}
-        </h3>
-        <button
-          onClick={() => fetchTransactions()}
-          disabled={isLoading}
-          className="flex items-center space-x-2 text-ksc-white hover:text-ksc-mint/80 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <RefreshCw
-            className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
-          />
-          <span>{t("wallet.transactions.refresh")}</span>
-        </button>
-      </div>
+          {activeTab === "transactions" && (
+            <div className="flex flex-col gap-6 bg-ksc-gray-dark rounded-lg sm:p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-ksc-white">
+                  {t("wallet.transactions.title")}
+                </h3>
+                <button
+                  onClick={() => fetchTransactions()}
+                  disabled={isLoading}
+                  className="flex items-center space-x-2 text-ksc-white hover:text-ksc-mint/80 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+                  />
+                  <span>{t("wallet.transactions.refresh")}</span>
+                </button>
+              </div>
 
-      {/* 거래 내역 테이블 뷰*/}
-      <div className="hidden sm:block overflow-x-auto">
-        {txHistory.length > 0 ? (
-          <table className="min-w-full divide-y divide-ksc-box/50">
-            <thead className="bg-ksc-box/30">
-              <tr>
-                <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                  {t("wallet.transactions.hash")}
-                </th>
-                <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                  {t("wallet.transactions.from")}
-                </th>
-                <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                  {t("wallet.transactions.to")}
-                </th>
-                <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                  {t("wallet.transactions.amount")}
-                </th>
-                <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                  {t("wallet.transactions.status.title")}
-                </th>
-                <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                  {t("wallet.transactions.timestamp")}
-                </th>
-                <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
-                  {t("wallet.transactions.explorer")}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-ksc-box/20 divide-y divide-ksc-box/30">
-              {txHistory.map((tx) => (
-                <tr key={tx.id} className={`hover:bg-ksc-box/30 ${tx.txStatus === "CANCELED"? "text-gray-500":""}`}>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-mono  text-center">
-                    {tx.txStatus === "CANCELED"? "":<AddressDisplay address={tx.txHash || ""} />}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm  text-center">
-                    {<AddressDisplay address={tx.fromAddress || ""} />}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm  text-center">
-                    {<AddressDisplay address={tx.toAddress || ""} />}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm  text-right text-center">
-                    {formatWeiToKsc(tx.amount)}&nbsp; KSC
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-center">
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        tx.txStatus === "CONFIRMED"
-                          ? "bg-secondary-400 text-secondary-100"
-                          : tx.txStatus === "PENDING"
-                          ? "bg-green-200 text-green-800" 
-                          : tx.txStatus === "FAILED"
-                          ? "bg-error-100 text-error-800" 
-                          : tx.txStatus === "CANCELED"
-                          ? "bg-gray-600 text-secondary-100"
-                          : "bg-yellow-200 text-yellow-800" 
+              {/* 거래 내역 테이블 뷰*/}
+              <div className="hidden sm:block overflow-x-auto">
+                {transactions.length > 0 ? (
+                  <table className="min-w-full divide-y divide-ksc-box/50">
+                    <thead className="bg-ksc-box/30">
+                      <tr>
+                        <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                          {t("wallet.transactions.hash")}
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                          {t("wallet.transactions.from")}
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                          {t("wallet.transactions.to")}
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                          {t("wallet.transactions.amount")}
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                          {t("wallet.transactions.status.title")}
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                          {t("wallet.transactions.timestamp")}
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-medium text-ksc-gray uppercase tracking-wider">
+                          {t("wallet.transactions.explorer")}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-ksc-box/20 divide-y divide-ksc-box/30">
+                      {(isMock? paginatedTransactions:transactions).map((tx) => (
+                        <tr
+                          key={tx.id}
+                          className={`hover:bg-ksc-box/30 ${
+                            tx.txStatus === "CANCELED" ? "text-gray-500" : ""
+                          }`}
+                        >
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-mono  text-center">
+                            {tx.txStatus === "CANCELED" ? (
+                              ""
+                            ) : (
+                              <AddressDisplay address={tx.txHash || ""} />
+                            )}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm  text-center">
+                            {<AddressDisplay address={tx.fromAddress || ""} />}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm  text-center">
+                            {<AddressDisplay address={tx.toAddress || ""} />}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm  text-right text-center">
+                            {formatWeiToKsc(tx.amount)}&nbsp; KSC
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-center">
+                            <span
+                              className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                tx.txStatus === "CONFIRMED"
+                                  ? "bg-secondary-400 text-secondary-100"
+                                  : tx.txStatus === "PENDING"
+                                  ? "bg-green-200 text-green-800"
+                                  : tx.txStatus === "FAILED"
+                                  ? "bg-error-100 text-error-800"
+                                  : tx.txStatus === "CANCELED"
+                                  ? "bg-gray-600 text-secondary-100"
+                                  : "bg-yellow-200 text-yellow-800"
+                              }`}
+                            >
+                              {t(
+                                `wallet.transactions.status.${
+                                  tx.txStatus.toLowerCase() || "failed"
+                                }`
+                              )}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-ksc-gray text-center">
+                            {tx.txStatus === "PENDING"
+                              ? formatDate(tx.createdAt)
+                              : tx.txStatus === "APPROVE"
+                              ? formatDate(tx.scheduledAt)
+                              : formatDate(tx.statusUpdatedAt || "")}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm">
+                            <a
+                              href={getExplorerUrl(tx.txHash || "", chainName!)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`text-ksc-white hover:text-ksc-mint/80 flex justify-center ${
+                                tx.txStatus === "CANCELED" ? "hidden" : ""
+                              }`}
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-ksc-gray">
+                      {t("wallet.transactions.noTransactions")}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* 거래 내역 모바일 카드 뷰 */}
+              <div className="sm:hidden space-y-4">
+                {transactions.length > 0 ? (
+                  transactions.map((tx) => (
+                    <div
+                      key={tx.id}
+                      className={`bg-ksc-box/20 p-2 rounded-lg shadow-sm ${
+                        tx.txStatus === "CANCELED" ? "text-gray-500" : ""
                       }`}
                     >
-                      {t(
-                        `wallet.transactions.status.${
-                          tx.txStatus.toLowerCase() || "failed"
-                        }`
-                      )}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-ksc-gray text-center">
-                    {tx.txStatus === "PENDING"
-                      ? formatDate(tx.createdAt)
-                      : tx.txStatus === "APPROVE"
-                      ? formatDate(tx.scheduledAt)
-                      : formatDate(tx.statusUpdatedAt || "")}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">
-                    <a
-                      href={getExplorerUrl(tx.txHash || "", chainName!)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`text-ksc-white hover:text-ksc-mint/80 flex justify-center ${tx.txStatus === "CANCELED"? "hidden":""}`}
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-ksc-gray">
-              {t("wallet.transactions.noTransactions")}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* 거래 내역 모바일 카드 뷰 */}
-      <div className="sm:hidden space-y-4">
-        {txHistory.length > 0 ? (
-          txHistory.map((tx) => (
-            <div key={tx.id} className={`bg-ksc-box/20 p-2 rounded-lg shadow-sm ${tx.txStatus === "CANCELED" ? "text-gray-500" : ""}`}>
-              <div className="flex justify-between items-center mb-2">
-                <span
-                  className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    tx.txStatus === "CONFIRMED"
-                      ? "bg-secondary-400 text-secondary-100" 
-                      : tx.txStatus === "PENDING"
-                      ? "bg-green-200 text-green-800" 
-                      : tx.txStatus === "FAILED"
-                      ? "bg-error-100 text-error-800" 
-                      : tx.txStatus === "CANCELED"
-                          ? "bg-gray-600 text-secondary-100"
-                      : "bg-yellow-200 text-yellow-800" 
-                  }`}
-                >
-                  {t(
-                    `wallet.transactions.status.${
-                      tx.txStatus.toLowerCase() || "failed"
-                    }`
-                  )}
-                </span>
-                <span className="text-sm text-ksc-white">
-                   {tx.txStatus === "PENDING"
-                      ? formatDate(tx.createdAt)
-                      : tx.txStatus === "APPROVE"
-                      ? formatDate(tx.scheduledAt)
-                      : formatDate(tx.statusUpdatedAt || "")}
-                </span>
+                      <div className="flex justify-between items-center mb-2">
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            tx.txStatus === "CONFIRMED"
+                              ? "bg-secondary-400 text-secondary-100"
+                              : tx.txStatus === "PENDING"
+                              ? "bg-green-200 text-green-800"
+                              : tx.txStatus === "FAILED"
+                              ? "bg-error-100 text-error-800"
+                              : tx.txStatus === "CANCELED"
+                              ? "bg-gray-600 text-secondary-100"
+                              : "bg-yellow-200 text-yellow-800"
+                          }`}
+                        >
+                          {t(
+                            `wallet.transactions.status.${
+                              tx.txStatus.toLowerCase() || "failed"
+                            }`
+                          )}
+                        </span>
+                        <span className="text-sm text-ksc-white">
+                          {tx.txStatus === "PENDING"
+                            ? formatDate(tx.createdAt)
+                            : tx.txStatus === "APPROVE"
+                            ? formatDate(tx.scheduledAt)
+                            : formatDate(tx.statusUpdatedAt || "")}
+                        </span>
+                      </div>
+                      <p className=" text-base font-semibold mb-1">
+                        {formatWeiToKsc(tx.amount)} KSC
+                      </p>
+                      <p className="text-sm">
+                        {<AddressDisplay address={tx.fromAddress || ""} />} →{" "}
+                        {<AddressDisplay address={tx.toAddress || ""} />}
+                      </p>
+                      {tx.memo && <p className="text-xs mt-1">{tx.memo}</p>}
+                      <div className="mt-2 text-right">
+                        <a
+                          href={getExplorerUrl(tx.txHash || "", chainName!)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-ksc-mint/80 inline-flex items-center text-xs"
+                        >
+                          {tx.txStatus === "CANCELED" ? (
+                            ""
+                          ) : (
+                            <ExternalLink className="w-4 h-4" />
+                          )}
+                        </a>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-ksc-gray">
+                    {t("wallet.transactions.noTransactions")}
+                  </p>
+                )}
               </div>
-              <p className=" text-base font-semibold mb-1">
-                {formatWeiToKsc(tx.amount)} KSC
-              </p>
-              <p className="text-sm">
-                {<AddressDisplay address={tx.fromAddress || ""} />} → {<AddressDisplay address={tx.toAddress || ""} />}
-              </p>
-              {tx.memo && (
-                <p className="text-xs mt-1">{tx.memo}</p>
-              )}
-              <div className="mt-2 text-right">
-                <a
-                  href={getExplorerUrl(tx.txHash || "", chainName!)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-ksc-mint/80 inline-flex items-center text-xs"
-                >
-                   {tx.txStatus === "CANCELED"? "": <ExternalLink className="w-4 h-4"/>}
-        
-                </a>
+
+              {/* 페이지네이션 컨트롤 */}
+              <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
+                <div className="flex items-center w-full sm:w-auto justify-center sm:justify-start">
+                  <CustomDropdown
+                    _onChange={({ value }) => setItemsPerPage(Number(value))}
+                    _options={["5", "10", "20"]}
+                    _defaultOption={["5", "10", "20"].indexOf(
+                      itemsPerPage.toString()
+                    )}
+                    _width={80}
+                    _fontSize={13}
+                  />
+                  <span className="ml-2 text-ksc-gray-light text-sm">
+                    {t("pagination.itemsPerPage")}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2 w-full sm:w-auto justify-center sm:justify-end">
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1 || isLoading}
+                    className="px-3 py-2 text-ksc-white hover:text-ksc-mint disabled:invisible rounded-md transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <span className="text-ksc-white text-sm">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === totalPages || isLoading}
+                    className="px-3 py-2 text-ksc-white hover:text-ksc-mint disabled:invisible rounded-md transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
-          ))
-        ) : (
-          <p className="text-ksc-gray">
-            {t("wallet.transactions.noTransactions")}
-          </p>
-        )}
-      </div>
-
-      {/* 페이지네이션 컨트롤 */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
-        <div className="flex items-center w-full sm:w-auto justify-center sm:justify-start">
-          <CustomDropdown
-            _onChange={({ value }) => setItemsPerPage(Number(value))} 
-            _options={["5", "10", "20"]}
-            _defaultOption={["5", "10", "20"].indexOf(itemsPerPage.toString())}
-            _width={80}
-            _fontSize={13}
-          />
-          <span className="ml-2 text-ksc-gray-light text-sm">
-            {t("pagination.itemsPerPage")}
-          </span>
-        </div>
-        <div className="flex items-center space-x-2 w-full sm:w-auto justify-center sm:justify-end">
-          <button
-            onClick={() => setCurrentPage(currentPage - 1)}
-            disabled={currentPage === 1 || isLoading}
-            className="px-3 py-2 text-ksc-white hover:text-ksc-mint disabled:invisible rounded-md transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <span className="text-ksc-white text-sm">
-            {currentPage} / {totalPages}
-          </span>
-          <button
-            onClick={() => setCurrentPage(currentPage + 1)} 
-            disabled={currentPage === totalPages || isLoading}
-            className="px-3 py-2 text-ksc-white hover:text-ksc-mint disabled:invisible rounded-md transition-colors"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-    </div>
-)}
+          )}
         </div>
       </div>
     </div>

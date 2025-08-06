@@ -1,14 +1,14 @@
 import { useLanguage } from "@/contexts/localization/LanguageContext";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ethers } from "ethers";
 import { useWalletData } from "./useWalletData";
 import { delay } from "@/utils/helpers";
 import { ReceiptIcon } from "lucide-react";
 import { convertToUTC } from "@/utils/formatters";
+import { WalletTransaction } from "@/types/global";
 
-// 📍컨트랙트 주소 (실제 배포 후 변경 필요)📍
 const KSC_CONTRACT_ADDRESS = {
   avalanche:
     process.env.NEXT_PUBLIC_KSC_AVAX_CONTRACT_ADDRESS ||
@@ -35,12 +35,15 @@ export const useSendTokens = () => {
     signer,
     isConnected,
     address,
+    chainName,
     kscBalance,
+    isMock,
     setIsLoading,
     setError,
+    setKscBalance,
+    setTransactions,
   } = useWalletContext();
-  const { fetchBalance, fetchKscBalance, fetchTransactions } =
-    useWalletData();
+  const { fetchBalance, fetchKscBalance, fetchTransactions } = useWalletData();
 
   const [sendError, setSendError] = useState("");
 
@@ -55,6 +58,51 @@ export const useSendTokens = () => {
       network: "xrpl" | "avalanche" | null,
       memo?: string
     ) => {
+      // 수신자 지갑 주소 형식 체크
+      if (!evmAddressRegex.test(toAddress)) {
+        setSendError(t("payment.errors.invalidAddress"));
+        return "client-side-validation-fail";
+      }
+
+      // KSC 잔액 부족 체크 (프론트에서 1차적으로 체크)
+      const amountWei = ethers.parseUnits(amount, 18);
+      if (BigInt(kscBalance) < amountWei) {
+        setSendError(t("payment.errors.insufficient"));
+        return "client-side-validation-fail";
+      }
+
+      //mock mode
+      if (isMock) {
+        try {
+          await delay(1000);
+          const newKscBalance = (BigInt(kscBalance) - amountWei).toString();
+          setKscBalance(newKscBalance);
+
+          const mockTransaction: WalletTransaction = {
+            id: "txid_" + Math.random().toString(36).substring(2, 9),
+            txHash: "0x" + Math.random().toString(36).substring(2, 15),
+            fromAddress: address || "0xMockFromAddress123456789",
+            toAddress: toAddress || "0xMockToAddress123456789",
+            txStatus: "CONFIRMED",
+            paymentType: "INSTANT",
+            fee: "0.003",
+            amount: amountWei.toString(),
+            tokenType: network === "avalanche" ? "A_KSC" : "X_KSC",
+            createdAt: new Date().toISOString(),
+            statusUpdatedAt: new Date().toISOString(),
+            memo: memo,
+          };
+
+          setTransactions((prev) => [...prev, mockTransaction]);
+
+          toast.success(t(`payment.messages.success`));
+
+          return;
+        } catch (err) {
+          toast.error(t(`payment.errors.processing`));
+          console.error("Mock KSC send error:", err);
+        }
+      }
 
       // 유효 상태 체크
       if (!isConnected || !address || !signer || !provider || !network) {
@@ -79,18 +127,6 @@ export const useSendTokens = () => {
         }
       } catch (err: any) {
         setSendError(t("payment.errors.systemUnavailable"));
-        return "client-side-validation-fail";
-      }
-
-      // 수신자 지갑 주소 형식 체크
-      if (!evmAddressRegex.test(toAddress)) {
-        setSendError(t("payment.errors.invalidAddress"));
-        return "client-side-validation-fail";
-      }
-
-      // KSC 잔액 부족 체크 (프론트에서 1차적으로 체크)
-      if (Number(kscBalance) < Number(amount)) {
-        setSendError(t("payment.errors.insufficient"));
         return "client-side-validation-fail";
       }
 
@@ -234,7 +270,21 @@ export const useSendTokens = () => {
         console.log("결제 처리 중 오류 발생: ", err);
       }
     },
-    [fetchBalance, fetchKscBalance, fetchTransactions]
+    [
+      t,
+      language,
+      isConnected,
+      address,
+      signer,
+      provider,
+      isMock,
+      kscBalance,
+      setSendError,
+      setKscBalance,
+      fetchBalance,
+      fetchKscBalance,
+      fetchTransactions,
+    ]
   );
 
   // 2. 배치 전송 함수
@@ -245,8 +295,69 @@ export const useSendTokens = () => {
       network: "xrpl" | "avalanche" | null,
       memo?: string
     ) => {
+      // 수신자 지갑 주소 체크
+      for (let i = 0; i < toAddresses.length; i++) {
+        if (!evmAddressRegex.test(toAddresses[i])) {
+          setSendError(t("payment.errors.invalidAddress"));
+          return "client-side-validation-fail";
+        }
+      }
+
+      // KSC 잔액 부족 체크 (프론트에서 1차적으로 체크)
+      const totalAmountToSend = amounts.reduce(
+        (acc, currentAmount) => acc + parseFloat(currentAmount),
+        0
+      );
+      const totalAmountWei = ethers.parseUnits(
+        totalAmountToSend.toString(),
+        18
+      );
+      if (BigInt(kscBalance) < totalAmountWei) {
+        setSendError(t("payment.errors.insufficient"));
+        return "client-side-validation-fail";
+      }
+
+      //mock mode
+      if (isMock) {
+        try {
+          await delay(1000);
+          const newKscBalance = (
+            BigInt(kscBalance) - totalAmountWei
+          ).toString();
+          setKscBalance(newKscBalance);
+
+          const amountsWei = amounts.map((amountStr) =>
+            ethers.parseUnits(amountStr, 18)
+          );
+
+          for (let i = 0; i < toAddresses.length; i++) {
+            const mockTransaction: WalletTransaction = {
+              id: "txid_" + Math.random().toString(36).substring(2, 9),
+              txHash: "0x" + Math.random().toString(36).substring(2, 15),
+              fromAddress: address || "0xMockFromAddress123456789",
+              toAddress: toAddresses[i] || "0xMockToAddress123456789",
+              txStatus: "CONFIRMED",
+              paymentType: "BATCH",
+              fee: "0.003",
+              amount: amountsWei[i].toString(),
+              tokenType: network === "avalanche" ? "A_KSC" : "X_KSC",
+              createdAt: new Date().toISOString(),
+              statusUpdatedAt: new Date().toISOString(),
+              memo: memo,
+            };
+            setTransactions((prev) => [...prev, mockTransaction]);
+          }
+
+          toast.success(t(`payment.messages.success`));
+
+          return;
+        } catch (err) {
+          toast.error(t(`payment.errors.processing`));
+          console.error("Mock KSC send error:", err);
+        }
+      }
+
       // 유효 상태 체크
-      console.log(kscBalance, amounts);
       if (!isConnected || !address || !signer || !provider || !network) {
         setSendError(t("payment.errors.disconnect"));
         return "client-side-validation-fail";
@@ -269,24 +380,6 @@ export const useSendTokens = () => {
         }
       } catch (err: any) {
         setSendError(t("payment.errors.systemUnavailable"));
-        return "client-side-validation-fail";
-      }
-
-      // 수신자 지갑 주소 체크
-      for (let i = 0; i < toAddresses.length; i++) {
-        if (!evmAddressRegex.test(toAddresses[i])) {
-          setSendError(t("payment.errors.invalidAddress"));
-          return "client-side-validation-fail";
-        }
-      }
-
-      // KSC 잔액 부족 체크 (프론트에서 1차적으로 체크)
-      const totalAmountToSend = amounts.reduce(
-        (acc, currentAmount) => acc + parseFloat(currentAmount),
-        0
-      );
-      if (parseFloat(kscBalance) < totalAmountToSend) {
-        setSendError(t("payment.errors.insufficient"));
         return "client-side-validation-fail";
       }
 
@@ -434,7 +527,19 @@ export const useSendTokens = () => {
         console.error("결제 처리 중 오류 발생", err);
       }
     },
-    [fetchBalance, fetchKscBalance, fetchTransactions]
+    [
+      t,
+      language,
+      isConnected,
+      address,
+      signer,
+      provider,
+      kscBalance,
+      setSendError,
+      fetchBalance,
+      fetchKscBalance,
+      fetchTransactions,
+    ]
   );
 
   // 3. 예약 전송 함수
@@ -446,6 +551,68 @@ export const useSendTokens = () => {
       scheduledTimeStr: string,
       memo?: string
     ) => {
+      // 수신자 지갑 주소 형식 체크
+      if (!evmAddressRegex.test(toAddress)) {
+        setSendError(t("payment.errors.invalidAddress"));
+        return "client-side-validation-fail";
+      }
+
+      // KSC 잔액 부족 체크
+      const amountWei = ethers.parseUnits(amount, 18);
+      if (BigInt(kscBalance) < amountWei) {
+        setSendError(t("payment.errors.insufficient"));
+        return "client-side-validation-fail";
+      }
+
+      // 예약 시간 체크
+      const scheduledTime = new Date(scheduledTimeStr);
+      const currentTime = new Date();
+      if (scheduledTime.getTime() < currentTime.getTime()) {
+        setSendError(t("payment.errors.invalidTime"));
+        return "client-side-validation-fail";
+      }
+
+      if (isMock) {
+        const amountWei = ethers.parseUnits(amount, 18);
+        const scheduledTime = new Date(scheduledTimeStr);
+        const delay = scheduledTime.getTime() - new Date().getTime();
+
+        // 예약 등록 (즉시 실행)
+        const newTx: WalletTransaction = {
+          id: "mock_tx_" + Date.now(),
+          txHash: `0x${Buffer.from(Math.random().toString())
+            .toString("hex")
+            .slice(0, 64)}`,
+          fromAddress: address || "0xMockFromAddress",
+          toAddress: toAddress,
+          amount: amountWei.toString(),
+          txStatus: "APPROVE",
+          paymentType: "SCHEDULED",
+          tokenType: network === "avalanche" ? "A_KSC" : "X_KSC",
+          fee: "0",
+          createdAt: new Date().toISOString(),
+          scheduledAt: scheduledTime.toISOString(),
+          statusUpdatedAt: new Date().toISOString(),
+          memo: memo,
+        };
+
+        setTransactions((prev) => [...prev, newTx]);
+
+        // 예약 실행 (지연 후 실행)
+        setTimeout(() => {
+          setTransactions((prevTxs) =>
+            prevTxs.map((tx) =>
+              tx.id === newTx.id ? { ...tx, txStatus: "CONFIRMED" } : tx
+            )
+          );
+
+          const newKscBalance = (BigInt(kscBalance) - amountWei).toString();
+          setKscBalance(newKscBalance);
+          toast.success(t("payment.messages.success"));
+        }, delay);
+
+        return;
+      }
 
       // 유효 상태 체크
       if (!isConnected || !address || !signer || !provider || !network) {
@@ -470,26 +637,6 @@ export const useSendTokens = () => {
         }
       } catch (err: any) {
         setSendError(t("payment.errors.systemUnavailable"));
-        return "client-side-validation-fail";
-      }
-
-      // 수신자 지갑 주소 형식 체크
-      if (!evmAddressRegex.test(toAddress)) {
-        setSendError(t("payment.errors.invalidAddress"));
-        return "client-side-validation-fail";
-      }
-
-      // KSC 잔액 부족 체크 
-      if (Number(kscBalance) < Number(amount)) {
-        setSendError(t("payment.errors.insufficient"));
-        return "client-side-validation-fail";
-      }
-
-      // 예약 시간 체크
-      const scheduledTime = new Date(scheduledTimeStr);
-      const currentTime = new Date();
-      if (scheduledTime.getTime() < currentTime.getTime()) {
-        setSendError(t("payment.errors.invalidTime"));
         return "client-side-validation-fail";
       }
 
@@ -562,7 +709,7 @@ export const useSendTokens = () => {
 
             if (!data.success) {
               toast.error(t(`payment.errors.saveTxError`));
-              console.log("post-tx error:", data.data)
+              console.log("post-tx error:", data.data);
               return;
             } else {
               txId = data.data.id; // 트랜잭션 아이디 추출
@@ -582,7 +729,19 @@ export const useSendTokens = () => {
         console.log("결제 처리 중 오류 발생: ", err);
       }
     },
-    [fetchBalance, fetchKscBalance, fetchTransactions]
+    [
+      t,
+      language,
+      isConnected,
+      address,
+      signer,
+      provider,
+      kscBalance,
+      setSendError,
+      fetchBalance,
+      fetchKscBalance,
+      fetchTransactions,
+    ]
   );
 
   // ⚒️ ---------------------테스트용 Hook (컨트랙트 연동 X)--------------------- ⚒️
