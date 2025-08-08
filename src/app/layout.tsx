@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { SocketProvider } from "@/contexts/SocketContext";
 import { WalletProvider } from "@/contexts/wallet/WalletContext";
 import { LanguageProvider } from "@/contexts/localization/LanguageContext";
 import { Toaster } from "react-hot-toast";
@@ -40,44 +41,44 @@ export default function RootLayout({
       <body
         className={`${inter.className} h-full bg-ksc-background text-ksc-white`}
       >
-          <LanguageProvider>
-            <WalletProvider>
+        <LanguageProvider>
+          <WalletProvider>
+            <SocketProvider>
               <Providers>
-                <div className="min-h-screen bg-ksc-background">
+                <div class="min-h-screen bg-ksc-background">
                   <Header />
                   {children}
                   <Footer />
                 </div>
               </Providers>
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  duration: 4000,
-                  style: {
-                    background: "#343035",
-                    color: "#fff",
+            </SocketProvider>
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: "#343035",
+                  color: "#fff",
+                },
+                success: {
+                  duration: 3000,
+                  iconTheme: {
+                    primary: "#1BDEBE",
+                    secondary: "#201E21",
                   },
-                  success: {
-                    duration: 3000,
-                    iconTheme: {
-                      primary: "#1BDEBE",
-                      secondary: "#201E21",
-                    },
+                },
+                error: {
+                  duration: 5000,
+                  iconTheme: {
+                    primary: "#ef4444",
+                    secondary: "#201E21",
                   },
-                  error: {
-                    duration: 5000,
-                    iconTheme: {
-                      primary: "#ef4444",
-                      secondary: "#201E21",
-                    },
-                  },
-                }}
-              />
-            </WalletProvider>
-          </LanguageProvider>
+                },
+              }}
+            />
+          </WalletProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
 }
-
-
