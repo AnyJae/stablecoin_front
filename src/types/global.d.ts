@@ -12,8 +12,29 @@ export interface WalletTransaction {
   txHash: string | null;
   fromAddress: string;
   toAddress: string;
-  txStatus: "pending" | "confirmed" | "failed" | "approve" | "canceled" | "paused" |"PENDING" | "CONFIRMED" | "FAILED" | "APPROVE" | "CANCELED" | "PAUSED" | string;
-  paymentType: "instant" | "batch" | "scheduled" | "INSTANT" | "BATCH" | "SCHEDULED" | "MINT" | "BURN";
+  txStatus:
+    | "pending"
+    | "confirmed"
+    | "failed"
+    | "approve"
+    | "canceled"
+    | "paused"
+    | "PENDING"
+    | "CONFIRMED"
+    | "FAILED"
+    | "APPROVE"
+    | "CANCELED"
+    | "PAUSED"
+    | string;
+  paymentType:
+    | "instant"
+    | "batch"
+    | "scheduled"
+    | "INSTANT"
+    | "BATCH"
+    | "SCHEDULED"
+    | "MINT"
+    | "BURN";
   fee: string | null;
   amount: string;
   tokenType: "A_KSC" | "X_KSC";
@@ -22,4 +43,7 @@ export interface WalletTransaction {
   updatedAt?: string | null;
   statusUpdatedAt?: string | null;
   memo?: string | null;
+  pollingCount?: number;
+  lastPolledAt?: string | null;
+  failureReason?: string | null;
 }
