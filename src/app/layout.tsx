@@ -45,7 +45,7 @@ export default function RootLayout({
           <WalletProvider>
             <SocketProvider>
               <Providers>
-                <div class="min-h-screen bg-ksc-background">
+                <div className="min-h-screen bg-ksc-background">
                   <Header />
                   {children}
                   <Footer />
