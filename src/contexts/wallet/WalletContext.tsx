@@ -9,6 +9,7 @@ import {
   useCallback,
   Dispatch,
   SetStateAction,
+  useMemo,
 } from "react";
 import { ethers, id } from "ethers";
 import { MOCK_WALLET_DATA, generateMockTransactions } from "@/utils/mockWallet";
@@ -78,8 +79,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
   const { t, language } = useLanguage();
 
-  
-  const contextValue: WalletContextType = {
+  const contextValue: WalletContextType = useMemo(()=>({
     address,
     addressId,
     balance,
@@ -107,7 +107,21 @@ export function WalletProvider({ children }: WalletProviderProps) {
     setIsLoading,
     setProvider,
     setSigner
-  };
+  }),[
+    address,
+    addressId,
+    balance,
+    kscBalance,
+    isConnected,
+    chainId,
+    chainName,
+    isMock,
+    transactions,
+    isLoading,
+    error,
+    provider,
+    signer
+  ]) ;
 
   //provider와 signer 설정 및 이벤트 리스너 등록
   useEffect(() => {
