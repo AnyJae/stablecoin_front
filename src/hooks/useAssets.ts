@@ -2,11 +2,12 @@ import { formatWeiToKsc } from "@/utils/formatters";
 import { useLanguage } from "@/contexts/localization/LanguageContext";
 import { useWalletContext } from "@/contexts/wallet/WalletContext";
 import { ethers } from "ethers";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useWalletData } from "./useWalletData";
 import toast from "react-hot-toast";
 import { delay } from "@/utils/helpers";
 import { WalletTransaction } from "@/types/global";
+import { useSocket } from "@/contexts/SocketContext";
 
 const KSC_CONTRACT_ADDRESS = {
   avalanche:
@@ -27,6 +28,7 @@ const KSC_ABI = [
 
 export function useAssets() {
   const { t, language } = useLanguage();
+  const {socket} = useSocket();
   const {
     address,
     addressId,
@@ -36,6 +38,8 @@ export function useAssets() {
     signer,
     provider,
     isMock,
+    transactions,
+    setTransactions,
   } = useWalletContext();
   const { fetchKscBalance } = useWalletData();
 
@@ -138,7 +142,7 @@ export function useAssets() {
         if (data.success) {
           toast.success(t("admin.mint.success"));
 
-          const newKscBalance = BigInt(kscBalance) + BigInt(amountWei);
+          const newKscBalance = BigInt(kscBalance) + amountWei;
           setKscBalanceTemp(newKscBalance.toString());
 
           const calculatedValue = (amountWei * 125n) / 100n;
@@ -147,6 +151,9 @@ export function useAssets() {
           const newKrwBalance = krwBalance - calculatedValue;
           const maxRequest = (newKrwBalance * 80n) / 100n;
           setMaxRequestAmount(maxRequest);
+
+          const newTxs = [data.data,...adminHistory];
+          setAdminHistory(newTxs);
         } else {
           throw new Error(t("admin.errors.mint"));
         }
@@ -159,7 +166,7 @@ export function useAssets() {
         setAdminLoading(null);
       }
     },
-    [address, language]
+    [address, language, adminHistory, kscBalance, krwBalance, chainName, isConnected, signer, provider, maxRequestAmount, t]
   );
 
   //2. KSC 소각
@@ -278,6 +285,8 @@ export function useAssets() {
               const maxRequest = (newKrwBalance * 80n) / 100n;
               setMaxRequestAmount(maxRequest);
 
+              const newTxs = [data.data,...adminHistory];
+              setAdminHistory(newTxs);
               toast.success(t("admin.burn.success")); // temp
             } else {
               throw new Error(data.message || "admin.errors.burn");
@@ -302,7 +311,7 @@ export function useAssets() {
         setAdminLoading(null);
       }
     },
-    [address, language]
+    [address, language, adminHistory, kscBalance, krwBalance, chainName, isConnected, signer, provider]
   );
 
   // 3. KSC 발행 및 소각 내역 조회
@@ -363,18 +372,60 @@ export function useAssets() {
   }, [maxRequestAmount]);
 
   useEffect(() => {
-    const loadData = async () => {
-      fetchKscBalance();
-      fetchAdminHistory(5);
-      if (kscBalance && !isNaN(Number(kscBalance))) {
-        setKscBalanceTemp(kscBalance);
-        setTotalAssets(BigInt(krwBalance) + BigInt(kscBalance));
-      }
+    fetchKscBalance();
+    const initialItemsPerPage = 5;
+    setItemsPerPage(initialItemsPerPage);
+  }, []);
+
+  useEffect(() => {
+    // 유효성 검사 (BigInt 에러 방지)
+    const isValidIntegerString = (value: string | null): boolean => {
+      if (typeof value !== "string" || value.trim() === "") return false;
+      return /^-?\d+$/.test(value);
     };
 
-    loadData();
-  }, [kscBalance, kscBalanceTemp]);
-  return {
+    if (isValidIntegerString(kscBalance)) {
+      setKscBalanceTemp(kscBalance);
+      setTotalAssets(BigInt(krwBalance) + BigInt(kscBalance));
+      console.log("✅ KSC 잔액으로 계산 완료:", kscBalance);
+    }
+  }, [kscBalance, krwBalance]);
+
+  useEffect(() => {
+    if (itemsPerPage > 0) {
+      fetchAdminHistory();
+    }
+  }, [currentPage, itemsPerPage, fetchAdminHistory]);
+  
+
+  // 웹소켓 이벤트 리스너
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("transaction.status.changed", (updatedTx) => {
+      setAdminHistory((prevTxs) => {
+        const existingTxIndex = prevTxs.findIndex(
+          (tx) => tx.id === updatedTx.data.id
+        );
+        if (existingTxIndex !== -1) {
+          const newTxs = [...prevTxs];
+          const originalTx = newTxs[existingTxIndex];
+          const changedTx = {
+            ...originalTx,
+            txStatus: updatedTx.data.currentStatus,
+            fee: updatedTx.data.fee,
+            statusUpdatedAt: updatedTx.data.statusUpdatedAt,
+          };
+          newTxs[existingTxIndex] = changedTx;
+          return newTxs;
+        } else {
+          return [...prevTxs];
+        }
+      });
+    });
+  }, [socket, adminHistory]);
+  
+
+  const value = useMemo(() => ({
     adminLoading,
     totalAssets,
     kscBalanceTemp,
@@ -387,11 +438,29 @@ export function useAssets() {
     redeemKSC,
     setAdminLoading,
     setAdminError,
+    setAdminHistory,
     currentPage,
     setCurrentPage,
     itemsPerPage,
     setItemsPerPage,
     totalTransactions,
     totalPages,
-  };
+  }), [
+      adminLoading,
+      totalAssets,
+      kscBalanceTemp,
+      krwBalance,
+      maxRequestAmount,
+      adminError,
+      adminHistory,
+      fetchAdminHistory, 
+      requestKSC,       
+      redeemKSC,         
+      currentPage,
+      itemsPerPage,
+      totalTransactions,
+      totalPages
+  ]);
+
+  return value;
 }
