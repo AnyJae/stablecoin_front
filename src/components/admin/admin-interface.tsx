@@ -114,16 +114,7 @@ export function AdminInterface() {
     setCurrentPage(1); // 항목 수 변경 시 첫 페이지로 리셋
   };
 
-  useEffect(() => {
-    const initialItemsPerPage = 5;
-    setItemsPerPage(initialItemsPerPage);
-  }, []);
 
-  useEffect(() => {
-    if (itemsPerPage > 0) {
-      fetchAdminHistory();
-    }
-  }, [currentPage, itemsPerPage]);
 
   if (!isConnected&& !isMock) {
     return (
